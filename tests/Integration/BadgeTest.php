@@ -90,7 +90,14 @@ final class BadgeTest extends WcTestCase {
 
 	public function test_markup_is_fixed_and_escaped(): void {
 		$html = Badge::html();
-		$this->assertStringContainsString( 'src="https://verifyblind.com/badges/verified-with-verifyblind-icon-', $html );
+		// The image ships with the plugin: readers' browsers never fetch it from VerifyBlind.
+		$this->assertMatchesRegularExpression( '#src="' . preg_quote( esc_url( VERIFYBLIND_URL . 'assets/badges/verified-with-verifyblind-icon-' ), '#' ) . '(tr|en)\.svg"#', $html );
+		$this->assertStringNotContainsString( 'src="https://verifyblind.com', $html );
+		foreach ( array( 'tr', 'en' ) as $lang ) {
+			$file = VERIFYBLIND_DIR . 'assets/badges/verified-with-verifyblind-icon-' . $lang . '.svg';
+			$this->assertFileExists( $file );
+			$this->assertStringNotContainsString( '<script', (string) file_get_contents( $file ) );
+		}
 		$this->assertMatchesRegularExpression( '#href="https://verifyblind.com/(tr|en)/how-it-works"#', $html );
 		$this->assertStringContainsString( 'alt="' . esc_attr__( 'Verified with VerifyBlind', 'verifyblind' ) . '"', $html );
 		$this->assertStringContainsString( 'rel="noopener"', $html );

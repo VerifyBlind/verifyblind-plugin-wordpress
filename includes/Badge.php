@@ -5,7 +5,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * "Verified with VerifyBlind" next to the names of members who passed the one-person check (a valid 'uid'
- * result). The badge carries no user data: a fixed image, a fixed link and a translatable label.
+ * result). The badge carries no user data: a fixed image from the plugin's own files, a fixed link to how
+ * VerifyBlind works and a translatable label.
  */
 final class Badge {
 	const OPTION = 'verifyblind_badge_places';
@@ -66,7 +67,8 @@ final class Badge {
 		return sprintf(
 			' <a class="verifyblind-badge" href="%1$s" target="_blank" rel="noopener"><img src="%2$s" alt="%3$s" title="%3$s" width="16" height="16" style="display:inline-block;vertical-align:middle;width:16px;height:16px;border:0;margin:0 0 0 4px" /></a>',
 			esc_url( 'https://verifyblind.com/' . $lang . '/how-it-works' ),
-			esc_url( 'https://verifyblind.com/badges/verified-with-verifyblind-icon-' . $lang . '.svg' ),
+			// Shipped with the plugin (assets/badges): readers' browsers never fetch it from VerifyBlind.
+			esc_url( VERIFYBLIND_URL . 'assets/badges/verified-with-verifyblind-icon-' . $lang . '.svg' ),
 			esc_attr( $label )
 		);
 	}
