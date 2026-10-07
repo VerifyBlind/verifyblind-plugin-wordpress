@@ -138,8 +138,9 @@ final class Widget {
 		self::enqueue_style();
 		$redirect = ( isset( $opts['redirect'] ) && '' !== (string) $opts['redirect'] ) ? (string) $opts['redirect'] : ( is_singular() ? (string) get_permalink() : home_url( '/' ) );
 		$links    = sprintf( '<a class="verifyblind-login" href="%1$s">%2$s</a>', esc_url( wp_login_url( $redirect ) ), esc_html__( 'Log in', 'verifyblind' ) );
-		if ( get_option( 'users_can_register' ) ) {
-			$links .= sprintf( '<a class="verifyblind-register" href="%1$s">%2$s</a>', esc_url( wp_registration_url() ), esc_html__( 'Create an account', 'verifyblind' ) );
+		$register = self::registration_url();
+		if ( '' !== $register ) {
+			$links .= sprintf( '<a class="verifyblind-register" href="%1$s">%2$s</a>', esc_url( $register ), esc_html__( 'Create an account', 'verifyblind' ) );
 		}
 		return sprintf(
 			'<div class="verifyblind-box verifyblind-box--login" data-rule="%1$s"><p class="verifyblind-box__title">%2$s</p>%3$s<p class="verifyblind-box__text">%4$s</p><p class="verifyblind-box__links">%5$s</p></div>',
@@ -149,6 +150,14 @@ final class Widget {
 			esc_html__( 'This check needs an account: log in first, then verify.', 'verifyblind' ),
 			$links
 		);
+	}
+
+	/** Where a visitor creates an account: a shop's My Account page (WooCommerce sign-up), else wp-login.php; '' when the site has no sign-up. */
+	private static function registration_url(): string {
+		if ( function_exists( 'wc_get_page_permalink' ) && 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) {
+			return (string) wc_get_page_permalink( 'myaccount' );
+		}
+		return get_option( 'users_can_register' ) ? (string) wp_registration_url() : '';
 	}
 
 	private static function title( array $rule, array $opts ): string {

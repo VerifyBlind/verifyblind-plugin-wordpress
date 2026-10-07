@@ -12,6 +12,8 @@ abstract class WcTestCase extends TestCase {
 	protected $wc_terms = array();
 	/** @var int[] orders to delete */
 	protected $wc_orders = array();
+	/** @var array<string,mixed> options changed through set_option(): name => value before (false = did not exist) */
+	private $options_saved = array();
 	/** @var bool */
 	private $cod_changed = false;
 	/** @var mixed */
@@ -25,6 +27,30 @@ abstract class WcTestCase extends TestCase {
 		wc_load_cart();
 		WC()->cart->empty_cart();
 		wc_clear_notices();
+		$this->forget_checkout_orders();
+	}
+
+	/** The session's resumable orders: a later test must not resume (or reload from the cache) an order deleted by an earlier one. */
+	private function forget_checkout_orders(): void {
+		if ( function_exists( 'WC' ) && WC()->session ) {
+			WC()->session->set( 'store_api_draft_order', null );
+			WC()->session->set( 'order_awaiting_payment', null );
+		}
+		// The Store API checkout route object keeps its order between requests (one request per PHP process on a
+		// real site; many in this test process): a later test would otherwise resume an earlier test's order.
+		foreach ( rest_get_server()->get_routes() as $route => $handlers ) {
+			if ( 1 !== preg_match( '#^/wc/store(/v\d+)?/checkout$#', $route ) ) {
+				continue;
+			}
+			foreach ( $handlers as $handler ) {
+				$object = isset( $handler['callback'][0] ) && is_object( $handler['callback'][0] ) ? $handler['callback'][0] : null;
+				if ( null !== $object && property_exists( $object, 'order' ) ) {
+					$p = new \ReflectionProperty( $object, 'order' );
+					$p->setAccessible( true );
+					$p->setValue( $object, null );
+				}
+			}
+		}
 	}
 
 	protected function tearDown(): void {
@@ -32,6 +58,7 @@ abstract class WcTestCase extends TestCase {
 			WC()->cart->empty_cart();
 			wc_clear_notices();
 		}
+		$this->forget_checkout_orders();
 		foreach ( $this->wc_orders as $id ) {
 			// Deleting an order (HPOS) leaves its notes behind as orphan comments.
 			foreach ( wc_get_order_notes( array( 'order_id' => $id ) ) as $note ) {
@@ -56,7 +83,24 @@ abstract class WcTestCase extends TestCase {
 			}
 			WC()->payment_gateways()->init();
 		}
+		foreach ( $this->options_saved as $name => $value ) {
+			if ( false === $value ) {
+				delete_option( $name );
+			} else {
+				update_option( $name, $value );
+			}
+		}
+		$this->options_saved = array();
+		remove_all_filters( 'send_auth_cookies' );
 		parent::tearDown();
+	}
+
+	/** Changes a site option for this test only (restored in tearDown). */
+	protected function set_option( string $name, $value ): void {
+		if ( ! array_key_exists( $name, $this->options_saved ) ) {
+			$this->options_saved[ $name ] = get_option( $name, false );
+		}
+		update_option( $name, $value );
 	}
 
 	protected function category( string $name, int $parent = 0 ): int {

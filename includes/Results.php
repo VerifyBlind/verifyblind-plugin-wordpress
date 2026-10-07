@@ -22,14 +22,21 @@ final class Results {
 		);
 	}
 
-	/** @return string[] distinct conditions passed within the validity window (0 = forever). */
-	public static function passed_conditions( string $owner, int $validity_days, bool $include_test ): array {
+	/**
+	 * @param int $within_seconds also only results at most this old (0 = no extra limit), e.g. CARRY_OVER_SECONDS
+	 * @return string[] distinct conditions passed within the validity window (0 = forever).
+	 */
+	public static function passed_conditions( string $owner, int $validity_days, bool $include_test, int $within_seconds = 0 ): array {
 		global $wpdb;
 		$sql  = 'SELECT DISTINCT cond FROM ' . Schema::table( 'results' ) . ' WHERE owner = %s AND passed = 1';
 		$args = array( $owner );
 		if ( $validity_days > 0 ) {
 			$sql   .= ' AND verified_at >= %s';
 			$args[] = gmdate( 'Y-m-d H:i:s', time() - $validity_days * DAY_IN_SECONDS );
+		}
+		if ( $within_seconds > 0 ) {
+			$sql   .= ' AND verified_at >= %s';
+			$args[] = gmdate( 'Y-m-d H:i:s', time() - $within_seconds );
 		}
 		if ( ! $include_test ) {
 			$sql .= ' AND is_test = 0';
