@@ -37,6 +37,27 @@ final class Results {
 		return array_map( 'strval', $wpdb->get_col( $wpdb->prepare( $sql, $args ) ) );
 	}
 
+	/** @return array[] id, cond, passed (bool), is_test (bool), verified_at, nonce — newest first */
+	public static function for_owner( string $owner ): array {
+		global $wpdb;
+		$rows = $wpdb->get_results(
+			$wpdb->prepare( 'SELECT id, cond, passed, is_test, verified_at, nonce FROM ' . Schema::table( 'results' ) . ' WHERE owner = %s ORDER BY verified_at DESC, id DESC', $owner ),
+			ARRAY_A
+		);
+		$out  = array();
+		foreach ( (array) $rows as $r ) {
+			$out[] = array(
+				'id'          => (int) $r['id'],
+				'cond'        => (string) $r['cond'],
+				'passed'      => 1 === (int) $r['passed'],
+				'is_test'     => 1 === (int) $r['is_test'],
+				'verified_at' => (string) $r['verified_at'],
+				'nonce'       => (string) $r['nonce'],
+			);
+		}
+		return $out;
+	}
+
 	/** @return string[] owners that had results for this nonce */
 	public static function delete_by_nonce( string $nonce ): array {
 		global $wpdb;
