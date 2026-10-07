@@ -50,15 +50,27 @@ final class Gate {
 		return (bool) apply_filters( 'verifyblind_bypass_gate', $bypass, $post );
 	}
 
-	/** First rule the current visitor does not satisfy, or null. */
+	/**
+	 * First rule the current visitor does not satisfy, or null.
+	 *
+	 * A guest's one-person pass exists only for the sign-up form (it is held until the account is created), so a
+	 * guest never satisfies a one-person rule of any other placement: those need an account.
+	 */
 	public static function blocking_rule( array $rules ): ?array {
 		$owner = Owner::current( false );
+		$guest = null !== $owner && 0 === strpos( $owner, 'g:' );
 		foreach ( $rules as $rule ) {
-			if ( null === $owner || ! Evaluator::satisfies( $owner, $rule ) ) {
+			if ( null === $owner || ( $guest && self::needs_account( $rule ) ) || ! Evaluator::satisfies( $owner, $rule ) ) {
 				return $rule;
 			}
 		}
 		return null;
+	}
+
+	/** One-person rules bind a person to an account; only the sign-up rule may be met before the account exists. */
+	public static function needs_account( array $rule ): bool {
+		// 'registration' = Placements\Registration::KEY (a literal, so this works without the placement class).
+		return ! empty( $rule['unique'] ) && 'registration' !== ( isset( $rule['placement'] ) ? $rule['placement'] : '' );
 	}
 
 	public static function no_cache(): void {

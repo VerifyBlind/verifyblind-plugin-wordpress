@@ -23,7 +23,7 @@ final class Rest {
 			return self::error( 503, 'not_configured' );
 		}
 		// One-person checks bind a person to an account: guests log in first - except on the sign-up form.
-		if ( ! empty( $rule['unique'] ) && ! is_user_logged_in() && 'registration' !== $rule['placement'] ) {
+		if ( Gate::needs_account( $rule ) && ! is_user_logged_in() ) {
 			return self::error( 401, 'login_required' );
 		}
 		$json       = $req->get_json_params();

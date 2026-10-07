@@ -26,8 +26,7 @@ final class Prompt {
 		if ( is_user_logged_in() ) {
 			return false;
 		}
-		// 'registration' = Registration::KEY (a literal here, so this helper works without the placement class).
-		return $forced || ( ! empty( $rule['unique'] ) && 'registration' !== ( isset( $rule['placement'] ) ? $rule['placement'] : '' ) );
+		return $forced || Gate::needs_account( $rule );
 	}
 
 	/** For action hooks: prints the box for the first of $rules the visitor does not meet (nothing when all are met). */
