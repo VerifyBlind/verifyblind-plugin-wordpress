@@ -76,11 +76,51 @@ final class Privacy {
 	public static function erase( $email, $page = 1 ): array {
 		$user = get_user_by( 'email', (string) $email );
 		$had  = false;
+		$kept = array();
 		if ( $user ) {
-			$had = (bool) Results::for_owner( Owner::for_user( (int) $user->ID ) ) || null !== Identities::find_by_wp_user( (int) $user->ID );
+			$had  = (bool) Results::for_owner( Owner::for_user( (int) $user->ID ) ) || null !== Identities::find_by_wp_user( (int) $user->ID );
+			$kept = self::kept( (int) $user->ID ); // before the removal: the coupon records are found through the person code
 			Members::remove( (int) $user->ID );
 		}
-		return array( 'items_removed' => $had, 'items_retained' => false, 'messages' => array(), 'done' => true );
+		return array( 'items_removed' => $had, 'items_retained' => (bool) $kept, 'messages' => $kept, 'done' => true );
+	}
+
+	/**
+	 * Shop records the eraser deliberately leaves (Members::remove() does not touch them), as messages for the
+	 * privacy tools: one-person coupon uses (a keyed code of the person, which keeps the offer once per person) and
+	 * the verification records on the user's orders (part of the purchase record).
+	 *
+	 * @return string[]
+	 */
+	private static function kept( int $user_id ): array {
+		global $wpdb;
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return array();
+		}
+		$out = array();
+		$key = get_option( Placements\WcCoupon::KEY_OPTION );
+		// Without the site's key no use was ever recorded (and asking for the person code would create the key).
+		$person = ( is_string( $key ) && '' !== $key ) ? Placements\WcCoupon::person_key( $user_id ) : null;
+		if ( null !== $person && null !== $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s LIMIT 1", Placements\WcCoupon::META, $person ) ) ) {
+			$out[] = __( 'One-person coupon uses are kept as a keyed code of the person (no identity data), so that each offer stays once per person.', 'verifyblind' );
+		}
+		$orders = wc_get_orders(
+			array(
+				'customer_id' => $user_id,
+				'limit'       => 1,
+				'return'      => 'ids',
+				'status'      => array_keys( wc_get_order_statuses() ),
+				'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- privacy tool, one user, limit 1
+					'relation' => 'OR',
+					array( 'key' => Placements\WcCheckout::META, 'compare' => 'EXISTS' ),
+					array( 'key' => Placements\WcCoupon::ORDER_META, 'compare' => 'EXISTS' ),
+				),
+			)
+		);
+		if ( $orders ) {
+			$out[] = __( 'Verification records on orders (which check passed, and when) are kept with the orders as part of the purchase record.', 'verifyblind' );
+		}
+		return $out;
 	}
 
 	public static function policy_text(): string {

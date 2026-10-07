@@ -81,7 +81,10 @@ final class CommentGate {
 		if ( is_wp_error( $approved ) || ! is_array( $data ) ) {
 			return $approved;
 		}
-		$post = get_post( isset( $data['comment_post_ID'] ) ? (int) $data['comment_post_ID'] : 0 );
+		// get_post( 0 ) would be the global post: a comment without a post is not judged against some other page.
+		// Pingbacks and trackbacks are judged like comments (decision): they carry text from elsewhere past the rule.
+		$id   = isset( $data['comment_post_ID'] ) ? (int) $data['comment_post_ID'] : 0;
+		$post = $id > 0 ? get_post( $id ) : null;
 		if ( ! $post || ! self::matches( $post, $products ) || null === self::blocking( $placement, $post ) ) {
 			return $approved;
 		}

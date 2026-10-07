@@ -95,6 +95,9 @@ final class MembersPage {
 		}
 		$user_id = isset( $_REQUEST['user_id'] ) ? absint( $_REQUEST['user_id'] ) : 0;
 		check_admin_referer( 'verifyblind_remove_member_' . $user_id );
+		if ( $user_id <= 0 || ! get_userdata( $user_id ) ) {
+			wp_die( esc_html__( 'This account does not exist.', 'verifyblind' ), '', array( 'response' => 400 ) );
+		}
 		Members::remove( $user_id );
 		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'vb_msg' => 'removed' ), admin_url( 'admin.php' ) ) );
 		exit;

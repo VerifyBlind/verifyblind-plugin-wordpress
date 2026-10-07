@@ -42,7 +42,9 @@ final class ApiErrors {
 	}
 
 	public static function clear(): void {
-		delete_option( self::OPTION );
+		if ( false !== get_option( self::OPTION, false ) ) {
+			delete_option( self::OPTION );
+		}
 	}
 
 	public static function text( int $status ): string {

@@ -139,6 +139,37 @@ final class CommentsTest extends WcTestCase {
 		$this->assertFalse( Gate::no_cache_requested(), 'archives have no comment form' );
 	}
 
+	public function test_a_comment_without_a_post_is_not_judged_against_the_global_post(): void {
+		$GLOBALS['post'] = get_post( $this->post() );
+		$this->rule( array( 'placement' => Comments::KEY, 'age' => '18+' ) );
+		$this->assertSame( 1, Comments::check( 1, array( 'comment_content' => 'x' ) ) );
+		$this->assertSame( 1, Comments::check( 1, array( 'comment_post_ID' => 0, 'comment_content' => 'x' ) ) );
+	}
+
+	/** Decision: pingbacks and trackbacks carry text from elsewhere past the rule, so a covered post refuses them too. */
+	public function test_pingbacks_and_trackbacks_on_covered_posts_are_refused(): void {
+		$post = $this->post();
+		$this->rule( array( 'placement' => Comments::KEY, 'age' => '18+' ) );
+		foreach ( array( 'pingback', 'trackback' ) as $type ) {
+			$refused = wp_new_comment(
+				array(
+					'comment_post_ID'      => $post,
+					'comment_content'      => 'VB ' . $type . ' ' . wp_rand(),
+					'comment_author'       => 'Elsewhere',
+					'comment_author_email' => '',
+					'comment_author_url'   => 'https://example.com/' . $type,
+					'comment_author_IP'    => '',
+					'comment_agent'        => '',
+					'comment_type'         => $type,
+					'user_id'              => 0,
+				),
+				true
+			);
+			$this->assertInstanceOf( \WP_Error::class, $refused, $type );
+			$this->assertSame( 'verifyblind_required', $refused->get_error_code(), $type );
+		}
+	}
+
 	public function test_a_comment_rule_does_not_touch_product_reviews(): void {
 		$product = $this->product();
 		$this->rule( array( 'placement' => Comments::KEY, 'age' => '18+' ) );

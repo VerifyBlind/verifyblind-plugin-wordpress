@@ -67,6 +67,8 @@ final class Rest {
 			if ( ! is_array( $body ) || ! isset( $body['nonce'] ) || ! is_string( $body['nonce'] ) || '' === $body['nonce'] ) {
 				return self::error( 502, 'api_unreachable' );
 			}
+			// The account works again (key, balance, e-mail fixed): the panel notice goes away.
+			ApiErrors::clear();
 			// A guest gets an owner cookie only for a session that really started.
 			$owner = Owner::current( true );
 			Nonces::put( $body['nonce'], $rule['id'], $rule['age'], ! empty( $rule['unique'] ), (string) $owner, 960 );

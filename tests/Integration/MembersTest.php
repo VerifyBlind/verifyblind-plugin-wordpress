@@ -134,6 +134,21 @@ final class MembersTest extends TestCase {
 		}
 	}
 
+	public function test_remove_action_needs_an_existing_account(): void {
+		$this->die_throws();
+		wp_set_current_user( $this->make_user( 'administrator' ) );
+		foreach ( array( 0, 2147483000 ) as $uid ) {
+			$_GET     = array( 'user_id' => (string) $uid, '_wpnonce' => wp_create_nonce( 'verifyblind_remove_member_' . $uid ) );
+			$_REQUEST = $_GET;
+			try {
+				MembersPage::remove();
+				$this->fail( 'no account ' . $uid . ': must stop' );
+			} catch ( \RuntimeException $e ) {
+				$this->assertSame( 'wp_die', $e->getMessage(), (string) $uid );
+			}
+		}
+	}
+
 	public function test_screen_lists_members_with_a_remove_link(): void {
 		$uid = $this->make_user();
 		Results::add( 'u:' . $uid, 'uid', true, 'sc', false );

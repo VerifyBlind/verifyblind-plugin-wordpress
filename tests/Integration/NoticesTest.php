@@ -115,6 +115,24 @@ final class NoticesTest extends TestCase {
 		$this->assertCount( 1, $this->mails );
 	}
 
+	public function test_a_successful_generate_clears_the_account_error(): void {
+		update_option( 'verifyblind_captcha', '0' );
+		$rule = $this->rule();
+		ApiErrors::record( 402, 'INSUFFICIENT_BALANCE' );
+		$this->assertNotNull( ApiErrors::recent() );
+		$this->mock_http(
+			function () {
+				return array( 'body' => '{"nonce":"ok-after-fix"}' );
+			}
+		);
+		$req = new \WP_REST_Request( 'POST', '/verifyblind/v1/generate' );
+		$req->set_query_params( array( 'rule' => $rule['id'] ) );
+		$req->set_header( 'content-type', 'application/json' );
+		$req->set_body( wp_json_encode( array( 'public_key' => 'PK' ) ) );
+		$this->assertSame( 200, rest_do_request( $req )->get_status() );
+		$this->assertNull( ApiErrors::recent(), 'the admin fixed it: the notice goes away' );
+	}
+
 	public function test_notices_render_only_on_plugin_screens_for_admins(): void {
 		update_option( 'verifyblind_api_key', '' );
 		wp_set_current_user( $this->make_user( 'administrator' ) );
