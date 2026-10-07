@@ -144,6 +144,13 @@ final class Registration {
 	 * @param mixed $email
 	 */
 	private static function check( $errors, $email ): void {
+		if ( is_user_logged_in() ) {
+			// Someone already logged in creating an account (an administrator, a shop manager, an API integration such
+			// as POST /wc/v3/customers) is an administrative act, not a visitor's sign-up: no check, nothing armed
+			// (Plugin::on_register ignores it too).
+			self::disarm();
+			return;
+		}
 		$why = self::refusal();
 		if ( null === $why ) {
 			$normalized        = self::normalize( is_string( $email ) ? $email : '' );

@@ -159,6 +159,26 @@ final class RegistrationTest extends TestCase {
 		$this->created_users[] = $uid;
 	}
 
+	public function test_an_administrator_creating_a_customer_through_the_api_is_not_asked(): void {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			$this->markTestSkipped( 'WooCommerce is not active' );
+		}
+		$this->rule( array( 'placement' => Registration::KEY, 'age' => '18+', 'unique' => true ) );
+		Results::add( $this->guest(), '18+', true, 'admin-browser', false ); // the admin's browser once verified as a guest
+		wp_set_current_user( $this->make_user( 'administrator' ) );
+		$req = new \WP_REST_Request( 'POST', '/wc/v3/customers' );
+		$req->set_header( 'content-type', 'application/json' );
+		$req->set_body( wp_json_encode( array( 'email' => 'vbapi' . wp_rand() . '@example.com', 'username' => 'vbapi_' . strtolower( wp_generate_password( 8, false ) ), 'password' => wp_generate_password() ) ) );
+		$res  = rest_do_request( $req );
+		$data = $res->get_data();
+		if ( is_array( $data ) && isset( $data['id'] ) ) {
+			$this->created_users[] = (int) $data['id'];
+		}
+		$this->assertSame( 201, $res->get_status(), (string) wp_json_encode( $data ) );
+		$this->assertSame( array(), Results::passed_conditions( 'u:' . (int) $data['id'], 0, true ), 'the new customer takes nothing from the admin\'s browser' );
+		$this->assertFalse( Registration::is_armed_for( (string) $data['email'] ) );
+	}
+
 	public function test_sign_up_forms_show_the_box_without_reload(): void {
 		$this->rule( array( 'placement' => Registration::KEY, 'age' => '18+' ) );
 		foreach ( array( 'register_form', 'woocommerce_register_form' ) as $hook ) {
