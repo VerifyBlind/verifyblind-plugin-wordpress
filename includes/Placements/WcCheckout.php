@@ -32,6 +32,14 @@ final class WcCheckout {
 
 	/** @var bool[] one entry per REST request being served: whether it is a Store API checkout that creates the customer's account */
 	private static $creates_account = array();
+	/** @var bool whether this request's classic checkout validation saw a guest creating their account */
+	private static $classic_creating = false;
+
+	/** Tests: forget what this request's checkout said about creating an account. */
+	public static function reset(): void {
+		self::$classic_creating = false;
+		self::$creates_account  = array();
+	}
 
 	public static function hooks(): void {
 		add_action( 'woocommerce_before_checkout_form', array( self::class, 'print_box' ), 5 );
@@ -191,11 +199,29 @@ final class WcCheckout {
 	 */
 	public static function classic_validation( $data, $errors ): void {
 		// Mirrors WC_Checkout::process_customer(); 'createaccount' is already 0 when checkout sign-up is off.
-		$creating = ! is_user_logged_in() && ( WC()->checkout()->is_registration_required() || ( is_array( $data ) && ! empty( $data['createaccount'] ) ) );
-		$rule     = self::blocking( self::cart(), $creating );
+		$creating               = ! is_user_logged_in() && ( WC()->checkout()->is_registration_required() || ( is_array( $data ) && ! empty( $data['createaccount'] ) ) );
+		self::$classic_creating = $creating;
+		$rule                   = self::blocking( self::cart(), $creating );
 		if ( null !== $rule && $errors instanceof \WP_Error ) {
 			$errors->add( 'verifyblind_required', self::message( $rule, $creating ) );
 		}
+	}
+
+	/**
+	 * Once the account a guest created in this checkout exists, only the "require an account" rules are judged again,
+	 * on the account: the other rules were judged moments before in the same request on the guest's results, which
+	 * may be valid yet too old to follow into a new account (Results::CARRY_OVER_SECONDS).
+	 *
+	 * @return array[]
+	 */
+	private static function account_rules( array $rules ): array {
+		$out = array();
+		foreach ( $rules as $rule ) {
+			if ( isset( $rule['guest_mode'] ) && 'require_account' === $rule['guest_mode'] ) {
+				$out[] = $rule;
+			}
+		}
+		return $out;
 	}
 
 	/**
@@ -271,7 +297,9 @@ final class WcCheckout {
 		if ( ! $rules ) {
 			return;
 		}
-		$rule = self::refusing_rule( $rules );
+		// After process_customer(): a guest who asked for an account in this checkout is logged in to it now.
+		$judge = ( self::$classic_creating && is_user_logged_in() ) ? self::account_rules( $rules ) : $rules;
+		$rule  = self::refusing_rule( $judge );
 		if ( null !== $rule ) {
 			throw new \Exception( self::message( $rule ) );
 		}
@@ -321,7 +349,7 @@ final class WcCheckout {
 		if ( ! $rules ) {
 			return;
 		}
-		$rule = self::refusing_rule( $rules );
+		$rule = self::refusing_rule( self::account_rules( $rules ) );
 		if ( null !== $rule ) {
 			throw new RouteException( 'verifyblind_required', self::message( $rule ), 403 );
 		}

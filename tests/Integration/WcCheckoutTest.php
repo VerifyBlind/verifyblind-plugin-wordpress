@@ -234,6 +234,36 @@ final class WcCheckoutTest extends WcTestCase {
 		$this->assertFalse( get_user_by( 'email', $email ), 'no account was created' );
 	}
 
+	public function test_an_older_guest_result_still_counts_for_a_per_order_rule_when_the_account_is_created_at_checkout(): void {
+		global $wpdb;
+		$this->enable_cod();
+		$this->allow_checkout_sign_up();
+		$rule  = $this->checkout_rule(); // verify each order: guests' results count, account or not
+		$older = gmdate( 'Y-m-d H:i:s', time() - 2 * HOUR_IN_SECONDS ); // valid, but too old to follow into a new account
+		WC()->cart->add_to_cart( $this->pid );
+		$guest = $this->verify_guest( '18+' );
+		$wpdb->update( \VerifyBlind\Schema::table( 'results' ), array( 'verified_at' => $older ), array( 'owner' => $guest ) );
+		$res = $this->store_api_order_creating_account( 'vbpo' . wp_rand() . '@example.com' );
+		$this->assertSame( 200, $res->get_status(), (string) wp_json_encode( $res->get_data() ) );
+		$this->assertSame( $rule['id'], wc_get_order( $res->get_data()['order_id'] )->get_meta( WcCheckout::META )[0]['rule'] );
+
+		// Classic checkout, same visitor situation.
+		wp_set_current_user( 0 );
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $this->pid );
+		$guest = $this->verify_guest( '18+' );
+		$wpdb->update( \VerifyBlind\Schema::table( 'results' ), array( 'verified_at' => $older ), array( 'owner' => $guest ) );
+		$data   = array_merge( $this->classic_data(), array( 'createaccount' => 1, 'billing_email' => 'vbpc' . wp_rand() . '@example.com' ) );
+		$errors = new \WP_Error();
+		do_action( 'woocommerce_after_checkout_validation', $data, $errors );
+		$this->assertFalse( $errors->has_errors() );
+		$this->classic_process_customer( $data );
+		$this->assertGreaterThan( 0, get_current_user_id() );
+		$id = WC()->checkout()->create_order( $data );
+		$this->assertIsInt( $id, is_wp_error( $id ) ? $id->get_error_message() : '' );
+		$this->wc_orders[] = $id;
+	}
+
 	public function test_with_checkout_sign_up_guests_can_verify_on_the_checkout_for_require_account(): void {
 		$this->allow_checkout_sign_up();
 		$this->checkout_rule( array( 'guest_mode' => 'require_account' ) );

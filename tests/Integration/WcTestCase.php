@@ -12,6 +12,8 @@ abstract class WcTestCase extends TestCase {
 	protected $wc_terms = array();
 	/** @var int[] orders to delete */
 	protected $wc_orders = array();
+	/** @var int the newest order id when the test started (HPOS orders table) */
+	private $order_floor = 0;
 	/** @var array<string,mixed> options changed through set_option(): name => value before (false = did not exist) */
 	private $options_saved = array();
 	/** @var bool */
@@ -28,6 +30,25 @@ abstract class WcTestCase extends TestCase {
 		WC()->cart->empty_cart();
 		wc_clear_notices();
 		$this->forget_checkout_orders();
+		\VerifyBlind\Placements\WcCheckout::reset();
+		$this->order_floor = $this->last_order_id();
+	}
+
+	private function last_order_id(): int {
+		global $wpdb;
+		return (int) $wpdb->get_var( "SELECT COALESCE( MAX( id ), 0 ) FROM {$wpdb->prefix}wc_orders" );
+	}
+
+	/**
+	 * Test orders this test created without tracking them (a checkout refused after its draft order existed leaves
+	 * the draft behind). Only test addresses: an order someone places on the site meanwhile is left alone.
+	 *
+	 * @return int[]
+	 */
+	private function untracked_orders(): array {
+		global $wpdb;
+		$ids = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}wc_orders WHERE id > %d AND ( billing_email IS NULL OR billing_email = '' OR billing_email LIKE %s )", $this->order_floor, '%@example.com' ) );
+		return array_values( array_diff( array_map( 'intval', $ids ), array_map( 'intval', $this->wc_orders ) ) );
 	}
 
 	/** The session's resumable orders: a later test must not resume (or reload from the cache) an order deleted by an earlier one. */
@@ -59,7 +80,10 @@ abstract class WcTestCase extends TestCase {
 			wc_clear_notices();
 		}
 		$this->forget_checkout_orders();
-		foreach ( $this->wc_orders as $id ) {
+		foreach ( $this->untracked_orders() as $id ) {
+			$this->wc_orders[] = $id;
+		}
+		foreach ( array_unique( $this->wc_orders ) as $id ) {
 			// Deleting an order (HPOS) leaves its notes behind as orphan comments.
 			foreach ( wc_get_order_notes( array( 'order_id' => $id ) ) as $note ) {
 				wc_delete_order_note( $note->id );
