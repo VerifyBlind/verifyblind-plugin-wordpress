@@ -83,7 +83,8 @@ final class Gate {
 	private static function post_is_gated( \WP_Post $post ): bool {
 		return (bool) self::rules_for_post( $post )
 			|| has_shortcode( (string) $post->post_content, 'verifyblind_gate' )
-			|| has_block( 'verifyblind/gate', $post );
+			|| has_block( 'verifyblind/gate', $post )
+			|| ( 'product' === $post->post_type && array() !== \VerifyBlind\Placements\ProductTargets::rules_for_product( (int) $post->ID, \VerifyBlind\Placements\WcProduct::KEY ) );
 	}
 
 	/** Early guard: any page whose main query contains a gated post must not be cached (archives, search, home...). */

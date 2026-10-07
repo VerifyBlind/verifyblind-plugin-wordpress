@@ -48,6 +48,7 @@ abstract class TestCase extends Base {
 		wp_set_current_user( 0 );
 		unset( $_COOKIE[ Owner::COOKIE ] );
 		Registration::reset();
+		\VerifyBlind\Placements\WcProduct::reset_memo();
 	}
 
 	protected function tearDown(): void {

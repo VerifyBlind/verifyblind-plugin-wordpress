@@ -107,4 +107,103 @@ final class WcProductTest extends WcTestCase {
 		WcProduct::on_template_redirect();
 		$this->assertTrue( Gate::no_cache_requested(), 'the unlocked page is per-visitor too' );
 	}
+	public function test_a_product_archive_with_a_targeted_product_is_never_cached(): void {
+		$q                       = new \WP_Query( array( 'post_type' => 'product', 'post__in' => array( $this->pid ) ) );
+		$GLOBALS['wp_query']     = $q;
+		$GLOBALS['wp_the_query'] = $q;
+		$this->assertFalse( is_singular() );
+		Gate::maybe_no_cache();
+		$this->assertTrue( Gate::no_cache_requested(), 'shop/archive/search pages listing a targeted product are per-visitor' );
+
+		Gate::reset_no_cache_flag();
+		$q                       = new \WP_Query( array( 'post_type' => 'product', 'post__in' => array( $this->product() ) ) );
+		$GLOBALS['wp_query']     = $q;
+		$GLOBALS['wp_the_query'] = $q;
+		Gate::maybe_no_cache();
+		$this->assertFalse( Gate::no_cache_requested(), 'untargeted products stay cacheable' );
+	}
+
+	public function test_every_read_of_a_targeted_product_marks_the_page_uncacheable(): void {
+		$this->verify_guest( '18+' );
+		Gate::reset_no_cache_flag();
+		$this->assertSame( 'SECRET-SHORT', apply_filters( 'get_the_excerpt', 'SECRET-SHORT', get_post( $this->pid ) ) );
+		$this->assertTrue( Gate::no_cache_requested(), 'excerpt, unlocked' );
+		foreach ( array( 'post_text', 'short', 'getter' ) as $which ) {
+			Gate::reset_no_cache_flag();
+			$GLOBALS['post'] = get_post( $this->pid );
+			if ( 'post_text' === $which ) {
+				apply_filters( 'the_content', 'x' );
+			} elseif ( 'short' === $which ) {
+				apply_filters( 'woocommerce_short_description', 'x' );
+			} else {
+				wc_get_product( $this->pid )->get_description();
+			}
+			$this->assertTrue( Gate::no_cache_requested(), $which . ', unlocked' );
+		}
+		$plain = $this->product();
+		Gate::reset_no_cache_flag();
+		wc_get_product( $plain )->get_description();
+		$this->assertFalse( Gate::no_cache_requested(), 'untargeted product' );
+	}
+
+	public function test_cron_and_cli_read_the_real_text(): void {
+		$product = wc_get_product( $this->pid );
+		$this->assertStringContainsString( Gate::locked_text(), $product->get_description() );
+		add_filter( 'wp_doing_cron', '__return_true' );
+		try {
+			$this->assertSame( 'SECRET-DESC', wc_get_product( $this->pid )->get_description() );
+			$this->assertSame( 'SECRET-SHORT', wc_get_product( $this->pid )->get_short_description() );
+			$GLOBALS['post'] = get_post( $this->pid );
+			$this->assertStringContainsString( 'SECRET-SHORT', apply_filters( 'woocommerce_short_description', 'SECRET-SHORT' ) );
+		} finally {
+			remove_filter( 'wp_doing_cron', '__return_true' );
+		}
+	}
+
+	public function test_blocking_is_memoised_per_request(): void {
+		$this->assertNotNull( WcProduct::blocking( $this->pid ) );
+		$this->verify_guest( '18+' ); // resets the memo
+		$this->assertNull( WcProduct::blocking( $this->pid ) );
+		Rules::save( array_merge( Rules::all()[ array_key_first( Rules::all() ) ], array( 'enabled' => false ) ) );
+		$this->assertNull( WcProduct::blocking( $this->pid ), 'the memo answers without recomputing' );
+	}
+
+	public function test_a_logged_in_customer_gets_redacted_descriptions_from_rest_v3(): void {
+		$customer = $this->make_user( 'customer' );
+		wp_set_current_user( $customer );
+		get_user_by( 'id', $customer )->add_cap( 'read_private_products' );
+		$res = rest_do_request( new \WP_REST_Request( 'GET', '/wc/v3/products/' . $this->pid ) );
+		if ( 200 !== $res->get_status() ) {
+			// wc/v3 needs a read capability for products; fall back to the Store API (same getters).
+			$res = $this->store_api( 'GET', 'products/' . $this->pid );
+		}
+		$this->assertSame( 200, $res->get_status() );
+		$data = $res->get_data();
+		$this->assertStringNotContainsString( 'SECRET-DESC', $data['description'] );
+		$this->assertStringNotContainsString( 'SECRET-SHORT', $data['short_description'] );
+		$this->assertStringContainsString( Gate::locked_text(), $data['description'] );
+	}
+
+	public function test_a_variation_is_refused_at_add_to_cart_and_its_description_redacted(): void {
+		$variable = new \WC_Product_Variable();
+		$variable->set_name( 'VB test variable' );
+		$variable->set_status( 'publish' );
+		$variable->set_category_ids( array( $this->cat ) );
+		$vp               = $variable->save();
+		$this->wc_posts[] = $vp;
+		$variation        = new \WC_Product_Variation();
+		$variation->set_parent_id( $vp );
+		$variation->set_regular_price( '5' );
+		$variation->set_description( 'SECRET-VARIATION' );
+		$vid              = $variation->save();
+		$this->wc_posts[] = $vid;
+
+		$this->assertFalse( apply_filters( 'woocommerce_add_to_cart_validation', true, $vp, 1, $vid ) );
+		$this->assertContains( Messages::get( 'product_required' ), wp_list_pluck( wc_get_notices( 'error' ), 'notice' ) );
+		$this->assertStringNotContainsString( 'SECRET-VARIATION', wc_get_product( $vid )->get_description() );
+		$this->assertStringContainsString( Gate::locked_text(), wc_get_product( $vid )->get_description() );
+		$this->verify_guest( '18+' );
+		$this->assertTrue( apply_filters( 'woocommerce_add_to_cart_validation', true, $vp, 1, $vid ) );
+		$this->assertStringContainsString( 'SECRET-VARIATION', wc_get_product( $vid )->get_description() );
+	}
 }

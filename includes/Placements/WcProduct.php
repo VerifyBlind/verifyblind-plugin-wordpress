@@ -35,13 +35,41 @@ final class WcProduct {
 		add_filter( 'rest_prepare_product', array( self::class, 'filter_rest' ), 999, 2 );
 	}
 
-	/** The rule blocking the current visitor from this product (or its parent), or null. Editors are never blocked. */
+	/** @var array<string,?array> per-request memo of blocking(), keyed by product id and user id */
+	private static $memo = array();
+
+	/** Forget the per-request memo (tests; a verification just happened). */
+	public static function reset_memo(): void {
+		self::$memo = array();
+	}
+
+	/**
+	 * The rule blocking the current visitor from this product (or its parent), or null. Editors are never blocked.
+	 * Any product with wc_product rules is per-visitor output, so the page is marked uncacheable here.
+	 */
 	public static function blocking( int $product_id ): ?array {
-		$rules = ProductTargets::rules_for_product( $product_id, self::KEY );
-		if ( ! $rules || Gate::bypass( ProductTargets::base_post( $product_id ) ) ) {
-			return null;
+		$key = $product_id . ':' . get_current_user_id();
+		if ( array_key_exists( $key, self::$memo ) ) {
+			if ( self::$memo[ $key ]['targeted'] ) {
+				Gate::no_cache();
+			}
+			return self::$memo[ $key ]['rule'];
 		}
-		return Gate::blocking_rule( $rules );
+		$rules    = ProductTargets::rules_for_product( $product_id, self::KEY );
+		$rule     = null;
+		if ( $rules ) {
+			Gate::no_cache();
+			if ( ! Gate::bypass( ProductTargets::base_post( $product_id ) ) ) {
+				$rule = Gate::blocking_rule( $rules );
+			}
+		}
+		self::$memo[ $key ] = array( 'targeted' => (bool) $rules, 'rule' => $rule );
+		return $rule;
+	}
+
+	/** Cron, imports and WP-CLI are not visitors: they must read (and persist) the real text. */
+	private static function is_visitor_context(): bool {
+		return ! ( wp_doing_cron() || ( defined( 'WP_CLI' ) && WP_CLI ) );
 	}
 
 	public static function box_html( array $rule ): string {
@@ -123,7 +151,7 @@ final class WcProduct {
 	 * @return mixed
 	 */
 	public static function filter_description( $value, $product = null ) {
-		return ( $product instanceof \WC_Product && null !== self::blocking( (int) $product->get_id() ) ) ? Gate::locked_text() : $value;
+		return ( $product instanceof \WC_Product && self::is_visitor_context() && null !== self::blocking( (int) $product->get_id() ) ) ? Gate::locked_text() : $value;
 	}
 
 	/**
@@ -134,7 +162,7 @@ final class WcProduct {
 	 */
 	public static function filter_short_description( $text ) {
 		$id = (int) get_the_ID();
-		return ( $id > 0 && 'product' === get_post_type( $id ) && null !== self::blocking( $id ) ) ? Gate::locked_text() : $text;
+		return ( $id > 0 && self::is_visitor_context() && 'product' === get_post_type( $id ) && null !== self::blocking( $id ) ) ? Gate::locked_text() : $text;
 	}
 
 	/**
@@ -145,7 +173,7 @@ final class WcProduct {
 	 */
 	public static function filter_post_text( $content ) {
 		$post = get_post();
-		return ( $post && 'product' === $post->post_type && null !== self::blocking( (int) $post->ID ) ) ? Gate::locked_text() : $content;
+		return ( $post && self::is_visitor_context() && 'product' === $post->post_type && null !== self::blocking( (int) $post->ID ) ) ? Gate::locked_text() : $content;
 	}
 
 	/**
@@ -157,7 +185,7 @@ final class WcProduct {
 	 */
 	public static function filter_excerpt( $excerpt, $post = null ) {
 		$post = get_post( $post );
-		return ( $post && 'product' === $post->post_type && null !== self::blocking( (int) $post->ID ) ) ? Gate::locked_text() : $excerpt;
+		return ( $post && self::is_visitor_context() && 'product' === $post->post_type && null !== self::blocking( (int) $post->ID ) ) ? Gate::locked_text() : $excerpt;
 	}
 
 	/**

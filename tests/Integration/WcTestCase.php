@@ -126,6 +126,7 @@ abstract class WcTestCase extends TestCase {
 	protected function verify_guest( string $cond = '18+' ): string {
 		$owner = (string) Owner::current( true );
 		Results::add( $owner, $cond, true, 'n-' . wp_rand(), false );
+		\VerifyBlind\Placements\WcProduct::reset_memo();
 		return $owner;
 	}
 }
