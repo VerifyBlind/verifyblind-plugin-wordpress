@@ -2,9 +2,9 @@
   'root' => 
   array (
     'name' => 'verifyblind/verifyblind-plugin-wordpress',
-    'pretty_version' => '1.0.0+no-version-set',
-    'version' => '1.0.0.0',
-    'reference' => NULL,
+    'pretty_version' => 'dev-main',
+    'version' => 'dev-main',
+    'reference' => '5a226a668b27c717f06bee92e1f0684e752503b2',
     'type' => 'wordpress-plugin',
     'install_path' => __DIR__ . '/../',
     'aliases' => 
