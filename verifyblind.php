@@ -26,4 +26,5 @@ require_once VERIFYBLIND_DIR . 'includes/autoload.php';
 
 add_action( 'plugins_loaded', array( 'VerifyBlind\\Plugin', 'boot' ) );
 
-register_activation_hook( __FILE__, array( 'VerifyBlind\\Schema', 'install' ) );
+register_activation_hook( __FILE__, array( 'VerifyBlind\\Plugin', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'VerifyBlind\\Plugin', 'deactivate' ) );

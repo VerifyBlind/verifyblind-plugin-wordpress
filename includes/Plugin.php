@@ -11,9 +11,25 @@ final class Plugin {
 		add_action( 'rest_api_init', array( Rest::class, 'register' ) );
 		Gate::hooks();
 		Widget::hooks();
+		Cron::hooks();
+		add_action( 'deleted_user', array( self::class, 'forget_user' ) );
 		if ( is_admin() ) {
 			Admin\Menu::hooks();
 		}
+	}
+
+	public static function forget_user( $user_id ): void {
+		Results::delete_owner( Owner::for_user( (int) $user_id ) );
+		Identities::delete_for_user( (int) $user_id );
+	}
+
+	public static function activate(): void {
+		Schema::install();
+		Cron::schedule();
+	}
+
+	public static function deactivate(): void {
+		Cron::unschedule();
 	}
 
 	public static function api(): ApiClient {
