@@ -11,7 +11,7 @@ final class Rules {
 	const OPTION   = 'verifyblind_rules';
 	const POLICIES = array( 'reject', 'block', 'flag', 'transfer' );
 
-	/** @return array<string,string> placement => label. Plan 2 adds placements through the filter. */
+	/** @return array<string,string> placement => label. Placements\Registry adds the other placements through the filter. */
 	public static function placements(): array {
 		$base = array(
 			'content'   => __( 'Page, post or category lock', 'verifyblind' ),
@@ -29,6 +29,17 @@ final class Rules {
 	public static function get( string $id ): ?array {
 		$all = self::all();
 		return isset( $all[ $id ] ) ? $all[ $id ] : null;
+	}
+
+	/** @return array[] switched-on rules of one placement, in saved order */
+	public static function enabled( string $placement ): array {
+		$out = array();
+		foreach ( self::all() as $rule ) {
+			if ( ! empty( $rule['enabled'] ) && isset( $rule['placement'] ) && $placement === $rule['placement'] ) {
+				$out[] = $rule;
+			}
+		}
+		return $out;
 	}
 
 	/** @throws \InvalidArgumentException */

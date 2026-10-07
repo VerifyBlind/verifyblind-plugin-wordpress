@@ -36,6 +36,22 @@ final class Messages {
 				return __( 'Bot check could not be completed. Please reload the page and try again.', 'verifyblind' );
 			case 'rate_limited':
 				return __( 'Too many verification attempts right now. Please try again in a minute.', 'verifyblind' );
+			case 'registration_required':
+				return __( 'Please verify with VerifyBlind before creating an account. The verification box is on the registration form.', 'verifyblind' );
+			case 'comment_required':
+				return __( 'Please verify with VerifyBlind before posting.', 'verifyblind' );
+			case 'checkout_required':
+				return __( 'Your cart contains products that need verification with VerifyBlind. Please verify on the checkout page, then place the order.', 'verifyblind' );
+			case 'account_required':
+				return __( 'Please log in or create an account to buy the products in your cart.', 'verifyblind' );
+			case 'product_required':
+				return __( 'This product needs verification with VerifyBlind before it can be added to the cart.', 'verifyblind' );
+			case 'coupon_required':
+				return __( 'This coupon is only for customers verified with VerifyBlind.', 'verifyblind' );
+			case 'coupon_login':
+				return __( 'Please log in to use this coupon.', 'verifyblind' );
+			case 'coupon_used':
+				return __( 'This coupon was already used by the same person.', 'verifyblind' );
 			default: // key_unavailable, api_unreachable, anything new
 				return __( 'Verification is not available right now. Please try again shortly.', 'verifyblind' );
 		}

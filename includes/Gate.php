@@ -37,29 +37,9 @@ final class Gate {
 	/** @return array[] enabled content rules that target this post directly or through a term (or its descendants) */
 	public static function rules_for_post( \WP_Post $post ): array {
 		$out = array();
-		foreach ( Rules::all() as $rule ) {
-			if ( empty( $rule['enabled'] ) || 'content' !== $rule['placement'] ) {
-				continue;
-			}
-			if ( in_array( (int) $post->ID, $rule['targets']['post_ids'], true ) ) {
+		foreach ( Rules::enabled( 'content' ) as $rule ) {
+			if ( Targets::covers( $post, $rule ) ) {
 				$out[] = $rule;
-				continue;
-			}
-			foreach ( $rule['targets']['term_ids'] as $tid ) {
-				$term = get_term( $tid );
-				if ( ! $term || is_wp_error( $term ) ) {
-					continue;
-				}
-				// A rule on a term also covers posts in its descendant terms.
-				$ids      = array( (int) $tid );
-				$children = get_term_children( (int) $tid, $term->taxonomy );
-				if ( is_array( $children ) ) {
-					$ids = array_merge( $ids, array_map( 'intval', $children ) );
-				}
-				if ( has_term( $ids, $term->taxonomy, $post ) ) {
-					$out[] = $rule;
-					break;
-				}
 			}
 		}
 		return $out;

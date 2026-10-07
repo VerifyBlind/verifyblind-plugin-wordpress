@@ -1,5 +1,6 @@
-/* VerifyBlind for WordPress — starts the VerifyBlind widget for a gate box, then lets the server check
- * the signed result. The page is reloaded on success so the server renders the unlocked content. */
+/* VerifyBlind for WordPress — starts the VerifyBlind widget for a box, then lets the server check the signed
+ * result. A box with data-reload="1" reloads the page on success so the server renders the open state; a box
+ * inside a form (data-reload="0") keeps what the visitor typed and the server checks again on submit. */
 (function () {
 	'use strict';
 	var cfg = window.VerifyBlindWP || {};
@@ -53,8 +54,13 @@
 					.then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
 					.then(function (res) {
 						if (res.ok && res.body && res.body.passed) {
-							setMessage(box, cfg.i18n.success, false);
-							window.location.reload();
+							if (box.getAttribute('data-reload') === '0') {
+								box.classList.add('is-verified');
+								setMessage(box, cfg.i18n.verified, false);
+							} else {
+								setMessage(box, cfg.i18n.success, false);
+								window.location.reload();
+							}
 						} else {
 							setMessage(box, (res.body && res.body.message) || cfg.i18n.failed, true);
 							restore();
