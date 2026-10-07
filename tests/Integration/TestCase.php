@@ -11,7 +11,7 @@ use VerifyBlind\Schema;
  * restores the options it touched.
  */
 abstract class TestCase extends Base {
-	const OPTIONS = array( 'verifyblind_rules', 'verifyblind_api_key', 'verifyblind_test_mode', 'verifyblind_captcha' );
+	const OPTIONS = array( 'verifyblind_rules', 'verifyblind_api_key', 'verifyblind_test_mode', 'verifyblind_captcha', 'verifyblind_cap_hits' );
 
 	/** @var array */
 	private $saved = array();
@@ -26,6 +26,7 @@ abstract class TestCase extends Base {
 		foreach ( array( 'nonces', 'results', 'identities' ) as $t ) {
 			$wpdb->query( 'TRUNCATE TABLE ' . Schema::table( $t ) );
 		}
+		delete_option( 'verifyblind_cap_hits' );
 		update_option( 'verifyblind_rules', array(), false );
 		update_option( 'verifyblind_test_mode', '0' );
 		update_option( 'verifyblind_api_key', 'test-key' );

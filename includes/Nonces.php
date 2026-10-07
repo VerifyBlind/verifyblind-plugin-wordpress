@@ -42,19 +42,6 @@ final class Nonces {
 		);
 	}
 
-	/** Hands a guest's open (unexpired) sessions to an account, so a verification finished after login still counts. */
-	public static function reassign_owner( string $from, string $to ): void {
-		global $wpdb;
-		$wpdb->query(
-			$wpdb->prepare(
-				'UPDATE ' . Schema::table( 'nonces' ) . ' SET owner = %s WHERE owner = %s AND expires_at > %s',
-				$to,
-				$from,
-				gmdate( 'Y-m-d H:i:s' )
-			)
-		);
-	}
-
 	public static function purge_expired(): void {
 		global $wpdb;
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . Schema::table( 'nonces' ) . ' WHERE expires_at <= %s', gmdate( 'Y-m-d H:i:s' ) ) );

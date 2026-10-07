@@ -64,7 +64,7 @@ final class RestTest extends TestCase {
 				return array( 'body' => '{"nonce":"cap-1"}' );
 			}
 		);
-		foreach ( array( array( 'public_key' => 'PK' ), array( 'public_key' => 'PK', 'cf_token' => '' ), array( 'public_key' => 'PK', 'cf_token' => 123 ) ) as $body ) {
+		foreach ( array( array( 'public_key' => 'PK' ), array( 'public_key' => 'PK', 'cf_token' => '' ), array( 'public_key' => 'PK', 'cf_token' => 123 ), array( 'public_key' => 'PK', 'cf_token' => ' ' ), array( 'public_key' => 'PK', 'cf_token' => "\t" ), array( 'public_key' => 'PK', 'cf_token' => "\xC2\xA0" ), array( 'public_key' => 'PK', 'cf_token' => 'a b' ) ) as $body ) {
 			$res = $this->post( 'generate', $body, array( 'rule' => $rule['id'] ) );
 			$this->assertSame( 400, $res->get_status() );
 			$this->assertSame( 'captcha_required', $res->get_data()['code'] );
@@ -101,6 +101,11 @@ final class RestTest extends TestCase {
 		$this->assertSame( 'Too many verification attempts right now. Please try again in a minute.', $res->get_data()['error'] );
 		$this->assertSame( '60', $res->get_headers()['Retry-After'] );
 		$this->assertSame( 2, $calls );
+		$hits = get_option( 'verifyblind_cap_hits' );
+		$this->assertSame( 1, $hits['count'] );
+		$this->assertEqualsWithDelta( time(), $hits['last'], 5 );
+		$this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) );
+		$this->assertSame( 2, get_option( 'verifyblind_cap_hits' )['count'] );
 	}
 
 	public function test_generate_cap_defaults_to_30_and_counts_failed_upstream_attempts(): void {
@@ -215,7 +220,7 @@ final class RestTest extends TestCase {
 		$ts  = (string) time();
 		$this->assertSame( 401, $this->post( 'revoke', array(), array(), array( 'x-webhook-signature' => 'AAAA', 'x-webhook-timestamp' => $ts ), $raw )->get_status() );
 		$this->assertSame( array( '18+' ), Results::passed_conditions( 'u:77', 0, false ), 'a bad signature deletes nothing' );
-		$ok =$this->post( 'revoke', array(), array(), array( 'x-webhook-signature' => $signer->sign( $ts . '.' . $raw ), 'x-webhook-timestamp' => $ts ), $raw );
+		$ok = $this->post( 'revoke', array(), array(), array( 'x-webhook-signature' => $signer->sign( $ts . '.' . $raw ), 'x-webhook-timestamp' => $ts ), $raw );
 		$this->assertSame( 200, $ok->get_status() );
 		$this->assertSame( array(), Results::passed_conditions( 'u:77', 0, false ) );
 	}

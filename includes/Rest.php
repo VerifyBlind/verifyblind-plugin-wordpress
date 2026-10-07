@@ -6,6 +6,7 @@ defined( 'ABSPATH' ) || exit;
 final class Rest {
 	const NS       = 'verifyblind/v1';
 	const RATE_KEY = 'verifyblind_generate_rate';
+	const CAP_HITS_OPTION = 'verifyblind_cap_hits';
 
 	public static function register(): void {
 		register_rest_route( self::NS, '/generate', array( 'methods' => 'POST', 'callback' => array( self::class, 'generate' ), 'permission_callback' => '__return_true' ) );
@@ -46,7 +47,7 @@ final class Rest {
 			}
 		}
 		// VerifyBlind checks the bot token only when one is sent, so the site enforces that it is sent.
-		if ( Settings::captcha() && ( ! isset( $forward['cf_token'] ) || '' === $forward['cf_token'] ) ) {
+		if ( Settings::captcha() && ( ! isset( $forward['cf_token'] ) || 1 !== preg_match( '/^[\x21-\x7E]{1,4096}$/', $forward['cf_token'] ) ) ) {
 			return self::error( 400, 'captcha_required' );
 		}
 		if ( ! self::take_generate_slot( time() ) ) {
@@ -90,6 +91,9 @@ final class Rest {
 		$state  = get_transient( self::RATE_KEY );
 		$count  = is_array( $state ) && isset( $state['m'], $state['n'] ) && (int) $state['m'] === $minute ? (int) $state['n'] : 0;
 		if ( $count >= $limit ) {
+			$hits = get_option( self::CAP_HITS_OPTION );
+			$n    = is_array( $hits ) && isset( $hits['count'] ) ? (int) $hits['count'] : 0;
+			update_option( self::CAP_HITS_OPTION, array( 'count' => $n + 1, 'last' => time() ), false ); // read by the admin notice
 			return false;
 		}
 		set_transient( self::RATE_KEY, array( 'm' => $minute, 'n' => $count + 1 ), 2 * MINUTE_IN_SECONDS );

@@ -34,17 +34,22 @@ final class GuestCarryOverTest extends TestCase {
 		$this->assertContains( Roles::BASE, get_userdata( $uid )->roles );
 	}
 
-	public function test_open_guest_sessions_move_too(): void {
+	public function test_only_fresh_guest_results_move(): void {
+		global $wpdb;
 		$uid                      = $this->make_user();
 		$_COOKIE[ Owner::COOKIE ] = self::GID;
 		$guest                    = 'g:' . self::GID;
-		Nonces::put( 'open-n', 'r_00000000', '18+', false, $guest, 960 );
-		Nonces::put( 'expired-n', 'r_00000000', '18+', false, $guest, -10 );
+		Results::add( $guest, '18+', true, 'old', false );
+		$wpdb->update(
+			\VerifyBlind\Schema::table( 'results' ),
+			array( 'verified_at' => gmdate( 'Y-m-d H:i:s', time() - 2 * HOUR_IN_SECONDS ) ),
+			array( 'nonce' => 'old' )
+		);
+		Results::add( $guest, '21+', true, 'fresh', false );
 		do_action( 'wp_login', get_userdata( $uid )->user_login, get_userdata( $uid ) );
 
-		$this->assertNull( Nonces::consume( 'open-n', $guest ) );
-		$this->assertNotNull( Nonces::consume( 'open-n', 'u:' . $uid ) );
-		$this->assertNull( Nonces::consume( 'expired-n', 'u:' . $uid ) );
+		$this->assertSame( array( '21+' ), Results::passed_conditions( 'u:' . $uid, 0, false ) );
+		$this->assertSame( array( '18+' ), Results::passed_conditions( $guest, 0, false ) );
 	}
 
 	public function test_guest_results_follow_the_visitor_when_they_register(): void {

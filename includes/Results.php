@@ -4,6 +4,8 @@ namespace VerifyBlind;
 defined( 'ABSPATH' ) || exit;
 
 final class Results {
+	const CARRY_OVER_SECONDS = 1800;
+
 	public static function add( string $owner, string $cond, bool $passed, string $nonce, bool $is_test ): void {
 		global $wpdb;
 		$wpdb->insert(
@@ -49,15 +51,20 @@ final class Results {
 		$wpdb->delete( Schema::table( 'results' ), array( 'owner' => $owner, 'cond' => $cond ), array( '%s', '%s' ) );
 	}
 
-	/** Moves a guest's age results to an account. One-person ('uid') results never move: they are bound to an account. */
+	/**
+	 * Moves a guest's FRESH age results (verified within CARRY_OVER_SECONDS) to an account, so a shared
+	 * browser's old guest results do not follow whoever logs in next. One-person ('uid') results never
+	 * move: they are bound to an account.
+	 */
 	public static function reassign_owner( string $from, string $to ): void {
 		global $wpdb;
 		$wpdb->query(
 			$wpdb->prepare(
-				'UPDATE ' . Schema::table( 'results' ) . ' SET owner = %s WHERE owner = %s AND cond <> %s',
+				'UPDATE ' . Schema::table( 'results' ) . ' SET owner = %s WHERE owner = %s AND cond <> %s AND verified_at >= %s',
 				$to,
 				$from,
-				'uid'
+				'uid',
+				gmdate( 'Y-m-d H:i:s', time() - self::CARRY_OVER_SECONDS )
 			)
 		);
 	}

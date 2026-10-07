@@ -45,7 +45,7 @@ final class Plugin {
 	}
 
 	/**
-	 * Results a visitor earned as a guest (and sessions still open) follow them into the account they log
+	 * Results a visitor recently earned as a guest follow them into the account they log
 	 * in to or create, so they do not verify (and the site does not pay) twice.
 	 */
 	public static function adopt_guest( int $user_id ): void {
@@ -55,7 +55,7 @@ final class Plugin {
 		}
 		$to = Owner::for_user( $user_id );
 		Results::reassign_owner( $guest, $to );
-		Nonces::reassign_owner( $guest, $to );
+		// Open sessions are not moved: guest pages carry no REST nonce, so the verify call stays a guest call.
 		Owner::forget_guest();
 		Roles::sync_user( $user_id );
 	}
