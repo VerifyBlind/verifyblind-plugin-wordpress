@@ -54,6 +54,10 @@ final class Messages {
 				return __( 'Please log in to use this coupon.', 'verifyblind' );
 			case 'coupon_used':
 				return __( 'This coupon was already used by the same person.', 'verifyblind' );
+			case 'coupon_no_person':
+				return __( 'This coupon needs a one-person verification on your account. Verify again with your own ID card.', 'verifyblind' );
+			case 'coupon_busy':
+				return __( 'This coupon is being used in another order right now. Please try again in a moment.', 'verifyblind' );
 			default: // key_unavailable, api_unreachable, anything new
 				return __( 'Verification is not available right now. Please try again shortly.', 'verifyblind' );
 		}

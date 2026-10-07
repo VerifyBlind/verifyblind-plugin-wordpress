@@ -14,6 +14,11 @@ use VerifyBlind\Rules;
  * WooCommerce's own usage counts, the person is recorded on the coupon — as a keyed hash of the person
  * code, one post-meta row per person — when the order is placed and on every live status, and released
  * when the order is cancelled, fails or is trashed/deleted (a refund keeps the use).
+ *
+ * The coupon check WooCommerce runs while validating the cart is what the visitor sees. The authoritative check runs
+ * when the order is placed (classic and Store API checkout) or paid for later (pay-for-order): it refuses the order
+ * when another live order of the same person holds the coupon, under a MySQL named lock per coupon and person that
+ * is held until the use is recorded, so two parallel checkouts cannot both pass.
  */
 final class WcCoupon {
 	const KEY        = 'wc_coupon';
@@ -22,8 +27,20 @@ final class WcCoupon {
 	const KEY_OPTION = 'verifyblind_person_key';
 	const SESSION    = 'verifyblind_coupon_rule';
 
+	/** Seconds a checkout waits for another checkout of the same person and coupon. */
+	const LOCK_WAIT = 5;
+
 	/** Order statuses that do not hold a coupon use (WooCommerce releases its usage count on these too). */
 	const DEAD = array( 'cancelled', 'failed', 'trash', 'checkout-draft' );
+
+	/** @var array<string, true> named locks this request holds */
+	private static $locks = array();
+
+	/** @var string[] routes of the REST requests being served (nested requests stack) */
+	private static $routes = array();
+
+	/** @var bool */
+	private static $shutdown_hooked = false;
 
 	public static function label(): string {
 		return __( 'WooCommerce coupons (chosen coupons)', 'verifyblind' );
@@ -31,6 +48,11 @@ final class WcCoupon {
 
 	public static function hooks(): void {
 		add_filter( 'woocommerce_coupon_is_valid', array( self::class, 'is_valid' ), 10, 3 );
+		add_action( 'woocommerce_checkout_create_order', array( self::class, 'check_classic_order' ) );
+		add_action( 'woocommerce_store_api_checkout_update_order_from_request', array( self::class, 'check_store_api_order' ), 10, 2 );
+		add_action( 'woocommerce_before_pay_action', array( self::class, 'check_pay_for_order' ) );
+		add_filter( 'rest_request_before_callbacks', array( self::class, 'rest_enter' ), 10, 3 );
+		add_filter( 'rest_request_after_callbacks', array( self::class, 'rest_leave' ), 10, 3 );
 		add_action( 'woocommerce_checkout_order_created', array( self::class, 'record_use' ) );
 		add_action( 'woocommerce_store_api_checkout_order_processed', array( self::class, 'record_use' ) );
 		foreach ( array( 'pending', 'on-hold', 'processing', 'completed' ) as $status ) {
@@ -72,7 +94,7 @@ final class WcCoupon {
 					// Fail closed: without a person code the use cannot be tied to a person. This is also the case of
 					// demo-card verifications in test mode (a demo card never binds an identity), so they cannot use
 					// one-person coupons.
-					return array( 'message' => Messages::get( 'coupon_required' ), 'rule' => null );
+					return array( 'message' => Messages::get( 'coupon_no_person' ), 'rule' => null );
 				}
 				if ( self::used( (int) $coupon->get_id(), $person ) ) {
 					return array( 'message' => Messages::get( 'coupon_used' ), 'rule' => null );
@@ -128,8 +150,18 @@ final class WcCoupon {
 		if ( is_string( $key ) && '' !== $key ) {
 			return $key;
 		}
+		$autoload = function_exists( 'wp_determine_option_autoload_value' ) ? 'off' : 'no';
+		$fresh    = wp_generate_password( 64, true, true );
 		// INSERT IGNORE: when two requests create it at once the first key stays (add_option would overwrite it).
-		$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, %s)", self::KEY_OPTION, wp_generate_password( 64, true, true ), function_exists( 'wp_determine_option_autoload_value' ) ? 'off' : 'no' ) );
+		$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, %s)", self::KEY_OPTION, $fresh, $autoload ) );
+		// An empty key counts as missing and is replaced (only while it is still empty, so concurrent requests agree).
+		// Losing or replacing the key forgets every recorded use: the hashes on coupons and orders no longer match anyone.
+		$replaced = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value = %s, autoload = %s WHERE option_name = %s AND option_value = ''", $fresh, $autoload, self::KEY_OPTION ) );
+		if ( $replaced ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- operator note, no personal data.
+			error_log( 'VerifyBlind: the one-person coupon key was empty and has been replaced; coupon uses recorded before it are forgotten.' );
+			wp_cache_delete( 'alloptions', 'options' );
+		}
 		$notoptions = wp_cache_get( 'notoptions', 'options' );
 		if ( is_array( $notoptions ) && isset( $notoptions[ self::KEY_OPTION ] ) ) {
 			unset( $notoptions[ self::KEY_OPTION ] );
@@ -165,21 +197,191 @@ final class WcCoupon {
 		return array() !== self::holders( $coupon_id, $person, (int) $resumed->get_id() );
 	}
 
+	/**
+	 * The order the running checkout would resume, read only from that checkout's own session key: the classic
+	 * checkout resumes `order_awaiting_payment` (pending/failed, same cart), the Store API `store_api_draft_order`
+	 * (its draft, or pending/failed with the same cart). Reading the other key would let one checkout pass on an
+	 * order the other one never resumes.
+	 */
 	private static function resumed_order(): ?\WC_Order {
 		if ( ! function_exists( 'WC' ) || ! WC()->session || ! WC()->cart ) {
 			return null;
 		}
-		foreach ( array( 'order_awaiting_payment', 'store_api_draft_order' ) as $key ) {
-			$id    = absint( WC()->session->get( $key ) );
-			$order = $id ? wc_get_order( $id ) : false;
-			if ( ! $order instanceof \WC_Order || (int) $order->get_customer_id() !== get_current_user_id() ) {
-				continue;
-			}
-			if ( $order->has_status( 'checkout-draft' ) || ( $order->has_status( array( 'pending', 'failed' ) ) && $order->has_cart_hash( WC()->cart->get_cart_hash() ) ) ) {
-				return $order;
-			}
+		$store = self::in_store_api();
+		$id    = absint( WC()->session->get( $store ? 'store_api_draft_order' : 'order_awaiting_payment' ) );
+		$order = $id ? wc_get_order( $id ) : false;
+		if ( ! $order instanceof \WC_Order || (int) $order->get_customer_id() !== get_current_user_id() ) {
+			return null;
+		}
+		if ( ( $store && $order->has_status( 'checkout-draft' ) ) || ( $order->has_status( array( 'pending', 'failed' ) ) && $order->has_cart_hash( WC()->cart->get_cart_hash() ) ) ) {
+			return $order;
 		}
 		return null;
+	}
+
+	/**
+	 * @param mixed $response
+	 * @param mixed $handler
+	 * @param mixed $request WP_REST_Request
+	 * @return mixed
+	 */
+	public static function rest_enter( $response, $handler, $request ) {
+		self::$routes[] = $request instanceof \WP_REST_Request ? (string) $request->get_route() : '';
+		return $response;
+	}
+
+	/**
+	 * @param mixed $response
+	 * @param mixed $handler
+	 * @param mixed $request
+	 * @return mixed
+	 */
+	public static function rest_leave( $response, $handler, $request ) {
+		array_pop( self::$routes );
+		return $response;
+	}
+
+	/** Whether the request being served is a Store API one (block cart/checkout). */
+	private static function in_store_api(): bool {
+		$route = end( self::$routes );
+		return is_string( $route ) && 0 === strpos( $route, '/wc/store/' );
+	}
+
+	/** @return int[] the coupons on the order that a one-person rule covers */
+	private static function one_person_coupons( \WC_Order $order ): array {
+		$out = array();
+		foreach ( $order->get_coupon_codes() as $code ) {
+			$coupon_id = (int) wc_get_coupon_id_by_code( $code );
+			if ( $coupon_id <= 0 || in_array( $coupon_id, $out, true ) ) {
+				continue;
+			}
+			foreach ( self::rules_for_coupon( $coupon_id ) as $rule ) {
+				if ( ! empty( $rule['unique'] ) ) {
+					$out[] = $coupon_id;
+					break;
+				}
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * The authoritative check when an order is placed or paid for: refuses it when another live order of the same
+	 * person holds one of its one-person coupons. On success the locks stay held until the use is recorded
+	 * (record_use) or the request ends.
+	 *
+	 * @return array|null array( 'code' => message code, 'message' => string ) when the order is refused
+	 */
+	private static function claim( \WC_Order $order ): ?array {
+		$coupons = self::one_person_coupons( $order );
+		if ( ! $coupons ) {
+			return null;
+		}
+		$code = null;
+		$uid  = (int) $order->get_customer_id();
+		if ( $uid <= 0 ) {
+			$code = 'coupon_login';
+		} else {
+			$person = self::person_key( $uid );
+			if ( null === $person ) {
+				$code = 'coupon_no_person';
+			} else {
+				foreach ( $coupons as $coupon_id ) {
+					if ( ! self::lock( $coupon_id, $person ) ) {
+						$code = 'coupon_busy';
+						break;
+					}
+					if ( array() !== self::holders( $coupon_id, $person, (int) $order->get_id() ) ) {
+						$code = 'coupon_used';
+						break;
+					}
+				}
+			}
+		}
+		if ( null === $code ) {
+			return null;
+		}
+		self::release_locks();
+		return array( 'code' => $code, 'message' => Messages::get( $code ) );
+	}
+
+	/**
+	 * Classic checkout, just before the order is saved.
+	 *
+	 * @param mixed $order WC_Order
+	 * @throws \Exception WooCommerce shows its message and does not save the order.
+	 */
+	public static function check_classic_order( $order ): void {
+		if ( ! $order instanceof \WC_Order ) {
+			return;
+		}
+		$refusal = self::claim( $order );
+		if ( null !== $refusal ) {
+			throw new \Exception( $refusal['message'] );
+		}
+	}
+
+	/**
+	 * Store API checkout (POST /checkout, and POST /checkout/{id} paying an existing order), before payment.
+	 *
+	 * @param mixed $order   WC_Order
+	 * @param mixed $request WP_REST_Request
+	 * @throws \Exception RouteException (409) the Store API turns into an error response.
+	 */
+	public static function check_store_api_order( $order, $request = null ): void {
+		if ( ! $order instanceof \WC_Order || ! $request instanceof \WP_REST_Request || 'POST' !== $request->get_method() ) {
+			return;
+		}
+		$refusal = self::claim( $order );
+		if ( null === $refusal ) {
+			return;
+		}
+		$class = '\Automattic\WooCommerce\StoreApi\Exceptions\RouteException';
+		if ( class_exists( $class ) ) {
+			throw new $class( 'verifyblind_' . $refusal['code'], esc_html( $refusal['message'] ), 409 );
+		}
+		throw new \Exception( esc_html( $refusal['message'] ) );
+	}
+
+	/**
+	 * Classic "pay for order" page: an error notice stops WooCommerce's pay_action before payment.
+	 *
+	 * @param mixed $order WC_Order
+	 */
+	public static function check_pay_for_order( $order ): void {
+		if ( ! $order instanceof \WC_Order ) {
+			return;
+		}
+		$refusal = self::claim( $order );
+		if ( null !== $refusal ) {
+			wc_add_notice( $refusal['message'], 'error' );
+		}
+	}
+
+	private static function lock( int $coupon_id, string $person ): bool {
+		global $wpdb;
+		$name = 'vb_c_' . md5( $coupon_id . '|' . $person );
+		if ( isset( self::$locks[ $name ] ) ) {
+			return true;
+		}
+		if ( '1' !== (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $name, self::LOCK_WAIT ) ) ) {
+			return false;
+		}
+		self::$locks[ $name ] = true;
+		if ( ! self::$shutdown_hooked ) {
+			self::$shutdown_hooked = true;
+			add_action( 'shutdown', array( self::class, 'release_locks' ) ); // the order failed after the check
+		}
+		return true;
+	}
+
+	/** Gives back the named locks this request holds. */
+	public static function release_locks(): void {
+		global $wpdb;
+		foreach ( array_keys( self::$locks ) as $name ) {
+			$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $name ) );
+		}
+		self::$locks = array();
 	}
 
 	/** @return array[] the [coupon id, person hash] pairs an order recorded */
@@ -238,27 +440,21 @@ final class WcCoupon {
 	 */
 	public static function record_use( $order_id, $order = null ): void {
 		$order = self::order_of( $order_id, $order );
-		if ( null === $order ) {
-			return;
+		if ( null !== $order ) {
+			self::record_order( $order );
 		}
+		// The use is recorded: a parallel checkout waiting on the lock now sees this order.
+		self::release_locks();
+	}
+
+	private static function record_order( \WC_Order $order ): void {
 		$person = self::person_key( (int) $order->get_customer_id() );
 		if ( null === $person ) {
 			return;
 		}
 		$pairs   = self::order_pairs( $order );
 		$changed = false;
-		foreach ( $order->get_coupon_codes() as $code ) {
-			$coupon_id = (int) wc_get_coupon_id_by_code( $code );
-			if ( $coupon_id <= 0 ) {
-				continue;
-			}
-			$unique = false;
-			foreach ( self::rules_for_coupon( $coupon_id ) as $rule ) {
-				$unique = $unique || ! empty( $rule['unique'] );
-			}
-			if ( ! $unique ) {
-				continue;
-			}
+		foreach ( self::one_person_coupons( $order ) as $coupon_id ) {
 			if ( ! self::has_person( $coupon_id, $person ) ) {
 				add_post_meta( $coupon_id, self::META, $person );
 			}
