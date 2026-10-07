@@ -140,38 +140,6 @@ final class WcCheckoutTest extends WcTestCase {
 		$this->assertFalse( $this->classic_errors()->has_errors() );
 	}
 
-	/** WooCommerce > Accounts: guests may create an account at checkout. No auth cookies from the command line. */
-	private function allow_checkout_sign_up(): void {
-		$this->set_option( 'woocommerce_enable_signup_and_login_from_checkout', 'yes' );
-		add_filter( 'send_auth_cookies', '__return_false' );
-	}
-
-	/** Block checkout placing the order and creating the customer's account in the same request. */
-	private function store_api_order_creating_account( string $email ): \WP_REST_Response {
-		$address = array_merge( $this->address(), array( 'email' => $email ) );
-		$res     = $this->store_api( 'POST', 'checkout', array( 'billing_address' => $address, 'shipping_address' => $address, 'payment_method' => 'cod', 'create_account' => true, 'customer_password' => wp_generate_password() ) );
-		$data    = $res->get_data();
-		if ( is_array( $data ) && isset( $data['order_id'] ) ) {
-			$this->wc_orders[] = (int) $data['order_id'];
-		}
-		$user = get_user_by( 'email', $email );
-		if ( $user ) {
-			$this->created_users[] = (int) $user->ID;
-		}
-		return $res;
-	}
-
-	/** Classic checkout after validation: WooCommerce's own process_customer() creates the account and logs it in. */
-	private function classic_process_customer( array $data ): void {
-		$m = new \ReflectionMethod( WC()->checkout(), 'process_customer' );
-		$m->setAccessible( true );
-		$m->invoke( WC()->checkout(), $data );
-		$user = get_user_by( 'email', $data['billing_email'] );
-		if ( $user ) {
-			$this->created_users[] = (int) $user->ID;
-		}
-	}
-
 	public function test_require_account_lets_a_freshly_verified_guest_create_the_account_at_block_checkout(): void {
 		$this->enable_cod();
 		$this->allow_checkout_sign_up();
@@ -302,6 +270,17 @@ final class WcCheckoutTest extends WcTestCase {
 		$this->assertStringNotContainsString( 'action=register', $box );
 		$this->set_option( 'woocommerce_enable_myaccount_registration', 'no' );
 		$this->assertStringNotContainsString( 'verifyblind-register', WcCheckout::box_html( $rule ), 'no sign-up link when the shop has no sign-up' );
+	}
+
+	public function test_the_login_box_uses_my_account_only_when_the_shop_has_that_page(): void {
+		$rule = $this->checkout_rule( array( 'age' => '', 'unique' => true ) );
+		$this->set_option( 'woocommerce_enable_myaccount_registration', 'yes' );
+		$this->set_option( 'woocommerce_myaccount_page_id', 0 );
+		$this->set_option( 'users_can_register', '1' );
+		$box = WcCheckout::box_html( $rule );
+		$this->assertStringContainsString( 'class="verifyblind-register" href="' . esc_url( wp_registration_url() ) . '"', $box, 'no My Account page: the WordPress sign-up' );
+		$this->set_option( 'users_can_register', '0' );
+		$this->assertStringNotContainsString( 'verifyblind-register', WcCheckout::box_html( $rule ) );
 	}
 
 	public function test_one_person_rules_need_an_account_and_are_noted(): void {

@@ -120,7 +120,7 @@ abstract class WcTestCase extends TestCase {
 			}
 		}
 		$this->options_saved = array();
-		remove_all_filters( 'send_auth_cookies' );
+		remove_filter( 'send_auth_cookies', '__return_false' );
 		parent::tearDown();
 	}
 
@@ -193,6 +193,38 @@ abstract class WcTestCase extends TestCase {
 			$this->wc_orders[] = (int) $data['order_id'];
 		}
 		return $res;
+	}
+
+	/** WooCommerce > Accounts: guests may create an account at checkout. No auth cookies from the command line. */
+	protected function allow_checkout_sign_up(): void {
+		$this->set_option( 'woocommerce_enable_signup_and_login_from_checkout', 'yes' );
+		add_filter( 'send_auth_cookies', '__return_false' );
+	}
+
+	/** Block checkout placing the order and creating the customer's account in the same request. */
+	protected function store_api_order_creating_account( string $email ): \WP_REST_Response {
+		$address = array_merge( $this->address(), array( 'email' => $email ) );
+		$res     = $this->store_api( 'POST', 'checkout', array( 'billing_address' => $address, 'shipping_address' => $address, 'payment_method' => 'cod', 'create_account' => true, 'customer_password' => wp_generate_password() ) );
+		$data    = $res->get_data();
+		if ( is_array( $data ) && isset( $data['order_id'] ) ) {
+			$this->wc_orders[] = (int) $data['order_id'];
+		}
+		$user = get_user_by( 'email', $email );
+		if ( $user ) {
+			$this->created_users[] = (int) $user->ID;
+		}
+		return $res;
+	}
+
+	/** Classic checkout after validation: WooCommerce's own process_customer() creates the account and logs it in. */
+	protected function classic_process_customer( array $data ): void {
+		$m = new \ReflectionMethod( WC()->checkout(), 'process_customer' );
+		$m->setAccessible( true );
+		$m->invoke( WC()->checkout(), $data );
+		$user = get_user_by( 'email', $data['billing_email'] );
+		if ( $user ) {
+			$this->created_users[] = (int) $user->ID;
+		}
 	}
 
 	/** The current guest (cookie created if needed) passed $cond just now. */

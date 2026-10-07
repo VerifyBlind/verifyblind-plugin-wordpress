@@ -154,7 +154,7 @@ final class Widget {
 
 	/** Where a visitor creates an account: a shop's My Account page (WooCommerce sign-up), else wp-login.php; '' when the site has no sign-up. */
 	private static function registration_url(): string {
-		if ( function_exists( 'wc_get_page_permalink' ) && 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) {
+		if ( function_exists( 'wc_get_page_id' ) && wc_get_page_id( 'myaccount' ) > 0 && 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) {
 			return (string) wc_get_page_permalink( 'myaccount' );
 		}
 		return get_option( 'users_can_register' ) ? (string) wp_registration_url() : '';
