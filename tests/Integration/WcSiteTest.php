@@ -8,6 +8,7 @@ use VerifyBlind\Rules;
 final class WcSiteTest extends WcTestCase {
 	protected function tearDown(): void {
 		unset( $_GET['wc-ajax'] );
+		set_query_var( 'sitemap', '' );
 		parent::tearDown();
 	}
 
@@ -32,6 +33,18 @@ final class WcSiteTest extends WcTestCase {
 		$this->assertNull( WcSite::blocking() );
 		unset( $_GET['wc-ajax'] );
 
+		foreach ( array( '', '0' ) as $value ) {
+			$_GET['wc-ajax'] = $value;
+			$this->assertNotNull( WcSite::blocking(), "wc-ajax='$value' is not an endpoint" );
+		}
+		unset( $_GET['wc-ajax'] );
+
+		set_query_var( 'sitemap', '0' );
+		$this->assertNotNull( WcSite::blocking(), 'sitemap=0 is not exempt' );
+		set_query_var( 'sitemap', 'index' );
+		$this->assertNull( WcSite::blocking() );
+		set_query_var( 'sitemap', '' );
+
 		$saved            = get_option( 'wp_page_for_privacy_policy' );
 		$privacy          = wp_insert_post( array( 'post_type' => 'page', 'post_title' => 'VB privacy', 'post_status' => 'publish' ) );
 		$this->wc_posts[] = $privacy;
@@ -55,6 +68,7 @@ final class WcSiteTest extends WcTestCase {
 		$this->assertStringContainsString( 'verifyblind-site-gate', $html );
 		$this->assertStringContainsString( 'verifyblind-start', $html );
 		$this->assertStringContainsString( '</body>', $html );
+		$this->assertMatchesRegularExpression( '/<meta name=.robots. content=.[^>]*noindex/', $html );
 		$this->assertTrue( wp_script_is( 'verifyblind-front', 'enqueued' ) || wp_script_is( 'verifyblind-front', 'done' ) );
 	}
 
@@ -62,5 +76,23 @@ final class WcSiteTest extends WcTestCase {
 		Gate::reset_no_cache_flag();
 		WcSite::maybe_gate(); // returns instead of printing a page
 		$this->assertFalse( Gate::no_cache_requested() );
+	}
+
+	public function test_decision_is_separate_from_output(): void {
+		$this->rule( array( 'placement' => WcSite::KEY, 'age' => '18+' ) );
+		$this->query_post( $this->product() );
+		$this->assertSame( 'gate', WcSite::decide() );
+		$this->verify_guest( '18+' );
+		$this->assertSame( 'open', WcSite::decide() );
+	}
+
+	public function test_exempt_request_with_a_rule_is_still_not_cached(): void {
+		$this->rule( array( 'placement' => WcSite::KEY, 'age' => '18+' ) );
+		$this->query_post( $this->product() );
+		$_GET['wc-ajax'] = 'get_refreshed_fragments';
+		Gate::reset_no_cache_flag();
+		$this->assertSame( 'exempt', WcSite::decide() );
+		WcSite::maybe_gate();
+		$this->assertTrue( Gate::no_cache_requested() );
 	}
 }

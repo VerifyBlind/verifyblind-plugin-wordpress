@@ -10,6 +10,9 @@ use VerifyBlind\Rules;
  * Whole-site entrance (age gate). Until the visitor meets the rule, every front-end page is replaced on the
  * server by a minimal page with the box — the requested page is never rendered. wp_head()/wp_footer() run so
  * the widget's scripts load. Both the gate and the open site are per-visitor: never cached.
+ *
+ * Limits (Plan 3 readme carries this): the entrance gate hides front-end pages only. REST API responses and
+ * direct media (uploads) URLs are not hidden by it, and page caches should be purged when this placement is enabled.
  */
 final class WcSite {
 	const KEY = 'wc_site';
@@ -27,10 +30,15 @@ final class WcSite {
 		if ( is_admin() || wp_doing_ajax() || wp_doing_cron() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 			return true;
 		}
-		if ( isset( $_GET['wc-ajax'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only checks which endpoint this is
-			return true;
+		// Mirror class-wc-ajax.php: `if ( $action )` after sanitising — empty and '0' are not an endpoint.
+		if ( isset( $_GET['wc-ajax'] ) && is_string( $_GET['wc-ajax'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only checks which endpoint this is
+			$action = sanitize_text_field( wp_unslash( $_GET['wc-ajax'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( '' !== $action && '0' !== $action ) {
+				return true;
+			}
 		}
-		if ( is_robots() || is_favicon() || '' !== (string) get_query_var( 'sitemap' ) ) {
+		// Core's sitemap handler uses `! empty( get_query_var( 'sitemap' ) )`.
+		if ( is_robots() || is_favicon() || ! empty( get_query_var( 'sitemap' ) ) ) {
 			return true;
 		}
 		$privacy = (int) get_option( 'wp_page_for_privacy_policy' );
@@ -48,11 +56,27 @@ final class WcSite {
 		return Gate::blocking_rule( $rules );
 	}
 
+	/** @return string 'none' (no rule) | 'exempt' | 'open' (visitor meets the rule) | 'gate' */
+	public static function decide(): string {
+		$rules = Rules::enabled( self::KEY );
+		if ( ! $rules ) {
+			return 'none';
+		}
+		if ( self::exempt() ) {
+			return 'exempt';
+		}
+		return null === Gate::blocking_rule( $rules ) ? 'open' : 'gate';
+	}
+
 	public static function maybe_gate(): void {
-		if ( ! Rules::enabled( self::KEY ) ) {
+		$decision = self::decide();
+		if ( 'none' === $decision ) {
 			return;
 		}
 		Gate::no_cache();
+		if ( 'gate' !== $decision ) {
+			return;
+		}
 		$rule = self::blocking();
 		if ( null === $rule ) {
 			return;
@@ -66,6 +90,7 @@ final class WcSite {
 		// Build the box first: it enqueues the widget scripts and styles that wp_head()/wp_footer() print.
 		$box     = Prompt::html( $rule, array( 'title' => __( 'Verify with VerifyBlind to enter this site.', 'verifyblind' ) ) );
 		$privacy = get_privacy_policy_url();
+		add_filter( 'wp_robots', 'wp_robots_no_robots' );
 		ob_start();
 		?>
 <!DOCTYPE html>
@@ -90,6 +115,7 @@ final class WcSite {
 </body>
 </html>
 		<?php
+		remove_filter( 'wp_robots', 'wp_robots_no_robots' );
 		return (string) ob_get_clean();
 	}
 }
