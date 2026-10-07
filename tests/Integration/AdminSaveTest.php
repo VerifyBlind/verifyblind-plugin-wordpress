@@ -5,7 +5,11 @@ use VerifyBlind\Admin\RulesPage;
 use VerifyBlind\Roles;
 
 final class AdminSaveTest extends TestCase {
+	/** @var string */
+	private $redirect = '';
+
 	protected function tearDown(): void {
+		remove_role( 'vb_privileged_test' );
 		remove_role( 'vb_yetiskin_uye' );
 		remove_role( 'vb_tmp_customer' );
 		remove_role( 'vb_tmp_shop_manager' );
@@ -100,8 +104,17 @@ final class AdminSaveTest extends TestCase {
 		}
 	}
 
-	/** @var string */
-	private $redirect = '';
+	public function test_new_role_name_colliding_with_a_privileged_role_is_not_stored(): void {
+		add_role( 'vb_privileged_test', 'Privileged Test', array( 'read' => true, 'edit_posts' => true ) );
+		$this->post_save( array( 'name' => 'Collide', 'placement' => 'content', 'age_type' => 'at_least', 'age_n' => '18', 'new_role' => 'Privileged Test', 'role' => '' ) );
+		$this->assertStringContainsString( 'vb_msg=saved', $this->redirect );
+		$rules = \VerifyBlind\Rules::all();
+		$this->assertNotEmpty( $rules );
+		foreach ( $rules as $rule ) {
+			$this->assertNotSame( 'vb_privileged_test', $rule['role'] );
+		}
+		$this->assertSame( '', end( $rules )['role'] );
+	}
 
 	public function test_failed_save_does_not_create_the_new_role(): void {
 		$this->post_save( array( 'name' => 'Orphan', 'placement' => 'content', 'age_type' => 'none', 'age_n' => '', 'new_role' => 'Orphan Test', 'role' => '' ) );

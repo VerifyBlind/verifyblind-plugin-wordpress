@@ -257,6 +257,10 @@ final class RulesPage {
 			if ( null !== $parsed['new_role'] ) {
 				Roles::create( $parsed['new_role']['slug'], $parsed['new_role']['label'] );
 			}
+			// A new-role name can collide with an existing privileged role; never store one.
+			if ( '' !== $input['role'] && ! Roles::is_grantable( (string) $input['role'] ) ) {
+				$input['role'] = '';
+			}
 			Rules::save( $input );
 		} catch ( \InvalidArgumentException $e ) {
 			$args = array( 'page' => self::SLUG, 'action' => '' !== $input['id'] ? 'edit' : 'new', 'vb_err' => $e->getMessage() );
