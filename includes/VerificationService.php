@@ -41,6 +41,12 @@ final class VerificationService {
 		if ( $is_test && ! $test_mode ) {
 			return self::fail( 400, 'test_card' );
 		}
+		// Newer enclaves also sign WHICH age condition they answered. When present it must be the one this
+		// site asked (stored with the session), so nothing between us and the enclave can swap "18+" for "1+".
+		// Absent (older enclave): the stored condition is what `age` refers to.
+		if ( array_key_exists( 'age_condition', $v ) && ! self::same_condition( $v['age_condition'], $session['age_cond'] ) ) {
+			return self::fail( 409, 'condition_mismatch' );
+		}
 
 		// Validate everything first so a partial answer writes nothing.
 		$user_id = Owner::user_id( $owner );
@@ -152,6 +158,16 @@ final class VerificationService {
 			default: // reject, block: the gated action stays closed
 				return 'duplicate';
 		}
+	}
+
+	/** @param mixed $signed the signed validations.age_condition */
+	private static function same_condition( $signed, string $asked ): bool {
+		if ( ! is_string( $signed ) || '' === $asked ) {
+			return false;
+		}
+		$a = AgeRule::parse( $signed );
+		$b = AgeRule::parse( $asked );
+		return null !== $a && null !== $b && $a->to_string() === $b->to_string();
 	}
 
 	private static function fail( int $status, string $code ): array {

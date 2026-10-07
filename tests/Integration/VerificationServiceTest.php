@@ -183,6 +183,46 @@ final class VerificationServiceTest extends TestCase {
 		$this->assertEmpty( get_user_meta( $b, 'verifyblind_flag_person', true ) );
 	}
 
+	public function test_signed_condition_matching_the_asked_one_passes(): void {
+		$rule  = $this->rule( array( 'age' => '18+' ) );
+		$owner = 'g:' . str_repeat( 'a', 32 );
+		foreach ( array( 'c1' => '18+', 'c2' => ' 18+ ' ) as $nonce => $cond ) {
+			$this->session( $rule, $owner, $nonce );
+			$r = $this->svc->verify( $this->signer->token( array( 'nonce' => $nonce, 'validations' => array( 'age' => true, 'age_condition' => $cond ) ) ), $owner, false );
+			$this->assertSame( 'ok', $r['code'], $cond );
+		}
+		$this->assertSame( array( '18+' ), Results::passed_conditions( $owner, 0, false ) );
+	}
+
+	public function test_signed_condition_different_from_the_asked_one_writes_nothing(): void {
+		$rule  = $this->rule( array( 'age' => '18+' ) );
+		$owner = 'g:' . str_repeat( 'a', 32 );
+		foreach ( array( 'm1' => '1+', 'm2' => '18-', 'm3' => 18, 'm4' => null, 'm5' => '' ) as $nonce => $cond ) {
+			$this->session( $rule, $owner, $nonce );
+			$r = $this->svc->verify( $this->signer->token( array( 'nonce' => $nonce, 'validations' => array( 'age' => true, 'age_condition' => $cond ) ) ), $owner, false );
+			$this->assertSame( array( 'ok' => false, 'status' => 409, 'code' => 'condition_mismatch', 'passed' => false ), $r, var_export( $cond, true ) );
+		}
+		// An age answer for a rule that asked no age at all is a mismatch too.
+		$uid    = $this->make_user();
+		$unique = $this->rule( array( 'age' => '', 'unique' => true ) );
+		$this->session( $unique, 'u:' . $uid, 'm6' );
+		$r = $this->svc->verify( $this->signer->token( array( 'nonce' => 'm6', 'validations' => array( 'user_id' => 'PM', 'age' => true, 'age_condition' => '18+' ) ) ), 'u:' . $uid, false );
+		$this->assertSame( 'condition_mismatch', $r['code'] );
+		$this->assertSame( array(), Results::passed_conditions( $owner, 0, true ) );
+		$this->assertSame( array(), Results::passed_conditions( 'u:' . $uid, 0, true ) );
+		$this->assertNull( Identities::find_by_vb_user_id( 'PM' ) );
+		$this->assertSame( 'The verification answered a different question than this site asked. Please try again.', \VerifyBlind\Messages::get( 'condition_mismatch' ) );
+	}
+
+	public function test_absent_signed_condition_keeps_the_stored_one(): void {
+		$rule  = $this->rule( array( 'age' => '21+' ) );
+		$owner = 'g:' . str_repeat( 'a', 32 );
+		$this->session( $rule, $owner, 'old-enclave' );
+		$r = $this->svc->verify( $this->signer->token( array( 'nonce' => 'old-enclave', 'validations' => array( 'age' => true ) ) ), $owner, false );
+		$this->assertSame( 'ok', $r['code'] );
+		$this->assertSame( array( '21+' ), Results::passed_conditions( $owner, 0, false ) );
+	}
+
 	public function test_webhook_signature(): void {
 		$raw = '{"event_type":"CONSENT_WITHDRAWN","nonce":"abc"}';
 		$ts  = (string) time();
