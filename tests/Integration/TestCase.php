@@ -31,6 +31,8 @@ abstract class TestCase extends Base {
 		update_option( 'verifyblind_api_key', 'test-key' );
 		delete_transient( 'verifyblind_enclave_key' );
 		delete_transient( 'verifyblind_webhook_key' );
+		delete_transient( 'verifyblind_enclave_key_refreshed' );
+		delete_transient( 'verifyblind_webhook_key_refreshed' );
 		wp_set_current_user( 0 );
 		unset( $_COOKIE[ Owner::COOKIE ] );
 	}
