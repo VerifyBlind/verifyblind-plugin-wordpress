@@ -214,8 +214,29 @@ final class RestTest extends TestCase {
 		$raw = '{"event_type":"DATA_ERASURE","nonce":"rv-1","request_id":"q"}';
 		$ts  = (string) time();
 		$this->assertSame( 401, $this->post( 'revoke', array(), array(), array( 'x-webhook-signature' => 'AAAA', 'x-webhook-timestamp' => $ts ), $raw )->get_status() );
-		$ok = $this->post( 'revoke', array(), array(), array( 'x-webhook-signature' => $signer->sign( $ts . '.' . $raw ), 'x-webhook-timestamp' => $ts ), $raw );
+		$this->assertSame( array( '18+' ), Results::passed_conditions( 'u:77', 0, false ), 'a bad signature deletes nothing' );
+		$ok =$this->post( 'revoke', array(), array(), array( 'x-webhook-signature' => $signer->sign( $ts . '.' . $raw ), 'x-webhook-timestamp' => $ts ), $raw );
 		$this->assertSame( 200, $ok->get_status() );
 		$this->assertSame( array(), Results::passed_conditions( 'u:77', 0, false ) );
+	}
+
+	public function test_revoke_rejects_missing_headers_and_stale_timestamps(): void {
+		$signer = new Signer();
+		add_filter( 'verifyblind_key_source', function () use ( $signer ) {
+			return $signer;
+		} );
+		Results::add( 'u:78', '18+', true, 'rv-2', false );
+		$raw   = '{"event_type":"DATA_ERASURE","nonce":"rv-2","request_id":"q"}';
+		$ts    = (string) time();
+		$stale = (string) ( time() - 301 );
+		$cases = array(
+			'missing signature' => array( 'x-webhook-timestamp' => $ts ),
+			'missing timestamp' => array( 'x-webhook-signature' => $signer->sign( $ts . '.' . $raw ) ),
+			'stale timestamp'   => array( 'x-webhook-signature' => $signer->sign( $stale . '.' . $raw ), 'x-webhook-timestamp' => $stale ),
+		);
+		foreach ( $cases as $name => $headers ) {
+			$this->assertSame( 401, $this->post( 'revoke', array(), array(), $headers, $raw )->get_status(), $name );
+			$this->assertSame( array( '18+' ), Results::passed_conditions( 'u:78', 0, false ), $name . ' deletes nothing' );
+		}
 	}
 }
