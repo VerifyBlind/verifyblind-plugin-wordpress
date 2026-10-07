@@ -4,11 +4,16 @@ namespace VerifyBlind\Admin;
 defined( 'ABSPATH' ) || exit;
 
 use VerifyBlind\AgeRule;
+use VerifyBlind\Placements\Registry;
 use VerifyBlind\Roles;
 use VerifyBlind\Rules;
 
 final class RulesPage {
 	const SLUG = 'verifyblind';
+
+	/** Which placements use which target pickers (data-vb-for: the editor shows a row only for these). */
+	const POST_TARGETS    = 'content comments';
+	const PRODUCT_TARGETS = 'wc_checkout wc_product wc_review';
 
 	public static function hooks(): void {
 		add_action( 'admin_post_verifyblind_save_rule', array( self::class, 'save' ) );
@@ -48,8 +53,8 @@ final class RulesPage {
 	}
 
 	private static function render_list(): void {
-		$placements = Rules::placements();
-		$policies   = self::policy_labels();
+		$placements = Rules::placements() + Registry::unavailable();
+		$policies  = self::policy_labels();
 		$msg        = isset( $_GET['vb_msg'] ) ? sanitize_key( wp_unslash( $_GET['vb_msg'] ) ) : '';
 		?>
 		<div class="wrap">
@@ -103,15 +108,31 @@ final class RulesPage {
 	}
 
 	private static function render_edit( ?array $rule ): void {
-		$rule  = $rule ? $rule : array( 'id' => '', 'name' => '', 'enabled' => true, 'placement' => 'content', 'targets' => array( 'post_ids' => array(), 'term_ids' => array() ), 'age' => '18+', 'unique' => false, 'duplicate_policy' => 'reject', 'role' => '', 'validity_days' => 0 );
-		$age   = '' !== $rule['age'] ? AgeRule::parse( $rule['age'] ) : null;
-		$type  = null === $age ? 'none' : ( null === $age->max() ? 'at_least' : ( 0 === $age->min() ? 'under' : 'between' ) );
-		$n     = null === $age ? 18 : ( 'under' === $type ? $age->max() : $age->min() );
-		$m     = ( null !== $age && 'between' === $type ) ? $age->max() : '';
-		$pages = get_pages( array( 'number' => 200 ) );
-		$page_ids  = wp_list_pluck( $pages, 'ID' );
-		$other_ids = array_diff( $rule['targets']['post_ids'], array_map( 'intval', $page_ids ) );
-		$err   = isset( $_GET['vb_err'] ) ? sanitize_key( wp_unslash( $_GET['vb_err'] ) ) : '';
+		$rule  = $rule ? $rule : array( 'id' => '', 'name' => '', 'enabled' => true, 'placement' => 'content', 'targets' => array( 'post_ids' => array(), 'term_ids' => array() ), 'age' => '18+', 'unique' => false, 'duplicate_policy' => 'reject', 'role' => '', 'validity_days' => 0, 'guest_mode' => 'verify_each_order' );
+		$guest_mode = isset( $rule['guest_mode'] ) ? (string) $rule['guest_mode'] : 'verify_each_order';
+		$age        = '' !== $rule['age'] ? AgeRule::parse( $rule['age'] ) : null;
+		$type       = null === $age ? 'none' : ( null === $age->max() ? 'at_least' : ( 0 === $age->min() ? 'under' : 'between' ) );
+		$n          = null === $age ? 18 : ( 'under' === $type ? $age->max() : $age->min() );
+		$m          = ( null !== $age && 'between' === $type ) ? $age->max() : '';
+		$pages      = get_pages( array( 'number' => 200 ) );
+		$page_ids   = array_map( 'intval', wp_list_pluck( $pages, 'ID' ) );
+		$wc         = Registry::woocommerce_active();
+		$products   = array();
+		$coupons    = array();
+		$cats       = array();
+		if ( $wc ) {
+			foreach ( $rule['targets']['post_ids'] as $pid ) {
+				if ( 'product' === get_post_type( (int) $pid ) ) {
+					$products[] = (int) $pid;
+				}
+			}
+			$coupons = get_posts( array( 'post_type' => 'shop_coupon', 'post_status' => 'publish', 'numberposts' => 200, 'orderby' => 'title', 'order' => 'ASC' ) );
+			$terms   = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false ) );
+			$cats    = is_array( $terms ) ? $terms : array();
+		}
+		$coupon_ids = array_map( 'intval', wp_list_pluck( $coupons, 'ID' ) );
+		$other_ids  = array_diff( $rule['targets']['post_ids'], $page_ids, $products, $coupon_ids );
+		$err        =isset( $_GET['vb_err'] ) ? sanitize_key( wp_unslash( $_GET['vb_err'] ) ) : '';
 		?>
 		<div class="wrap">
 			<h1><?php echo '' === $rule['id'] ? esc_html__( 'Add rule', 'verifyblind' ) : esc_html__( 'Edit rule', 'verifyblind' ); ?></h1>
@@ -133,20 +154,48 @@ final class RulesPage {
 							<?php foreach ( Rules::placements() as $key => $label ) : ?>
 								<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $rule['placement'], $key ); ?>><?php echo esc_html( $label ); ?></option>
 							<?php endforeach; ?>
+							<?php foreach ( Registry::unavailable() as $key => $label ) : ?>
+								<option value="<?php echo esc_attr( $key ); ?>" disabled><?php echo esc_html( sprintf( /* translators: %s: placement name */ __( '%s — needs WooCommerce', 'verifyblind' ), $label ) ); ?></option>
+							<?php endforeach; ?>
 						</select>
 						<p class="description"><?php esc_html_e( 'For a lock you can also place the "VerifyBlind lock" block or the shortcode in any content.', 'verifyblind' ); ?></p></td></tr>
-					<tr><th><?php esc_html_e( 'Pages', 'verifyblind' ); ?></th>
+					<tr data-vb-for="<?php echo esc_attr( self::POST_TARGETS ); ?>"><th><?php esc_html_e( 'Pages', 'verifyblind' ); ?></th>
 						<td><div style="max-height:160px;overflow:auto;border:1px solid #dcdcde;padding:6px;background:#fff">
 							<?php foreach ( $pages as $p ) : ?>
 								<label style="display:block"><input type="checkbox" name="page_ids[]" value="<?php echo esc_attr( $p->ID ); ?>" <?php checked( in_array( (int) $p->ID, $rule['targets']['post_ids'], true ) ); ?>> <?php echo esc_html( $p->post_title ); ?></label>
 							<?php endforeach; ?>
-						</div></td></tr>
-					<tr><th><?php esc_html_e( 'Categories', 'verifyblind' ); ?></th>
+						</div>
+						<p class="description"><?php esc_html_e( 'A comment rule with nothing chosen here applies to every post.', 'verifyblind' ); ?></p></td></tr>
+					<tr data-vb-for="<?php echo esc_attr( self::POST_TARGETS ); ?>"><th><?php esc_html_e( 'Categories', 'verifyblind' ); ?></th>
 						<td><?php foreach ( get_categories( array( 'hide_empty' => false ) ) as $c ) : ?>
 							<label style="margin-right:12px"><input type="checkbox" name="term_ids[]" value="<?php echo esc_attr( $c->term_id ); ?>" <?php checked( in_array( (int) $c->term_id, $rule['targets']['term_ids'], true ) ); ?>> <?php echo esc_html( $c->name ); ?></label>
 						<?php endforeach; ?></td></tr>
-					<tr><th><label for="vb-other"><?php esc_html_e( 'Other post IDs', 'verifyblind' ); ?></label></th>
+					<tr data-vb-for="<?php echo esc_attr( self::POST_TARGETS ); ?>"><th><label for="vb-other"><?php esc_html_e( 'Other post IDs', 'verifyblind' ); ?></label></th>
 						<td><input id="vb-other" name="other_post_ids" class="regular-text" value="<?php echo esc_attr( implode( ', ', $other_ids ) ); ?>" placeholder="12, 57"></td></tr>
+					<?php if ( $wc ) : ?>
+						<tr data-vb-for="<?php echo esc_attr( self::PRODUCT_TARGETS ); ?>"><th><label for="vb-products"><?php esc_html_e( 'Product IDs', 'verifyblind' ); ?></label></th>
+							<td><input id="vb-products" name="product_ids" class="regular-text" value="<?php echo esc_attr( implode( ', ', $products ) ); ?>" placeholder="57, 58">
+							<p class="description"><?php esc_html_e( 'You can also tick the rule in the VerifyBlind box on the product edit screen. Checkout and product-page rules apply only to the products and categories chosen here; a review rule with nothing chosen applies to every product.', 'verifyblind' ); ?></p></td></tr>
+						<tr data-vb-for="<?php echo esc_attr( self::PRODUCT_TARGETS ); ?>"><th><?php esc_html_e( 'Product categories', 'verifyblind' ); ?></th>
+							<td><?php foreach ( $cats as $c ) : ?>
+								<label style="margin-right:12px"><input type="checkbox" name="product_cat_ids[]" value="<?php echo esc_attr( $c->term_id ); ?>" <?php checked( in_array( (int) $c->term_id, $rule['targets']['term_ids'], true ) ); ?>> <?php echo esc_html( $c->name ); ?></label>
+							<?php endforeach; ?>
+							<p class="description"><?php esc_html_e( 'Subcategories are included.', 'verifyblind' ); ?></p></td></tr>
+						<tr data-vb-for="wc_coupon"><th><?php esc_html_e( 'Coupons', 'verifyblind' ); ?></th>
+							<td>
+							<?php if ( ! $coupons ) : ?>
+								<?php esc_html_e( 'No coupons yet.', 'verifyblind' ); ?>
+							<?php endif; ?>
+							<?php foreach ( $coupons as $cp ) : ?>
+								<label style="display:block"><input type="checkbox" name="coupon_ids[]" value="<?php echo esc_attr( $cp->ID ); ?>" <?php checked( in_array( (int) $cp->ID, $rule['targets']['post_ids'], true ) ); ?>> <code><?php echo esc_html( $cp->post_title ); ?></code></label>
+							<?php endforeach; ?>
+							</td></tr>
+						<tr data-vb-for="wc_checkout"><th><?php esc_html_e( 'Guests', 'verifyblind' ); ?></th>
+							<td><select name="guest_mode">
+								<option value="verify_each_order" <?php selected( $guest_mode, 'verify_each_order' ); ?>><?php esc_html_e( 'Guests verify at checkout (kept for 24 hours in their browser)', 'verifyblind' ); ?></option>
+								<option value="require_account" <?php selected( $guest_mode, 'require_account' ); ?>><?php esc_html_e( 'Require a customer account for these products', 'verifyblind' ); ?></option>
+							</select></td></tr>
+					<?php endif; ?>
 
 					<tr><th colspan="2"><h2><?php esc_html_e( '2 · What is asked?', 'verifyblind' ); ?></h2></th></tr>
 					<tr><th><?php esc_html_e( 'Age condition', 'verifyblind' ); ?></th>
@@ -159,7 +208,7 @@ final class RulesPage {
 						<input type="number" name="age_n" min="1" max="150" value="<?php echo esc_attr( $n ); ?>" style="width:5em">
 						<input type="number" name="age_m" min="1" max="150" value="<?php echo esc_attr( $m ); ?>" style="width:5em" placeholder="<?php esc_attr_e( 'upper', 'verifyblind' ); ?>"></td></tr>
 					<tr><th><?php esc_html_e( 'One-person check', 'verifyblind' ); ?></th>
-						<td><label><input type="checkbox" name="unique" value="1" <?php checked( $rule['unique'] ); ?>> <?php esc_html_e( 'Recognise the same person across accounts (visitors must be logged in)', 'verifyblind' ); ?></label>
+						<td><label><input type="checkbox" name="unique" value="1" <?php checked( $rule['unique'] ); ?>> <?php esc_html_e( 'Recognise the same person across accounts (visitors log in first; on the sign-up form they verify while creating the account)', 'verifyblind' ); ?></label>
 						<p class="description"><?php esc_html_e( 'Each requested item counts as one verification: age = 1, one-person check = 1. 2,000 verifications a month are free.', 'verifyblind' ); ?></p></td></tr>
 
 					<tr><th colspan="2"><h2><?php esc_html_e( '3 · Same person on another account', 'verifyblind' ); ?></h2></th></tr>
@@ -206,6 +255,8 @@ final class RulesPage {
 			<?php endif; ?>
 		</div>
 		<?php
+		// Show only the target rows of the chosen placement (all rows stay in the form; hidden ones still submit).
+		wp_print_inline_script_tag( "(function(){var s=document.querySelector('select[name=\"placement\"]');if(!s){return;}function t(){var v=' '+s.value+' ';document.querySelectorAll('[data-vb-for]').forEach(function(r){r.style.display=(' '+r.getAttribute('data-vb-for')+' ').indexOf(v)===-1?'none':'';});}s.addEventListener('change',t);t();})();" );
 	}
 
 	/**
@@ -227,21 +278,31 @@ final class RulesPage {
 		if ( null === $pending && '' !== $role && ! Roles::is_grantable( $role ) ) {
 			$role = '';
 		}
-		$other = isset( $p['other_post_ids'] ) ? explode( ',', (string) $p['other_post_ids'] ) : array();
-		$input = array(
+		$other    = isset( $p['other_post_ids'] ) ? explode( ',', (string) $p['other_post_ids'] ) : array();
+		$products = isset( $p['product_ids'] ) ? explode( ',', (string) $p['product_ids'] ) : array();
+		$input    = array(
 			'id'               => sanitize_text_field( isset( $p['id'] ) ? (string) $p['id'] : '' ),
 			'name'             => sanitize_text_field( isset( $p['name'] ) ? (string) $p['name'] : '' ),
 			'enabled'          => ! empty( $p['enabled'] ),
 			'placement'        => sanitize_key( isset( $p['placement'] ) ? (string) $p['placement'] : '' ),
 			'targets'          => array(
-				'post_ids' => array_merge( isset( $p['page_ids'] ) ? (array) $p['page_ids'] : array(), array_filter( $other, 'strlen' ) ),
-				'term_ids' => isset( $p['term_ids'] ) ? (array) $p['term_ids'] : array(),
+				'post_ids' => array_merge(
+					isset( $p['page_ids'] ) ? (array) $p['page_ids'] : array(),
+					array_filter( $other, 'strlen' ),
+					array_filter( $products, 'strlen' ),
+					isset( $p['coupon_ids'] ) ? (array) $p['coupon_ids'] : array()
+				),
+				'term_ids' => array_merge(
+					isset( $p['term_ids'] ) ? (array) $p['term_ids'] : array(),
+					isset( $p['product_cat_ids'] ) ? (array) $p['product_cat_ids'] : array()
+				),
 			),
 			'age'              => Rules::age_from_form( sanitize_key( isset( $p['age_type'] ) ? (string) $p['age_type'] : '' ), isset( $p['age_n'] ) ? $p['age_n'] : 0, isset( $p['age_m'] ) ? $p['age_m'] : 0 ),
 			'unique'           => ! empty( $p['unique'] ),
 			'duplicate_policy' => sanitize_key( isset( $p['duplicate_policy'] ) ? (string) $p['duplicate_policy'] : 'reject' ),
 			'role'             => $role,
 			'validity_days'    => (int) ( isset( $p['validity_days'] ) ? $p['validity_days'] : 0 ),
+			'guest_mode'       => sanitize_key( isset( $p['guest_mode'] ) ? (string) $p['guest_mode'] : 'verify_each_order' ),
 		);
 		return array( 'input' => $input, 'new_role' => $pending );
 	}
