@@ -15,7 +15,7 @@ final class Registry {
 
 	/** @return string[] placement classes that need WooCommerce */
 	public static function woocommerce(): array {
-		return array( WcReview::class, WcCheckout::class );
+		return array( WcReview::class, WcCheckout::class, WcProduct::class );
 	}
 
 	public static function woocommerce_active(): bool {
