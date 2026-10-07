@@ -52,9 +52,12 @@ final class VerificationService {
 
 		$rule = Rules::get( $session['rule_id'] );
 		if ( $session['want_uid'] ) {
-			$outcome = $this->claim_identity( $person, $user_id, $v, $nonce, $rule ? $rule['duplicate_policy'] : 'reject' );
-			if ( 'ok' !== $outcome ) {
-				return self::fail( 409, $outcome );
+			// A demo card's person code is shared by everyone: it never binds an identity.
+			if ( ! $is_test ) {
+				$outcome = $this->claim_identity( $person, $user_id, $v, $nonce, $rule ? $rule['duplicate_policy'] : 'reject' );
+				if ( 'ok' !== $outcome ) {
+					return self::fail( 409, $outcome );
+				}
 			}
 			Results::add( $owner, 'uid', true, $nonce, $is_test );
 		}
@@ -62,10 +65,10 @@ final class VerificationService {
 			Results::add( $owner, $session['age_cond'], $v['age'], $nonce, $is_test );
 		}
 		if ( $user_id > 0 ) {
-			Roles::sync_user( $user_id );
+			Roles::sync_user( $user_id, $test_mode );
 		}
 		// Judge with the caller's test-mode flag (not the global setting) so a demo card counts only where the caller allowed it.
-		$passed = null !== $rule && Evaluator::conditions_satisfy( Results::passed_conditions( $owner, (int) ( isset( $rule['validity_days'] ) ? $rule['validity_days'] : 0 ), $test_mode ), $rule );
+		$passed = null !== $rule && Evaluator::satisfies( $owner, $rule, $test_mode );
 		return array( 'ok' => true, 'status' => 200, 'code' => $passed ? 'ok' : 'not_eligible', 'passed' => $passed );
 	}
 
@@ -100,6 +103,8 @@ final class VerificationService {
 			}
 		}
 		foreach ( array_unique( $users ) as $u ) {
+			delete_user_meta( (int) $u, 'verifyblind_duplicate_of' );
+			delete_user_meta( (int) $u, 'verifyblind_flag_person' );
 			Roles::sync_user( (int) $u );
 		}
 	}
@@ -117,6 +122,11 @@ final class VerificationService {
 		if ( $mine ) {
 			return $mine['vb_user_id'] === $person ? 'ok' : 'different_identity';
 		}
+		// A flag-accepted duplicate has no identity row, but the account still may not switch person later.
+		$flagged = get_user_meta( $user_id, 'verifyblind_flag_person', true );
+		if ( is_string( $flagged ) && '' !== $flagged && $flagged !== $person ) {
+			return 'different_identity';
+		}
 		$nsbd = isset( $v['nsbd_id'] ) && is_string( $v['nsbd_id'] ) ? $v['nsbd_id'] : null;
 		$doc  = isset( $v['doc_id'] ) && is_string( $v['doc_id'] ) ? $v['doc_id'] : null;
 		if ( Identities::insert( $person, $user_id, $nsbd, $doc, $nonce ) ) {
@@ -130,9 +140,10 @@ final class VerificationService {
 		switch ( $policy ) {
 			case 'flag':
 				update_user_meta( $user_id, 'verifyblind_duplicate_of', $other );
+				update_user_meta( $user_id, 'verifyblind_flag_person', $person );
 				return 'ok';
 			case 'transfer':
-				Identities::move( $person, $user_id, $nonce );
+				Identities::move( $person, $user_id, $nonce, $nsbd, $doc );
 				Results::delete_cond( Owner::for_user( $other ), 'uid' );
 				Roles::sync_user( $other );
 				return 'ok';

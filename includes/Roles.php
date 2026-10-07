@@ -24,21 +24,23 @@ final class Roles {
 		return null !== add_role( $slug, $label, array( 'read' => true ) );
 	}
 
-	public static function sync_user( int $user_id ): void {
+	/** $include_test null = the global test-mode setting. */
+	public static function sync_user( int $user_id, ?bool $include_test = null ): void {
 		$user = get_userdata( $user_id );
 		if ( ! $user ) {
 			return;
 		}
+		$test  = null === $include_test ? Settings::test_mode() : $include_test;
 		$owner = Owner::for_user( $user_id );
 		$want  = array();
-		if ( Results::passed_conditions( $owner, 0, Settings::test_mode() ) ) {
+		if ( Results::passed_conditions( $owner, 0, $test ) ) {
 			$want[] = self::BASE;
 		}
 		foreach ( Rules::all() as $rule ) {
 			if ( empty( $rule['enabled'] ) || '' === $rule['role'] || 'administrator' === $rule['role'] || ! get_role( $rule['role'] ) ) {
 				continue;
 			}
-			if ( Evaluator::satisfies( $owner, $rule ) ) {
+			if ( Evaluator::satisfies( $owner, $rule, $test ) ) {
 				$want[] = $rule['role'];
 			}
 		}

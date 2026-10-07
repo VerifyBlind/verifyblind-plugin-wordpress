@@ -29,8 +29,10 @@ final class Evaluator {
 		return false;
 	}
 
-	public static function satisfies( string $owner, array $rule ): bool {
+	/** $include_test null = the global test-mode setting. */
+	public static function satisfies( string $owner, array $rule, ?bool $include_test = null ): bool {
 		$validity = (int) ( isset( $rule['validity_days'] ) ? $rule['validity_days'] : 0 );
-		return self::conditions_satisfy( Results::passed_conditions( $owner, $validity, Settings::test_mode() ), $rule );
+		$test     = null === $include_test ? Settings::test_mode() : $include_test;
+		return self::conditions_satisfy( Results::passed_conditions( $owner, $validity, $test ), $rule );
 	}
 }

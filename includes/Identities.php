@@ -35,15 +35,19 @@ final class Identities {
 		return 1 === $ok;
 	}
 
-	public static function move( string $vb, int $to_wp, string $nonce ): void {
+	public static function move( string $vb, int $to_wp, string $nonce, ?string $nsbd = null, ?string $doc = null ): void {
 		global $wpdb;
-		$wpdb->update(
-			Schema::table( 'identities' ),
-			array( 'wp_user_id' => $to_wp, 'nonce' => $nonce, 'verified_at' => gmdate( 'Y-m-d H:i:s' ) ),
-			array( 'vb_user_id' => $vb ),
-			array( '%d', '%s', '%s' ),
-			array( '%s' )
-		);
+		$data    = array( 'wp_user_id' => $to_wp, 'nonce' => $nonce, 'verified_at' => gmdate( 'Y-m-d H:i:s' ) );
+		$formats = array( '%d', '%s', '%s' );
+		if ( null !== $nsbd ) {
+			$data['nsbd_id'] = $nsbd;
+			$formats[]       = '%s';
+		}
+		if ( null !== $doc ) {
+			$data['doc_id'] = $doc;
+			$formats[]      = '%s';
+		}
+		$wpdb->update( Schema::table( 'identities' ), $data, array( 'vb_user_id' => $vb ), $formats, array( '%s' ) );
 	}
 
 	/** @return int[] accounts whose identity was tied to this nonce */

@@ -66,6 +66,30 @@ final class VerificationServiceTest extends TestCase {
 		$this->assertSame( 'ok', $this->svc->verify( $this->signer->token( array( 'nonce' => $this->session( $rule, $owner, 'a2' ), 'validations' => $v ) ), $owner, true )['code'] );
 	}
 
+	public function test_demo_card_grants_base_role_in_test_mode(): void {
+		$rule  = $this->rule();
+		$uid   = $this->make_user();
+		$owner = 'u:' . $uid;
+		$v     = array( 'age' => true, 'is_test' => true );
+		$this->assertSame( 'ok', $this->svc->verify( $this->signer->token( array( 'nonce' => $this->session( $rule, $owner, 'tr1' ), 'validations' => $v ) ), $owner, true )['code'] );
+		$this->assertContains( Roles::BASE, get_userdata( $uid )->roles );
+	}
+
+	public function test_demo_cards_never_bind_identities(): void {
+		$rule = $this->rule( array( 'age' => '', 'unique' => true ) ); // default policy: reject
+		$a    = $this->make_user();
+		$b    = $this->make_user();
+		foreach ( array( $a => 'dm-a', $b => 'dm-b' ) as $user => $nonce ) {
+			$owner = 'u:' . $user;
+			$this->session( $rule, $owner, $nonce );
+			$r = $this->svc->verify( $this->signer->token( array( 'nonce' => $nonce, 'validations' => array( 'user_id' => 'DEMO', 'is_test' => true ) ) ), $owner, true );
+			$this->assertSame( 'ok', $r['code'] );
+		}
+		$this->assertNull( Identities::find_by_vb_user_id( 'DEMO' ) );
+		$this->assertNull( Identities::find_by_wp_user( $a ) );
+		$this->assertSame( 'ok', $this->verify_uid( $rule, $a, 'REAL-A', 'dm-real' )['code'] );
+	}
+
 	public function test_missing_requested_field_writes_nothing(): void {
 		$rule  = $this->rule( array( 'age' => '18+', 'unique' => true ) );
 		$uid   = $this->make_user();
@@ -101,6 +125,16 @@ final class VerificationServiceTest extends TestCase {
 		$this->assertSame( 'ok', $this->verify_uid( $rule, $b, 'PF', 'f-b' )['code'] );
 		$this->assertSame( $a, (int) get_user_meta( $b, 'verifyblind_duplicate_of', true ) );
 		$this->assertSame( $a, (int) Identities::find_by_vb_user_id( 'PF' )['wp_user_id'] );
+		$this->assertSame( 'PF', get_user_meta( $b, 'verifyblind_flag_person', true ) );
+	}
+
+	public function test_flagged_account_cannot_switch_identity_later(): void {
+		$rule = $this->rule( array( 'age' => '', 'unique' => true, 'duplicate_policy' => 'flag' ) );
+		$a    = $this->make_user();
+		$b    = $this->make_user();
+		$this->verify_uid( $rule, $a, 'PG', 'g-a' );
+		$this->assertSame( 'ok', $this->verify_uid( $rule, $b, 'PG', 'g-b' )['code'] );
+		$this->assertSame( 'different_identity', $this->verify_uid( $rule, $b, 'PG-OTHER', 'g-c' )['code'] );
 	}
 
 	public function test_duplicate_transfer_moves_identity(): void {
@@ -111,6 +145,8 @@ final class VerificationServiceTest extends TestCase {
 		$this->assertContains( Roles::BASE, get_userdata( $a )->roles );
 		$this->assertSame( 'ok', $this->verify_uid( $rule, $b, 'PT', 't-b' )['code'] );
 		$this->assertSame( $b, (int) Identities::find_by_vb_user_id( 'PT' )['wp_user_id'] );
+		$this->assertSame( 'N-PT', Identities::find_by_vb_user_id( 'PT' )['nsbd_id'] );
+		$this->assertSame( 'D-PT', Identities::find_by_vb_user_id( 'PT' )['doc_id'] );
 		$this->assertNotContains( 'uid', Results::passed_conditions( 'u:' . $a, 0, false ) );
 		$this->assertNotContains( Roles::BASE, get_userdata( $a )->roles );
 	}
@@ -133,6 +169,18 @@ final class VerificationServiceTest extends TestCase {
 		$this->assertSame( array(), Results::passed_conditions( $owner, 0, false ) );
 		$this->assertNull( Identities::find_by_vb_user_id( 'PR' ) );
 		$this->assertNotContains( Roles::BASE, get_userdata( $a )->roles );
+	}
+
+	public function test_revoke_clears_flag_marks(): void {
+		$rule = $this->rule( array( 'age' => '', 'unique' => true, 'duplicate_policy' => 'flag' ) );
+		$a    = $this->make_user();
+		$b    = $this->make_user();
+		$this->verify_uid( $rule, $a, 'PV', 'v-a' );
+		$this->verify_uid( $rule, $b, 'PV', 'v-b' );
+		$this->assertNotEmpty( get_user_meta( $b, 'verifyblind_flag_person', true ) );
+		$this->svc->revoke( 'v-b' );
+		$this->assertEmpty( get_user_meta( $b, 'verifyblind_duplicate_of', true ) );
+		$this->assertEmpty( get_user_meta( $b, 'verifyblind_flag_person', true ) );
 	}
 
 	public function test_webhook_signature(): void {
