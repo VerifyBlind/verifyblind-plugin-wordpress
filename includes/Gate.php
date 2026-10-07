@@ -3,23 +3,36 @@ namespace VerifyBlind;
 
 /**
  * Content lock. Locked content is removed on the server — it never reaches the browser — in the post
- * body, excerpts, the REST API and feeds. Pages with a gate are excluded from page caches.
+ * body, excerpts, the REST API and feeds. Pages with a gate (locked or unlocked) are excluded from page
+ * caches: both versions are per-visitor.
  */
 final class Gate {
+	/** @var bool whether no_cache() ran during this request (also lets tests observe the decision) */
+	private static $no_cache_requested = false;
+
 	public static function hooks(): void {
 		add_shortcode( 'verifyblind_gate', array( self::class, 'shortcode' ) );
 		add_action( 'init', array( self::class, 'register_block' ) );
+		// After all post types (including custom ones registered on init) exist.
+		add_action( 'init', array( self::class, 'register_rest_filters' ), 99 );
 		add_action( 'template_redirect', array( self::class, 'maybe_no_cache' ) );
 		add_filter( 'the_content', array( self::class, 'filter_content' ), 999 );
 		add_filter( 'get_the_excerpt', array( self::class, 'filter_excerpt' ), 999, 2 );
 		add_filter( 'the_content_feed', array( self::class, 'filter_feed' ), 999 );
 		add_filter( 'the_excerpt_rss', array( self::class, 'filter_feed' ), 999 );
-		foreach ( array( 'post', 'page' ) as $type ) {
+	}
+
+	public static function register_rest_filters(): void {
+		$skip = array( 'attachment', 'wp_block', 'wp_template', 'wp_template_part', 'wp_navigation' );
+		foreach ( get_post_types( array( 'show_in_rest' => true ) ) as $type ) {
+			if ( in_array( $type, $skip, true ) ) {
+				continue;
+			}
 			add_filter( "rest_prepare_{$type}", array( self::class, 'filter_rest' ), 999, 2 );
 		}
 	}
 
-	/** @return array[] enabled content rules that target this post directly or through a term */
+	/** @return array[] enabled content rules that target this post directly or through a term (or its descendants) */
 	public static function rules_for_post( \WP_Post $post ): array {
 		$out = array();
 		foreach ( Rules::all() as $rule ) {
@@ -32,7 +45,16 @@ final class Gate {
 			}
 			foreach ( $rule['targets']['term_ids'] as $tid ) {
 				$term = get_term( $tid );
-				if ( $term && ! is_wp_error( $term ) && has_term( $tid, $term->taxonomy, $post ) ) {
+				if ( ! $term || is_wp_error( $term ) ) {
+					continue;
+				}
+				// A rule on a term also covers posts in its descendant terms.
+				$ids      = array( (int) $tid );
+				$children = get_term_children( (int) $tid, $term->taxonomy );
+				if ( is_array( $children ) ) {
+					$ids = array_merge( $ids, array_map( 'intval', $children ) );
+				}
+				if ( has_term( $ids, $term->taxonomy, $post ) ) {
 					$out[] = $rule;
 					break;
 				}
@@ -58,6 +80,7 @@ final class Gate {
 	}
 
 	public static function no_cache(): void {
+		self::$no_cache_requested = true;
 		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
 			define( 'DONOTCACHEPAGE', true );
 		}
@@ -66,17 +89,39 @@ final class Gate {
 		}
 	}
 
+	public static function no_cache_requested(): bool {
+		return self::$no_cache_requested;
+	}
+
+	/** Test helper. */
+	public static function reset_no_cache_flag(): void {
+		self::$no_cache_requested = false;
+	}
+
+	private static function post_is_gated( \WP_Post $post ): bool {
+		return (bool) self::rules_for_post( $post )
+			|| has_shortcode( (string) $post->post_content, 'verifyblind_gate' )
+			|| has_block( 'verifyblind/gate', $post );
+	}
+
+	/** Early guard: any page whose main query contains a gated post must not be cached (archives, search, home...). */
 	public static function maybe_no_cache(): void {
-		if ( ! is_singular() ) {
+		if ( is_feed() ) {
 			return;
 		}
-		$post = get_queried_object();
-		if ( ! $post instanceof \WP_Post ) {
-			return;
+		global $wp_query;
+		$posts = ( $wp_query instanceof \WP_Query && is_array( $wp_query->posts ) ) ? $wp_query->posts : array();
+		if ( is_singular() ) {
+			$queried = get_queried_object();
+			if ( $queried instanceof \WP_Post ) {
+				$posts[] = $queried;
+			}
 		}
-		// Both the locked and the unlocked version are per-visitor: neither may be cached.
-		if ( self::rules_for_post( $post ) || has_shortcode( $post->post_content, 'verifyblind_gate' ) || has_block( 'verifyblind/gate', $post ) ) {
-			self::no_cache();
+		foreach ( $posts as $post ) {
+			if ( $post instanceof \WP_Post && self::post_is_gated( $post ) ) {
+				self::no_cache();
+				return;
+			}
 		}
 	}
 
@@ -90,7 +135,11 @@ final class Gate {
 			return $content;
 		}
 		$rules = self::rules_for_post( $post );
-		if ( ! $rules || self::bypass( $post ) ) {
+		if ( ! $rules ) {
+			return $content;
+		}
+		self::no_cache();
+		if ( self::bypass( $post ) ) {
 			return $content;
 		}
 		$blocking = self::blocking_rule( $rules );
@@ -103,7 +152,11 @@ final class Gate {
 			return $excerpt;
 		}
 		$rules = self::rules_for_post( $post );
-		if ( ! $rules || self::bypass( $post ) ) {
+		if ( ! $rules ) {
+			return $excerpt;
+		}
+		self::no_cache();
+		if ( self::bypass( $post ) ) {
 			return $excerpt;
 		}
 		return self::blocking_rule( $rules ) ? self::locked_text() : $excerpt;
@@ -120,7 +173,12 @@ final class Gate {
 			return $response;
 		}
 		$rules = self::rules_for_post( $post );
-		if ( ! $rules || self::bypass( $post ) || ! self::blocking_rule( $rules ) ) {
+		if ( ! $rules ) {
+			return $response;
+		}
+		// Locked and unlocked responses are both per-visitor.
+		$response->header( 'Cache-Control', 'no-store, private' );
+		if ( self::bypass( $post ) || ! self::blocking_rule( $rules ) ) {
 			return $response;
 		}
 		$data = $response->get_data();
@@ -134,24 +192,38 @@ final class Gate {
 		return $response;
 	}
 
-	public static function render_gate( string $rule_id, string $inner ): string {
+	/**
+	 * Decide what a visitor sees for one gate. Returns the replacement output (box, or '' for a
+	 * misconfigured gate), or null when the inner content may be shown.
+	 */
+	private static function closed_output( string $rule_id ): ?string {
+		self::no_cache();
 		$post = get_post();
 		$rule = Rules::get( $rule_id );
 		if ( ! $rule || empty( $rule['enabled'] ) ) {
 			// Misconfigured gate fails closed for visitors.
-			return self::bypass( $post ) ? $inner : '';
+			return self::bypass( $post ) ? null : '';
 		}
-		self::no_cache();
 		if ( self::bypass( $post ) ) {
-			return $inner;
+			return null;
 		}
 		$blocking = self::blocking_rule( array( $rule ) );
-		return $blocking ? Widget::box( $blocking ) : $inner;
+		return $blocking ? Widget::box( $blocking ) : null;
+	}
+
+	/** For the block path: the inner HTML is already rendered by core. */
+	public static function render_gate( string $rule_id, string $inner ): string {
+		$closed = self::closed_output( $rule_id );
+		return null === $closed ? $inner : $closed;
 	}
 
 	public static function shortcode( $atts, $content = '' ): string {
-		$atts = shortcode_atts( array( 'rule' => '' ), $atts, 'verifyblind_gate' );
-		return self::render_gate( (string) $atts['rule'], do_shortcode( (string) $content ) );
+		$atts   = shortcode_atts( array( 'rule' => '' ), $atts, 'verifyblind_gate' );
+		$closed = self::closed_output( (string) $atts['rule'] );
+		if ( null !== $closed ) {
+			return $closed; // Locked: inner shortcodes are never executed.
+		}
+		return do_shortcode( (string) $content );
 	}
 
 	public static function register_block(): void {
@@ -166,7 +238,7 @@ final class Gate {
 		foreach ( Rules::all() as $r ) {
 			$choices[] = array( 'value' => $r['id'], 'label' => $r['name'] );
 		}
-		wp_add_inline_script( 'verifyblind-gate-block', 'window.VerifyBlindRules = ' . wp_json_encode( $choices ) . ';', 'before' );
+		wp_add_inline_script( 'verifyblind-gate-block', 'window.VerifyBlindRules = ' . wp_json_encode( $choices, JSON_HEX_TAG | JSON_HEX_AMP ) . ';', 'before' );
 		register_block_type(
 			'verifyblind/gate',
 			array(
