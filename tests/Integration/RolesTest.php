@@ -42,6 +42,16 @@ final class RolesTest extends TestCase {
 		$this->assertContains( 'vb_adult', get_userdata( $uid )->roles );
 	}
 
+	public function test_sync_user_never_grants_a_non_grantable_rule_role(): void {
+		$this->rule( array( 'placement' => 'role_only', 'age' => '18+', 'role' => 'editor' ) );
+		$uid = $this->make_user();
+		Results::add( 'u:' . $uid, '25+', true, 'n1', false );
+		Roles::sync_user( $uid );
+		$roles = get_userdata( $uid )->roles;
+		$this->assertNotContains( 'editor', $roles );
+		$this->assertContains( Roles::BASE, $roles );
+	}
+
 	public function test_test_results_count_only_in_test_mode(): void {
 		$uid = $this->make_user();
 		Results::add( 'u:' . $uid, '18+', true, 'n1', true );

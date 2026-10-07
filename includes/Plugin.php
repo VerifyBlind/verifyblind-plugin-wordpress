@@ -11,6 +11,9 @@ final class Plugin {
 		add_action( 'rest_api_init', array( Rest::class, 'register' ) );
 		Gate::hooks();
 		Widget::hooks();
+		if ( is_admin() ) {
+			Admin\Menu::hooks();
+		}
 	}
 
 	public static function api(): ApiClient {

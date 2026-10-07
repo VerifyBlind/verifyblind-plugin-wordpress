@@ -24,6 +24,48 @@ final class Roles {
 		return null !== add_role( $slug, $label, array( 'read' => true ) );
 	}
 
+	/** Capabilities that make a role privileged; a rule may never hand such a role out automatically. */
+	const DANGEROUS_CAPS = array(
+		'edit_posts',
+		'edit_pages',
+		'edit_others_posts',
+		'publish_posts',
+		'moderate_comments',
+		'manage_options',
+		'manage_categories',
+		'promote_users',
+		'list_users',
+		'edit_users',
+		'create_users',
+		'delete_users',
+		'remove_users',
+		'unfiltered_html',
+		'upload_files',
+		'edit_theme_options',
+		'activate_plugins',
+		'install_plugins',
+		'manage_woocommerce',
+		'edit_shop_orders',
+		'view_woocommerce_reports',
+	);
+
+	/** True only for an existing, non-privileged role. */
+	public static function is_grantable( string $slug ): bool {
+		if ( '' === $slug || 'administrator' === $slug ) {
+			return false;
+		}
+		$role = get_role( $slug );
+		if ( ! $role ) {
+			return false;
+		}
+		foreach ( self::DANGEROUS_CAPS as $cap ) {
+			if ( $role->has_cap( $cap ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/** $include_test null = the global test-mode setting. */
 	public static function sync_user( int $user_id, ?bool $include_test = null ): void {
 		$user = get_userdata( $user_id );
@@ -37,7 +79,7 @@ final class Roles {
 			$want[] = self::BASE;
 		}
 		foreach ( Rules::all() as $rule ) {
-			if ( empty( $rule['enabled'] ) || '' === $rule['role'] || 'administrator' === $rule['role'] || ! get_role( $rule['role'] ) ) {
+			if ( empty( $rule['enabled'] ) || '' === $rule['role'] || ! self::is_grantable( $rule['role'] ) ) {
 				continue;
 			}
 			if ( Evaluator::satisfies( $owner, $rule, $test ) ) {
