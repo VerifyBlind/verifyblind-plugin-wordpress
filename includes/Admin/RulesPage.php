@@ -54,7 +54,7 @@ final class RulesPage {
 
 	private static function render_list(): void {
 		$placements = Rules::placements() + Registry::unavailable();
-		$policies  = self::policy_labels();
+		$policies   = self::policy_labels();
 		$msg        = isset( $_GET['vb_msg'] ) ? sanitize_key( wp_unslash( $_GET['vb_msg'] ) ) : '';
 		?>
 		<div class="wrap">
@@ -108,7 +108,7 @@ final class RulesPage {
 	}
 
 	private static function render_edit( ?array $rule ): void {
-		$rule  = $rule ? $rule : array( 'id' => '', 'name' => '', 'enabled' => true, 'placement' => 'content', 'targets' => array( 'post_ids' => array(), 'term_ids' => array() ), 'age' => '18+', 'unique' => false, 'duplicate_policy' => 'reject', 'role' => '', 'validity_days' => 0, 'guest_mode' => 'verify_each_order' );
+		$rule       = $rule ? $rule : array( 'id' => '', 'name' => '', 'enabled' => true, 'placement' => 'content', 'targets' => array( 'post_ids' => array(), 'term_ids' => array() ), 'age' => '18+', 'unique' => false, 'duplicate_policy' => 'reject', 'role' => '', 'validity_days' => 0, 'guest_mode' => 'verify_each_order' );
 		$guest_mode = isset( $rule['guest_mode'] ) ? (string) $rule['guest_mode'] : 'verify_each_order';
 		$age        = '' !== $rule['age'] ? AgeRule::parse( $rule['age'] ) : null;
 		$type       = null === $age ? 'none' : ( null === $age->max() ? 'at_least' : ( 0 === $age->min() ? 'under' : 'between' ) );
@@ -132,7 +132,7 @@ final class RulesPage {
 		}
 		$coupon_ids = array_map( 'intval', wp_list_pluck( $coupons, 'ID' ) );
 		$other_ids  = array_diff( $rule['targets']['post_ids'], $page_ids, $products, $coupon_ids );
-		$err        =isset( $_GET['vb_err'] ) ? sanitize_key( wp_unslash( $_GET['vb_err'] ) ) : '';
+		$err        = isset( $_GET['vb_err'] ) ? sanitize_key( wp_unslash( $_GET['vb_err'] ) ) : '';
 		?>
 		<div class="wrap">
 			<h1><?php echo '' === $rule['id'] ? esc_html__( 'Add rule', 'verifyblind' ) : esc_html__( 'Edit rule', 'verifyblind' ); ?></h1>
@@ -278,25 +278,27 @@ final class RulesPage {
 		if ( null === $pending && '' !== $role && ! Roles::is_grantable( $role ) ) {
 			$role = '';
 		}
-		$other    = isset( $p['other_post_ids'] ) ? explode( ',', (string) $p['other_post_ids'] ) : array();
-		$products = isset( $p['product_ids'] ) ? explode( ',', (string) $p['product_ids'] ) : array();
-		$input    = array(
+		$other     = isset( $p['other_post_ids'] ) ? explode( ',', (string) $p['other_post_ids'] ) : array();
+		$products  = isset( $p['product_ids'] ) ? explode( ',', (string) $p['product_ids'] ) : array();
+		$placement = sanitize_key( isset( $p['placement'] ) ? (string) $p['placement'] : '' );
+		$post_ids  = array();
+		$term_ids  = array();
+		// Keep only the targets that belong to the chosen placement (the form submits every hidden row too).
+		if ( in_array( $placement, explode( ' ', self::POST_TARGETS ), true ) ) {
+			$post_ids = array_merge( isset( $p['page_ids'] ) ? (array) $p['page_ids'] : array(), array_filter( $other, 'strlen' ) );
+			$term_ids = isset( $p['term_ids'] ) ? (array) $p['term_ids'] : array();
+		} elseif ( in_array( $placement, explode( ' ', self::PRODUCT_TARGETS ), true ) ) {
+			$post_ids = array_filter( $products, 'strlen' );
+			$term_ids = isset( $p['product_cat_ids'] ) ? (array) $p['product_cat_ids'] : array();
+		} elseif ( 'wc_coupon' === $placement ) {
+			$post_ids = isset( $p['coupon_ids'] ) ? (array) $p['coupon_ids'] : array();
+		}
+		$input     = array(
 			'id'               => sanitize_text_field( isset( $p['id'] ) ? (string) $p['id'] : '' ),
 			'name'             => sanitize_text_field( isset( $p['name'] ) ? (string) $p['name'] : '' ),
 			'enabled'          => ! empty( $p['enabled'] ),
-			'placement'        => sanitize_key( isset( $p['placement'] ) ? (string) $p['placement'] : '' ),
-			'targets'          => array(
-				'post_ids' => array_merge(
-					isset( $p['page_ids'] ) ? (array) $p['page_ids'] : array(),
-					array_filter( $other, 'strlen' ),
-					array_filter( $products, 'strlen' ),
-					isset( $p['coupon_ids'] ) ? (array) $p['coupon_ids'] : array()
-				),
-				'term_ids' => array_merge(
-					isset( $p['term_ids'] ) ? (array) $p['term_ids'] : array(),
-					isset( $p['product_cat_ids'] ) ? (array) $p['product_cat_ids'] : array()
-				),
-			),
+			'placement'        => $placement,
+			'targets'          => array( 'post_ids' => $post_ids, 'term_ids' => $term_ids ),
 			'age'              => Rules::age_from_form( sanitize_key( isset( $p['age_type'] ) ? (string) $p['age_type'] : '' ), isset( $p['age_n'] ) ? $p['age_n'] : 0, isset( $p['age_m'] ) ? $p['age_m'] : 0 ),
 			'unique'           => ! empty( $p['unique'] ),
 			'duplicate_policy' => sanitize_key( isset( $p['duplicate_policy'] ) ? (string) $p['duplicate_policy'] : 'reject' ),

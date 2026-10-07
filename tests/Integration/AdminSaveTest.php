@@ -30,7 +30,7 @@ final class AdminSaveTest extends TestCase {
 				'id'               => '',
 				'name'             => ' Yetişkin forum ',
 				'enabled'          => '1',
-				'placement'        => 'role_only',
+				'placement'        => 'content',
 				'page_ids'         => array( (string) $page ),
 				'other_post_ids'   => '12, 13',
 				'term_ids'         => array( '4' ),
