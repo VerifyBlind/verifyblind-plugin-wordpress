@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 /** One VerifyBlind person code (user_id) <-> one WordPress account. UNIQUE on vb_user_id. */
 final class Identities {
 	public static function find_by_vb_user_id( string $vb ): ?array {

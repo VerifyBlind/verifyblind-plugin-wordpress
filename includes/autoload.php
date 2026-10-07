@@ -1,4 +1,6 @@
 <?php
+defined( 'ABSPATH' ) || exit;
+
 // VerifyBlind\Foo\Bar -> includes/Foo/Bar.php. Prefixed vendor classes (VerifyBlind\Vendor\...) and
 // tests (VerifyBlind\Tests\...) are owned by their own autoloaders.
 spl_autoload_register(

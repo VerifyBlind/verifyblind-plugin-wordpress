@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 final class Cron {
 	const HOOK = 'verifyblind_daily';
 

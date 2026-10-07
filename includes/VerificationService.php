@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 final class VerificationService {
 	/** @var KeySource */
 	private $keys;

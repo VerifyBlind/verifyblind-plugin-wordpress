@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Content lock. Locked content is removed on the server — it never reaches the browser — in the post
  * body, excerpts, the REST API and feeds. Pages with a gate (locked or unlocked) are excluded from page

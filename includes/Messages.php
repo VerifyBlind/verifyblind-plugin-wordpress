@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 final class Messages {
 	public static function get( string $code ): string {
 		switch ( $code ) {

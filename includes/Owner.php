@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 /** Who a verification belongs to: 'u:<user id>' or, for guests, 'g:<random cookie id>'. */
 final class Owner {
 	const COOKIE = 'verifyblind_gid';

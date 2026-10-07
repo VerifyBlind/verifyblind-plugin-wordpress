@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 final class Results {
 	public static function add( string $owner, string $cond, bool $passed, string $nonce, bool $is_test ): void {
 		global $wpdb;

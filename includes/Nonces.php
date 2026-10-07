@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 final class Nonces {
 	public static function put( string $nonce, string $rule_id, string $age_cond, bool $want_uid, string $owner, int $ttl ): void {
 		global $wpdb;

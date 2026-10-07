@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 final class Settings {
 	/** Accept demo-card (is_test) results. Off on live sites. */
 	public static function test_mode(): bool {

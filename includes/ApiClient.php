@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 final class ApiClient implements KeySource {
 	const ENCLAVE_KEY_TTL = 60;
 	const WEBHOOK_KEY_TTL = 3600;

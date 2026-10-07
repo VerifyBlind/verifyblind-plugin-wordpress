@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind\Admin;
 
+defined( 'ABSPATH' ) || exit;
+
 use VerifyBlind\AgeRule;
 use VerifyBlind\Roles;
 use VerifyBlind\Rules;

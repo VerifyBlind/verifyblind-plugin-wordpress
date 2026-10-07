@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind\Admin;
 
+defined( 'ABSPATH' ) || exit;
+
 use VerifyBlind\Plugin;
 use VerifyBlind\Rest;
 

@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind\Admin;
 
+defined( 'ABSPATH' ) || exit;
+
 final class Menu {
 	public static function hooks(): void {
 		add_action( 'admin_menu', array( self::class, 'register' ) );

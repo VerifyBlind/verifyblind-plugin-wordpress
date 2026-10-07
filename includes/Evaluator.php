@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 final class Evaluator {
 	/**
 	 * Pure. $passed = condition strings the owner has passed ('18+', '13-18', 'uid', ...).

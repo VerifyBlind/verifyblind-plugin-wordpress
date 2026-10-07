@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Roles are a bridge to other plugins. Everyone with a valid result gets BASE; a rule may add its own
  * role. Roles are added next to the user's existing role, never replacing it, and only roles this

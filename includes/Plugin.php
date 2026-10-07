@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 final class Plugin {
 	/** @var ApiClient|null */
 	private static $api;

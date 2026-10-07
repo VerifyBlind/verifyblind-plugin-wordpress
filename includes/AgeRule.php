@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * An age condition as the enclave evaluates it: "N+" (age >= N), "N-" (age < N), "N-M" (N <= age < M).
  * Internally a half-open interval [min, max). A person proven to be inside interval A is also inside

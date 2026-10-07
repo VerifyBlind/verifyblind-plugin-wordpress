@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 use VerifyBlind\Vendor\phpseclib3\Crypt\RSA;
 use VerifyBlind\Vendor\phpseclib3\Crypt\PublicKeyLoader;
 

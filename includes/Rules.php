@@ -1,6 +1,8 @@
 <?php
 namespace VerifyBlind;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Rules live in one non-autoloaded option keyed by id. A rule = where (placement + targets) +
  * what (age condition and/or one-person check) + duplicate policy + role + validity.
