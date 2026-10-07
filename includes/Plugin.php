@@ -42,6 +42,11 @@ final class Plugin {
 		if ( $current > 0 && (int) $user_id !== $current ) {
 			return;
 		}
+		$guest = Owner::guest_from_cookie();
+		if ( null !== $guest && get_userdata( (int) $user_id ) ) {
+			// A one-person check made on the sign-up form now belongs to the new account.
+			PendingIdentities::claim( $guest, (int) $user_id );
+		}
 		self::adopt_guest( (int) $user_id );
 	}
 

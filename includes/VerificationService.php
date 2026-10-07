@@ -49,23 +49,36 @@ final class VerificationService {
 		}
 
 		// Validate everything first so a partial answer writes nothing.
+		$rule    = Rules::get( $session['rule_id'] );
 		$user_id = Owner::user_id( $owner );
 		$person  = isset( $v['user_id'] ) && is_string( $v['user_id'] ) ? $v['user_id'] : '';
-		if ( $session['want_uid'] && ( '' === $person || $user_id <= 0 ) ) {
+		// A guest proves one person only while creating an account: the code waits for the new account.
+		$signup = $user_id <= 0 && null !== $rule && 'registration' === $rule['placement'];
+		if ( $session['want_uid'] && ( '' === $person || ( $user_id <= 0 && ! $signup ) ) ) {
 			return self::fail( 502, 'incomplete' );
 		}
 		if ( '' !== $session['age_cond'] && ( ! isset( $v['age'] ) || ! is_bool( $v['age'] ) ) ) {
 			return self::fail( 502, 'incomplete' );
 		}
 
-		$rule = Rules::get( $session['rule_id'] );
 		if ( $session['want_uid'] ) {
-			// A demo card's person code is shared by everyone: it never binds an identity.
-			if ( ! $is_test ) {
-				$outcome = $this->claim_identity( $person, $user_id, $v, $nonce, $rule ? $rule['duplicate_policy'] : 'reject' );
-				if ( 'ok' !== $outcome ) {
-					return self::fail( 409, $outcome );
+			$policy = $rule ? $rule['duplicate_policy'] : 'reject';
+			$nsbd   = isset( $v['nsbd_id'] ) && is_string( $v['nsbd_id'] ) ? $v['nsbd_id'] : null;
+			$doc    = isset( $v['doc_id'] ) && is_string( $v['doc_id'] ) ? $v['doc_id'] : null;
+			if ( $user_id > 0 ) {
+				// A demo card's person code is shared by everyone: it never binds an identity.
+				if ( ! $is_test ) {
+					$outcome = IdentityClaim::claim( $person, $user_id, $nsbd, $doc, $nonce, $policy );
+					if ( 'ok' !== $outcome ) {
+						return self::fail( 409, $outcome );
+					}
 				}
+			} else {
+				// Sign-up would be refused anyway: say so now. Sign-up checks again (someone may take the person meanwhile).
+				if ( ! $is_test && in_array( $policy, array( 'reject', 'block' ), true ) && null !== Identities::find_by_vb_user_id( $person ) ) {
+					return self::fail( 409, 'duplicate' );
+				}
+				PendingIdentities::put( $owner, (string) $rule['id'], $person, $nsbd, $doc, $nonce, $is_test );
 			}
 			Results::add( $owner, 'uid', true, $nonce, $is_test );
 		}
@@ -99,6 +112,7 @@ final class VerificationService {
 	}
 
 	public function revoke( string $nonce ): void {
+		PendingIdentities::delete_by_nonce( $nonce );
 		$users = array();
 		foreach ( Identities::delete_by_nonce( $nonce ) as $u ) {
 			Results::delete_cond( Owner::for_user( $u ), 'uid' ); // no person code left -> no one-person pass
@@ -123,41 +137,6 @@ final class VerificationService {
 		}
 		// The enclave key rotates on enclave restart: refresh once and retry.
 		return SignatureVerifier::verify( $payload, $signature, $this->keys->enclave_key( true ) );
-	}
-
-	private function claim_identity( string $person, int $user_id, array $v, string $nonce, string $policy ): string {
-		$mine = Identities::find_by_wp_user( $user_id );
-		if ( $mine ) {
-			return $mine['vb_user_id'] === $person ? 'ok' : 'different_identity';
-		}
-		// A flag-accepted duplicate has no identity row, but the account still may not switch person later.
-		$flagged = get_user_meta( $user_id, 'verifyblind_flag_person', true );
-		if ( is_string( $flagged ) && '' !== $flagged && $flagged !== $person ) {
-			return 'different_identity';
-		}
-		$nsbd = isset( $v['nsbd_id'] ) && is_string( $v['nsbd_id'] ) ? $v['nsbd_id'] : null;
-		$doc  = isset( $v['doc_id'] ) && is_string( $v['doc_id'] ) ? $v['doc_id'] : null;
-		if ( Identities::insert( $person, $user_id, $nsbd, $doc, $nonce ) ) {
-			return 'ok';
-		}
-		$existing = Identities::find_by_vb_user_id( $person );
-		if ( ! $existing ) {
-			return 'duplicate';
-		}
-		$other = (int) $existing['wp_user_id'];
-		switch ( $policy ) {
-			case 'flag':
-				update_user_meta( $user_id, 'verifyblind_duplicate_of', $other );
-				update_user_meta( $user_id, 'verifyblind_flag_person', $person );
-				return 'ok';
-			case 'transfer':
-				Identities::move( $person, $user_id, $nonce, $nsbd, $doc );
-				Results::delete_cond( Owner::for_user( $other ), 'uid' );
-				Roles::sync_user( $other );
-				return 'ok';
-			default: // reject, block: the gated action stays closed
-				return 'duplicate';
-		}
 	}
 
 	/** @param mixed $signed the signed validations.age_condition */

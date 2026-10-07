@@ -4,7 +4,7 @@ namespace VerifyBlind;
 defined( 'ABSPATH' ) || exit;
 
 final class Schema {
-	const DB_VERSION = '1';
+	const DB_VERSION = '2';
 
 	public static function table( string $name ): string {
 		global $wpdb;
@@ -18,6 +18,7 @@ final class Schema {
 		$n = self::table( 'nonces' );
 		$r = self::table( 'results' );
 		$i = self::table( 'identities' );
+		$p = self::table( 'pending' );
 		dbDelta(
 			array(
 				"CREATE TABLE $n (
@@ -54,6 +55,19 @@ final class Schema {
   UNIQUE KEY vb_user_id (vb_user_id),
   KEY wp_user_id (wp_user_id),
   KEY nonce (nonce)
+) $c;",
+				"CREATE TABLE $p (
+  owner varchar(40) NOT NULL,
+  rule_id varchar(32) NOT NULL,
+  vb_user_id varchar(191) NOT NULL,
+  nsbd_id varchar(191) DEFAULT NULL,
+  doc_id varchar(191) DEFAULT NULL,
+  nonce varchar(64) NOT NULL,
+  is_test tinyint(1) NOT NULL DEFAULT 0,
+  created_at datetime NOT NULL,
+  PRIMARY KEY  (owner),
+  KEY nonce (nonce),
+  KEY created_at (created_at)
 ) $c;",
 			)
 		);

@@ -24,6 +24,7 @@ final class Cron {
 	public static function run(): void {
 		Nonces::purge_expired();
 		Results::purge_guests( DAY_IN_SECONDS );
+		PendingIdentities::purge( DAY_IN_SECONDS );
 		Roles::sync_all(); // drops rule roles whose validity window has passed
 	}
 }

@@ -12,7 +12,7 @@ use VerifyBlind\Schema;
  */
 abstract class TestCase extends Base {
 	const OPTIONS = array( 'verifyblind_rules', 'verifyblind_api_key', 'verifyblind_test_mode', 'verifyblind_captcha', 'verifyblind_cap_hits', 'verifyblind_badge_places', 'verifyblind_last_api_error', 'verifyblind_api_error_mailed' );
-	const TABLES  = array( 'nonces', 'results', 'identities' );
+	const TABLES  = array( 'nonces', 'results', 'identities', 'pending' );
 
 	/** @var array */
 	private $saved = array();

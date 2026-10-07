@@ -22,7 +22,8 @@ final class Rest {
 		if ( '' === ApiClient::api_key() ) {
 			return self::error( 503, 'not_configured' );
 		}
-		if ( ! empty( $rule['unique'] ) && ! is_user_logged_in() ) {
+		// One-person checks bind a person to an account: guests log in first - except on the sign-up form.
+		if ( ! empty( $rule['unique'] ) && ! is_user_logged_in() && 'registration' !== $rule['placement'] ) {
 			return self::error( 401, 'login_required' );
 		}
 		$json       = $req->get_json_params();

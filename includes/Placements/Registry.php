@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 final class Registry {
 	/** @return string[] placement classes that work on any site */
 	public static function core(): array {
-		return array();
+		return array( Registration::class );
 	}
 
 	/** @return string[] placement classes that need WooCommerce */
