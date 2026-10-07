@@ -46,7 +46,9 @@ final class Widget {
 			array(
 				'generateUrl' => rest_url( Rest::NS . '/generate' ),
 				'verifyUrl'   => rest_url( Rest::NS . '/verify' ),
-				'restNonce'   => wp_create_nonce( 'wp_rest' ),
+				// Guests need no REST nonce, and a stale one (cached page, old tab) makes WordPress refuse the
+				// request: only logged-in pages (never page-cached) carry it.
+				'restNonce'   => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
 				'captcha'     => Settings::captcha() ? '1' : '0',
 				'locale'      => self::is_turkish() ? 'tr' : 'en',
 				'i18n'        => array(

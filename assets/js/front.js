@@ -28,10 +28,18 @@
 		btn.hidden = true;
 		setMessage(box, '', false);
 		var restore = function () { btn.hidden = false; };
+		// The REST nonce is sent only for logged-in visitors (it is empty for guests): WordPress refuses a
+		// request carrying a stale nonce, while a guest without one is simply a guest.
+		var genParams = { rule: box.getAttribute('data-rule') };
+		var verifyHeaders = { 'Content-Type': 'application/json' };
+		if (cfg.restNonce) {
+			genParams._wpnonce = cfg.restNonce;
+			verifyHeaders['X-WP-Nonce'] = cfg.restNonce;
+		}
 		window.VerifyBlind.init({
 			// The widget's own fetch cannot add headers: the REST nonce travels as _wpnonce so the
 			// logged-in user is recognised. The server ignores any validations the browser sends.
-			generateUrl: withParams(cfg.generateUrl, { rule: box.getAttribute('data-rule'), _wpnonce: cfg.restNonce }),
+			generateUrl: withParams(cfg.generateUrl, genParams),
 			captcha: cfg.captcha === '1',
 			containerId: container.id,
 			locale: cfg.locale,
@@ -39,7 +47,7 @@
 				fetch(cfg.verifyUrl, {
 					method: 'POST',
 					credentials: 'same-origin',
-					headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.restNonce },
+					headers: verifyHeaders,
 					body: JSON.stringify({ token: data && data.token })
 				})
 					.then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
