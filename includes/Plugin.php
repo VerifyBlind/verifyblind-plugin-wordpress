@@ -17,6 +17,7 @@ final class Plugin {
 		Placements\Registry::boot();
 		Badge::hooks();
 		Privacy::hooks();
+		SeoRedaction::hooks();
 		add_action( 'deleted_user', array( self::class, 'forget_user' ) );
 		add_action( 'wp_login', array( self::class, 'on_login' ), 10, 2 );
 		add_action( 'user_register', array( self::class, 'on_register' ) );
