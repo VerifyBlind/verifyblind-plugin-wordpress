@@ -87,7 +87,7 @@ final class RulesPage {
 							echo esc_html( implode( ' + ', $asks ) );
 							?>
 						</td>
-						<td><?php echo $rule['unique'] ? esc_html( $policies[ $rule['duplicate_policy'] ] ) : '—'; ?></td>
+						<td><?php echo $rule['unique'] ? esc_html( isset( $policies[ $rule['duplicate_policy'] ] ) ? $policies[ $rule['duplicate_policy'] ] : $rule['duplicate_policy'] ) : '—'; ?></td>
 						<td><?php echo '' !== $rule['role'] ? esc_html( $rule['role'] ) : '—'; ?></td>
 						<td><?php echo $rule['enabled'] ? esc_html__( 'On', 'verifyblind' ) : esc_html__( 'Off', 'verifyblind' ); ?></td>
 						<td><code>[verifyblind_gate rule="<?php echo esc_html( $rule['id'] ); ?>"]…[/verifyblind_gate]</code></td>
@@ -180,6 +180,9 @@ final class RulesPage {
 							<?php endforeach; ?>
 						</select>
 						<?php esc_html_e( 'or new role:', 'verifyblind' ); ?> <input name="new_role" class="regular-text" style="width:14em">
+						<?php if ( '' !== $rule['role'] && ! Roles::is_grantable( (string) $rule['role'] ) ) : ?>
+							<p class="description" style="color:#b32d2e"><?php echo esc_html( sprintf( /* translators: %s: role slug */ __( 'The role %s can no longer be granted automatically because it has editing or admin rights; choose another role.', 'verifyblind' ), $rule['role'] ) ); ?></p>
+						<?php endif; ?>
 						<p class="description"><?php esc_html_e( 'Added next to the existing role (Customer, Subscriber…), never replacing it. Only roles without editing or management powers are offered. What the role may do is set in the plugin that uses it.', 'verifyblind' ); ?></p></td></tr>
 					<tr><th><?php esc_html_e( 'Valid for', 'verifyblind' ); ?></th>
 						<td><select name="validity_days">
@@ -203,21 +206,27 @@ final class RulesPage {
 		<?php
 	}
 
-	/** Form fields -> Rules::save() input. Creates the "new role" if one was typed. */
+	/**
+	 * Form fields -> array( 'input' => Rules::save() input, 'new_role' => null|array( 'slug', 'label' ) ).
+	 * Creates nothing: the pending new role is created by save() once the rule validates.
+	 */
 	public static function input_from_post( array $p ): array {
 		$role     = sanitize_key( isset( $p['role'] ) ? (string) $p['role'] : '' );
 		$new_role = trim( sanitize_text_field( isset( $p['new_role'] ) ? (string) $p['new_role'] : '' ) );
+		$pending  = null;
 		if ( '' !== $new_role ) {
-			$slug = 'vb_' . sanitize_key( str_replace( ' ', '_', remove_accents( $new_role ) ) );
-			Roles::create( $slug, $new_role );
-			$role = $slug;
+			$suffix = sanitize_key( str_replace( ' ', '_', remove_accents( $new_role ) ) );
+			if ( '' !== $suffix ) {
+				$pending = array( 'slug' => 'vb_' . $suffix, 'label' => $new_role );
+				$role    = $pending['slug'];
+			}
 		}
 		// Rules may only hand out roles without editing or management powers.
-		if ( '' !== $role && ! Roles::is_grantable( $role ) ) {
+		if ( null === $pending && '' !== $role && ! Roles::is_grantable( $role ) ) {
 			$role = '';
 		}
 		$other = isset( $p['other_post_ids'] ) ? explode( ',', (string) $p['other_post_ids'] ) : array();
-		return array(
+		$input = array(
 			'id'               => sanitize_text_field( isset( $p['id'] ) ? (string) $p['id'] : '' ),
 			'name'             => sanitize_text_field( isset( $p['name'] ) ? (string) $p['name'] : '' ),
 			'enabled'          => ! empty( $p['enabled'] ),
@@ -232,6 +241,7 @@ final class RulesPage {
 			'role'             => $role,
 			'validity_days'    => (int) ( isset( $p['validity_days'] ) ? $p['validity_days'] : 0 ),
 		);
+		return array( 'input' => $input, 'new_role' => $pending );
 	}
 
 	public static function save(): void {
@@ -239,8 +249,14 @@ final class RulesPage {
 			wp_die( '', 403 );
 		}
 		check_admin_referer( 'verifyblind_save_rule' );
-		$input = self::input_from_post( wp_unslash( $_POST ) );
+		$parsed = self::input_from_post( wp_unslash( $_POST ) );
+		$input  = $parsed['input'];
 		try {
+			// Validate first, so a failed save leaves no orphan role behind.
+			Rules::sanitize( $input, array_keys( Rules::placements() ) );
+			if ( null !== $parsed['new_role'] ) {
+				Roles::create( $parsed['new_role']['slug'], $parsed['new_role']['label'] );
+			}
 			Rules::save( $input );
 		} catch ( \InvalidArgumentException $e ) {
 			$args = array( 'page' => self::SLUG, 'action' => '' !== $input['id'] ? 'edit' : 'new', 'vb_err' => $e->getMessage() );
