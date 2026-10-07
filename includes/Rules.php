@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 final class Rules {
 	const OPTION   = 'verifyblind_rules';
 	const POLICIES = array( 'reject', 'block', 'flag', 'transfer' );
+	const GUEST_MODES = array( 'verify_each_order', 'require_account' );
 
 	/** @return array<string,string> placement => label. Placements\Registry adds the other placements through the filter. */
 	public static function placements(): array {
@@ -98,6 +99,10 @@ final class Rules {
 		if ( 'administrator' === $role ) {
 			$role = '';
 		}
+		$guest_mode = (string) ( isset( $in['guest_mode'] ) ? $in['guest_mode'] : 'verify_each_order' );
+		if ( ! in_array( $guest_mode, self::GUEST_MODES, true ) ) {
+			$guest_mode = 'verify_each_order';
+		}
 		$targets = isset( $in['targets'] ) && is_array( $in['targets'] ) ? $in['targets'] : array();
 		return array(
 			'id'               => $id,
@@ -113,6 +118,7 @@ final class Rules {
 			'duplicate_policy' => $policy,
 			'role'             => $role,
 			'validity_days'    => max( 0, min( 3650, (int) ( isset( $in['validity_days'] ) ? $in['validity_days'] : 0 ) ) ),
+			'guest_mode'       => $guest_mode,
 		);
 	}
 

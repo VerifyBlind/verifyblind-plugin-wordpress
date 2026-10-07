@@ -62,4 +62,10 @@ final class RulesSanitizeTest extends TestCase {
 		$this->assertSame( '13-18', Rules::age_from_form( 'between', '13', '18' ) );
 		$this->assertSame( '', Rules::age_from_form( 'none', 18, 0 ) );
 	}
+
+	public function test_guest_mode_defaults_to_verify_each_order(): void {
+		$this->assertSame( 'verify_each_order', Rules::sanitize( $this->base(), array( 'content' ) )['guest_mode'] );
+		$this->assertSame( 'require_account', Rules::sanitize( $this->base( array( 'guest_mode' => 'require_account' ) ), array( 'content' ) )['guest_mode'] );
+		$this->assertSame( 'verify_each_order', Rules::sanitize( $this->base( array( 'guest_mode' => 'anything' ) ), array( 'content' ) )['guest_mode'] );
+	}
 }

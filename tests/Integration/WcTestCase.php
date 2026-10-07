@@ -33,6 +33,10 @@ abstract class WcTestCase extends TestCase {
 			wc_clear_notices();
 		}
 		foreach ( $this->wc_orders as $id ) {
+			// Deleting an order (HPOS) leaves its notes behind as orphan comments.
+			foreach ( wc_get_order_notes( array( 'order_id' => $id ) ) as $note ) {
+				wc_delete_order_note( $note->id );
+			}
 			$order = wc_get_order( $id );
 			if ( $order ) {
 				$order->delete( true );
