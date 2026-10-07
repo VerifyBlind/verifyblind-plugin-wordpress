@@ -44,18 +44,21 @@ final class Plugin {
 	}
 
 	public static function on_register( $user_id ): void {
-		// Only a visitor creating their own account (WordPress or shop sign-up): an administrator who adds a
-		// user from a browser that once verified as a guest must not hand those results to someone else.
-		$current = get_current_user_id();
-		if ( $current > 0 && (int) $user_id !== $current ) {
-			return;
-		}
 		$user = get_userdata( (int) $user_id );
 		if ( ! $user ) {
 			return;
 		}
+		$armed   = Placements\Registration::is_armed_for( (string) $user->user_email );
+		$current = get_current_user_id();
+		if ( $current > 0 && (int) $user_id !== $current && ( Placements\Registration::creates_users() || ! $armed ) ) {
+			// Someone logged in created another account. An administrator (or shop manager, API integration) who adds
+			// a user from a browser that once verified as a guest must not hand those results to someone else; any
+			// other member was judged like a visitor at the sign-up gate, and only the account that passed it takes
+			// the held check (and the browser's guest results).
+			return;
+		}
 		$guest = Owner::guest_from_cookie();
-		if ( Placements\Registration::is_armed_for( (string) $user->user_email ) ) {
+		if ( $armed ) {
 			// The account that passed the sign-up gate: a one-person check held for it now belongs to it.
 			Placements\Registration::disarm();
 			$outcome = null === $guest ? '' : PendingIdentities::claim( $guest, (int) $user_id );

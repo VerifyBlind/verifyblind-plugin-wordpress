@@ -49,6 +49,7 @@ abstract class TestCase extends Base {
 		unset( $_COOKIE[ Owner::COOKIE ] );
 		Registration::reset();
 		\VerifyBlind\Placements\WcProduct::reset_memo();
+		\VerifyBlind\Placements\WcCheckout::reset(); // per-request checkout state (one request per process on a real site)
 	}
 
 	protected function tearDown(): void {

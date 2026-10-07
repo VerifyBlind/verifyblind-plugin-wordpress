@@ -149,7 +149,7 @@ final class PlacementsFoundationTest extends WcTestCase {
 
 	public function test_new_visitor_messages_exist(): void {
 		$fallback = Messages::get( 'something_unknown' );
-		foreach ( array( 'registration_required', 'comment_required', 'checkout_required', 'account_required', 'product_required', 'coupon_required', 'coupon_login', 'coupon_used', 'coupon_no_person', 'coupon_busy' ) as $code ) {
+		foreach ( array( 'registration_required', 'registration_at_checkout', 'comment_required', 'checkout_required', 'account_required', 'product_required', 'coupon_required', 'coupon_login', 'coupon_used', 'coupon_no_person', 'coupon_busy' ) as $code ) {
 			$this->assertNotSame( $fallback, Messages::get( $code ), $code );
 		}
 	}

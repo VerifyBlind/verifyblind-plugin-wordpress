@@ -40,6 +40,8 @@ final class Messages {
 				return __( 'Too many verification attempts right now. Please try again in a minute.', 'verifyblind' );
 			case 'registration_required':
 				return __( 'Please verify with VerifyBlind before creating an account. The verification box is on the registration form.', 'verifyblind' );
+			case 'registration_at_checkout':
+				return __( 'Verify with VerifyBlind above to create your account.', 'verifyblind' );
 			case 'comment_required':
 				return __( 'Please verify with VerifyBlind before posting.', 'verifyblind' );
 			case 'checkout_required':

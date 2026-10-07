@@ -175,7 +175,8 @@ final class WcCheckout {
 	}
 
 	/**
-	 * Block checkout: the box goes in front of the checkout block.
+	 * Block checkout: the box goes in front of the checkout block, and so does the sign-up box when a guest can create
+	 * their account in this checkout (Registration::checkout_box_html()).
 	 *
 	 * @param mixed $html
 	 * @param mixed $block
@@ -187,7 +188,8 @@ final class WcCheckout {
 		}
 		$creating = self::display_creating();
 		$rule     = self::blocking( self::cart(), $creating );
-		return null === $rule ? $html : self::box_html( $rule, $creating ) . $html;
+		$boxes    = ( null === $rule ? '' : self::box_html( $rule, $creating ) ) . Registration::checkout_box_html();
+		return '' === $boxes ? $html : $boxes . $html;
 	}
 
 	/**
@@ -275,6 +277,11 @@ final class WcCheckout {
 			return false;
 		}
 		return filter_var( $checkout->is_registration_required(), FILTER_VALIDATE_BOOLEAN ) || filter_var( $request['create_account'], FILTER_VALIDATE_BOOLEAN );
+	}
+
+	/** Whether this request is a checkout (classic or block) in which a guest creates their account. */
+	public static function creating_account(): bool {
+		return self::$classic_creating || self::store_api_creates_account();
 	}
 
 	/** Whether the Store API request being served places an order that creates the customer's account. */

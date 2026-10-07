@@ -179,6 +179,30 @@ final class RegistrationTest extends TestCase {
 		$this->assertFalse( Registration::is_armed_for( (string) $data['email'] ) );
 	}
 
+	public function test_a_logged_in_member_who_cannot_create_users_is_judged_like_a_visitor(): void {
+		$this->rule( array( 'placement' => Registration::KEY, 'age' => '', 'unique' => true ) );
+		$member = $this->make_user( 'subscriber' );
+		Results::add( 'u:' . $member, 'uid', true, 'member-own', false ); // their own account passed: not a hold for a new one
+		wp_set_current_user( $member );
+		$refused = $this->sign_up();
+		$this->assertInstanceOf( \WP_Error::class, $refused );
+		$this->assertContains( Messages::get( 'registration_required' ), $refused->get_error_messages() );
+	}
+
+	public function test_a_logged_in_member_with_a_fresh_hold_binds_it_to_the_new_account_once(): void {
+		$rule   = $this->rule( array( 'placement' => Registration::KEY, 'age' => '', 'unique' => true ) );
+		$member = $this->make_user( 'subscriber' );
+		Results::add( 'u:' . $member, 'uid', true, 'member-own', false );
+		$this->assertSame( 'ok', $this->guest_verifies( $rule, 'P-MEMBER' )['code'] );
+		wp_set_current_user( $member );
+		$uid = $this->sign_up();
+		$this->assertIsInt( $uid );
+		$this->assertSame( $uid, (int) Identities::find_by_vb_user_id( 'P-MEMBER' )['wp_user_id'], 'the hold went to the new account' );
+		$this->assertNull( PendingIdentities::find( 'g:' . self::GID ) );
+		$this->guest(); // the same browser cookie again
+		$this->assertInstanceOf( \WP_Error::class, $this->sign_up(), 'the hold is used up' );
+	}
+
 	public function test_sign_up_forms_show_the_box_without_reload(): void {
 		$this->rule( array( 'placement' => Registration::KEY, 'age' => '18+' ) );
 		foreach ( array( 'register_form', 'woocommerce_register_form' ) as $hook ) {
