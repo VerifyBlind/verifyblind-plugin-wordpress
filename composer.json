@@ -1,0 +1,36 @@
+{
+    "name": "verifyblind/verifyblind-plugin-wordpress",
+    "description": "VerifyBlind for WordPress: age and one-person-one-account verification without sharing identity data.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4",
+        "phpseclib/phpseclib": "~3.0"
+    },
+    "require-dev": {
+        "brianhenryie/strauss": ">=0.19 <1.0",
+        "phpunit/phpunit": "^9.6"
+    },
+    "autoload-dev": {
+        "psr-4": { "VerifyBlind\\Tests\\": "tests/" }
+    },
+    "config": {
+        "platform": { "php": "7.4.33" },
+        "sort-packages": true
+    },
+    "extra": {
+        "strauss": {
+            "target_directory": "vendor-prefixed",
+            "namespace_prefix": "VerifyBlind\\Vendor\\",
+            "classmap_prefix": "VerifyBlind_Vendor_",
+            "constant_prefix": "VERIFYBLIND_VENDOR_",
+            "packages": ["phpseclib/phpseclib"],
+            "delete_vendor_packages": false
+        }
+    },
+    "scripts": {
+        "prefix-namespaces": ["vendor/bin/strauss"],
+        "post-install-cmd": ["@prefix-namespaces"],
+        "post-update-cmd": ["@prefix-namespaces"]
+    }
+}

@@ -1,0 +1,54 @@
+<?php return array (
+  'root' => 
+  array (
+    'name' => 'verifyblind/verifyblind-plugin-wordpress',
+    'pretty_version' => '1.0.0+no-version-set',
+    'version' => '1.0.0.0',
+    'reference' => NULL,
+    'type' => 'wordpress-plugin',
+    'install_path' => __DIR__ . '/../',
+    'aliases' => 
+    array (
+    ),
+    'dev' => true,
+  ),
+  'versions' => 
+  array (
+    'paragonie/constant_time_encoding' => 
+    array (
+      'pretty_version' => 'v2.8.2',
+      'version' => '2.8.2.0',
+      'reference' => 'e30811f7bc69e4b5b6d5783e712c06c8eabf0226',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../paragonie/constant_time_encoding',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+    'paragonie/random_compat' => 
+    array (
+      'pretty_version' => 'v9.99.100',
+      'version' => '9.99.100.0',
+      'reference' => '996434e5492cb4c3edcb9168db6fbb1359ef965a',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../paragonie/random_compat',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+    'phpseclib/phpseclib' => 
+    array (
+      'pretty_version' => '3.0.57',
+      'version' => '3.0.57.0',
+      'reference' => 'd17e0ddaeaf6f22f7e007cbb437d78792fe2a0e4',
+      'type' => 'library',
+      'install_path' => __DIR__ . '/../phpseclib/phpseclib',
+      'aliases' => 
+      array (
+      ),
+      'dev_requirement' => false,
+    ),
+  ),
+);
