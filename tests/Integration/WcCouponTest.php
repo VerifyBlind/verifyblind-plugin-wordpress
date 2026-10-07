@@ -96,14 +96,30 @@ final class WcCouponTest extends WcTestCase {
 		return $order;
 	}
 
-	/** A new, unsaved order of $uid using $c — what checkout holds at the moment it saves the order. */
-	private function unsaved_order( \WC_Coupon $c, int $uid ): \WC_Order {
+	/** A new, unsaved order of $uid using $c (and $more, in that order) — what checkout holds when it saves the order. */
+	private function unsaved_order( \WC_Coupon $c, int $uid, \WC_Coupon ...$more ): \WC_Order {
 		$order = new \WC_Order();
 		$order->set_customer_id( $uid );
-		$item = new \WC_Order_Item_Coupon();
-		$item->set_code( $c->get_code() );
-		$order->add_item( $item );
+		foreach ( array_merge( array( $c ), $more ) as $coupon ) {
+			$item = new \WC_Order_Item_Coupon();
+			$item->set_code( $coupon->get_code() );
+			$order->add_item( $item );
+		}
 		return $order;
+	}
+
+	/** Runs $fn with error_log() sent to a temp file; returns what was logged. */
+	private function logged( callable $fn ): string {
+		$log = (string) tempnam( sys_get_temp_dir(), 'vb-log' );
+		$was = ini_set( 'error_log', $log );
+		try {
+			$fn();
+		} finally {
+			ini_set( 'error_log', (string) $was );
+			$logged = (string) file_get_contents( $log );
+			unlink( $log );
+		}
+		return $logged;
 	}
 
 	private function lock_name( \WC_Coupon $c, int $uid ): string {
@@ -449,6 +465,177 @@ final class WcCouponTest extends WcTestCase {
 		$this->assertSame( 0, wc_notice_count( 'error' ) );
 	}
 
+	public function test_paying_a_failed_order_again_moves_it_to_pending_so_it_holds_the_coupon(): void {
+		$c = $this->one_person_coupon();
+		$a = $this->person( 'P-REVIVE' );
+		wp_set_current_user( $a );
+		$order = $this->payable_order( $c, $a );
+		$order->update_status( 'failed' ); // released
+		$this->assertSame( array(), $this->people( $c ) );
+
+		// The customer pays again; an off-site gateway leaves the status as it is while the payment runs.
+		do_action( 'woocommerce_before_pay_action', wc_get_order( $order->get_id() ) );
+		$this->assertSame( 0, wc_notice_count( 'error' ) );
+		$this->assertTrue( wc_get_order( $order->get_id() )->has_status( 'pending' ) );
+		$this->assertSame( array( WcCoupon::person_key( $a ) ), $this->people( $c ) );
+		$this->assertTrue( $this->lock_is_free( $this->lock_name( $c, $a ) ), 'released once recorded' );
+
+		// Meanwhile a new order with the coupon is refused.
+		WC()->cart->add_to_cart( $this->product() );
+		$this->assertSame( Messages::get( 'coupon_used' ), $this->message( $this->check( $c ) ) );
+		$this->assertSame( Messages::get( 'coupon_used' ), $this->thrown( function () use ( $c, $a ) {
+			do_action( 'woocommerce_checkout_create_order', $this->unsaved_order( $c, $a ), array() );
+		} ) );
+	}
+
+	public function test_a_released_order_coming_back_while_another_order_holds_the_coupon_is_put_on_hold(): void {
+		$c     = $this->one_person_coupon();
+		$a     = $this->person( 'P-LATE' );
+		$first = $this->order( $c, $a, 'processing' );
+		$first->update_status( 'failed' );
+		$second = $this->order( $c, $a, 'processing' );
+
+		// e.g. a late payment confirmation for the first order.
+		$logged = $this->logged( function () use ( $first ) {
+			wc_get_order( $first->get_id() )->update_status( 'processing' );
+		} );
+		$first = wc_get_order( $first->get_id() );
+		$this->assertTrue( $first->has_status( 'on-hold' ), $first->get_status() );
+		$notes = wp_list_pluck( wc_get_order_notes( array( 'order_id' => $first->get_id() ) ), 'content' );
+		$this->assertContains( sprintf( 'VerifyBlind: this person already used coupon %1$s on order #%2$s.', wc_get_coupon_code_by_id( $c->get_id() ), $second->get_order_number() ), $notes );
+		$this->assertStringContainsString( '#' . $first->get_id(), $logged );
+		$this->assertStringContainsString( '#' . $second->get_id(), $logged );
+		$this->assertStringNotContainsString( (string) WcCoupon::person_key( $a ), $logged, 'ids only' );
+		$this->assertStringNotContainsString( 'P-LATE', $logged );
+		$this->assertCount( 1, $this->people( $c ) );
+		$this->assertTrue( wc_get_order( $second->get_id() )->has_status( 'processing' ), 'the other order is left alone' );
+	}
+
+	public function test_orders_created_in_wp_admin_are_not_checked_when_paid(): void {
+		$c   = $this->one_person_coupon();
+		$new = function ( ?string $via ) use ( $c ): \WC_Order {
+			$order = wc_create_order( null === $via ? array() : array( 'created_via' => $via ) ); // a guest order
+			$order->add_product( wc_get_product( $this->product() ), 1 );
+			$item = new \WC_Order_Item_Coupon();
+			$item->set_code( $c->get_code() );
+			$order->add_item( $item );
+			$order->set_billing_email( 'buyer@example.com' );
+			$order->calculate_totals();
+			$order->save();
+			$this->wc_orders[] = $order->get_id();
+			return $order;
+		};
+		$admin = $new( 'admin' ); // made by a shop manager in wp-admin
+		do_action( 'woocommerce_before_pay_action', wc_get_order( $admin->get_id() ) );
+		$this->assertSame( 0, wc_notice_count( 'error' ) );
+		$this->assertSame( '', $this->thrown( function () use ( $admin ) {
+			do_action( 'woocommerce_store_api_checkout_update_order_from_request', wc_get_order( $admin->get_id() ), new \WP_REST_Request( 'POST', '/wc/store/v1/checkout/' . $admin->get_id() ) );
+		} ) );
+
+		// Any other guest order still needs an account.
+		$other = $new( null );
+		do_action( 'woocommerce_before_pay_action', wc_get_order( $other->get_id() ) );
+		$this->assertSame( 1, wc_notice_count( 'error' ) );
+		$this->assertSame( Messages::get( 'coupon_login' ), wc_get_notices( 'error' )[0]['notice'] );
+	}
+
+	public function test_locks_are_taken_in_the_same_order_whatever_the_order_of_the_coupons(): void {
+		$low  = $this->one_person_coupon();
+		$high = $this->one_person_coupon();
+		$a    = $this->person( 'P-SORT' );
+		$this->assertLessThan( $high->get_id(), $low->get_id() );
+		$taken = array();
+		$spy   = function ( $query ) use ( &$taken ) {
+			if ( preg_match( "/GET_LOCK\\('([^']+)'/", (string) $query, $m ) ) {
+				$taken[] = $m[1];
+			}
+			return $query;
+		};
+		add_filter( 'query', $spy );
+		try {
+			$this->assertSame( '', $this->thrown( function () use ( $low, $high, $a ) {
+				do_action( 'woocommerce_checkout_create_order', $this->unsaved_order( $high, $a, $low ), array() );
+			} ) );
+			$this->assertSame( array( $this->lock_name( $low, $a ), $this->lock_name( $high, $a ) ), $taken );
+			WcCoupon::release_locks();
+
+			// Another checkout (coupons the other way round) holds the first lock: this one waits for it without taking
+			// the second, so the other one can finish instead of both waiting on each other.
+			$taken = array();
+			$name  = $this->lock_name( $low, $a );
+			$host  = explode( ':', DB_HOST, 2 );
+			$db    = new \mysqli( $host[0], DB_USER, DB_PASSWORD, DB_NAME, isset( $host[1] ) ? (int) $host[1] : 3306 );
+			$this->assertSame( '1', (string) $db->query( "SELECT GET_LOCK('" . $db->real_escape_string( $name ) . "', 0)" )->fetch_row()[0] );
+			try {
+				$this->assertSame( Messages::get( 'coupon_busy' ), $this->thrown( function () use ( $low, $high, $a ) {
+					do_action( 'woocommerce_checkout_create_order', $this->unsaved_order( $high, $a, $low ), array() );
+				} ) );
+			} finally {
+				$db->query( "SELECT RELEASE_LOCK('" . $db->real_escape_string( $name ) . "')" );
+				$db->close();
+			}
+			$this->assertSame( array( $name ), $taken );
+		} finally {
+			remove_filter( 'query', $spy );
+		}
+		$this->assertTrue( $this->lock_is_free( $this->lock_name( $high, $a ) ) );
+	}
+
+	public function test_a_refusal_or_a_record_gives_back_only_the_locks_of_that_order(): void {
+		$c     = $this->one_person_coupon();
+		$other = $this->one_person_coupon();
+		$a     = $this->person( 'P-OWN' );
+		$b     = $this->person( 'P-OWN-B' );
+		// Order 1 (person B) passed its check and waits to be recorded.
+		$waiting = $this->unsaved_order( $other, $b );
+		do_action( 'woocommerce_checkout_create_order', $waiting, array() );
+		$held = $this->lock_name( $other, $b );
+		$this->assertFalse( $this->lock_is_free( $held ) );
+
+		// Order 2 (person A) is refused, and order 3 (person A, other coupon) is recorded: order 1 keeps its lock.
+		$this->order( $c, $a, 'on-hold' );
+		$this->assertSame( Messages::get( 'coupon_used' ), $this->thrown( function () use ( $c, $a ) {
+			do_action( 'woocommerce_checkout_create_order', $this->unsaved_order( $c, $a ), array() );
+		} ) );
+		$this->assertFalse( $this->lock_is_free( $held ), 'not released by the refusal of another order' );
+		$this->order( $other, $a, 'processing' );
+		$this->assertFalse( $this->lock_is_free( $held ), 'not released by the record of another order' );
+
+		$waiting->save();
+		$this->wc_orders[] = $waiting->get_id();
+		do_action( 'woocommerce_checkout_order_created', $waiting );
+		$this->assertTrue( $this->lock_is_free( $held ) );
+	}
+
+	public function test_a_failed_store_api_payment_retry_does_not_leave_the_use_behind(): void {
+		$this->enable_cod();
+		$c = $this->one_person_coupon();
+		$a = $this->person( 'P-API-RETRY' );
+		wp_set_current_user( $a );
+		$order = $this->payable_order( $c, $a );
+		$order->update_status( 'failed' );
+		$this->assertSame( array(), $this->people( $c ) );
+
+		$seen    = array();
+		$decline = function ( $context ) use ( &$seen, $c ) {
+			$paying = $context->order;
+			$seen   = array( $paying->get_status(), $this->people( $c ) );
+			$paying->update_status( 'failed', 'Card declined.' );
+			throw new \Exception( 'Card declined.' );
+		};
+		add_action( 'woocommerce_rest_checkout_process_payment_with_context', $decline, 1 );
+		try {
+			$res = $this->store_api( 'POST', 'checkout/' . $order->get_id(), array( 'billing_address' => $this->address(), 'payment_method' => 'cod' ) );
+		} finally {
+			remove_action( 'woocommerce_rest_checkout_process_payment_with_context', $decline, 1 );
+		}
+		$this->assertSame( 400, $res->get_status(), (string) wp_json_encode( $res->get_data() ) );
+		$this->assertSame( array( 'pending', array( WcCoupon::person_key( $a ) ) ), $seen, 'pending and holding the use while paying' );
+		$this->assertTrue( wc_get_order( $order->get_id() )->has_status( 'failed' ) );
+		$this->assertSame( array(), $this->people( $c ), 'no stale use left' );
+		$this->assertTrue( $this->lock_is_free( $this->lock_name( $c, $a ) ) );
+	}
+
 	public function test_the_order_a_checkout_resumes_does_not_count_against_the_person(): void {
 		$c = $this->one_person_coupon();
 		$a = $this->person( 'P-RETRY' );
@@ -470,6 +657,28 @@ final class WcCouponTest extends WcTestCase {
 		WC()->cart->add_to_cart( $this->product() );
 		WC()->cart->calculate_totals();
 		$this->assertSame( Messages::get( 'coupon_used' ), $this->message( $this->check( $c ) ) );
+	}
+
+	public function test_a_resumed_failed_order_is_moved_to_pending_and_holds_the_coupon(): void {
+		$c = $this->one_person_coupon();
+		$a = $this->person( 'P-RESUME' );
+		wp_set_current_user( $a );
+		WC()->cart->add_to_cart( $this->product() );
+		$this->assertTrue( WC()->cart->apply_coupon( $c->get_code() ) );
+		WC()->cart->calculate_totals();
+		$data = array( 'payment_method' => 'cod', 'billing_email' => 'buyer@example.com', 'billing_first_name' => 'Test', 'billing_last_name' => 'Buyer', 'billing_country' => 'TR' );
+		$id   = WC()->checkout()->create_order( $data );
+		$this->assertIsInt( $id );
+		$this->wc_orders[] = $id;
+		wc_get_order( $id )->update_status( 'failed' );
+		$this->assertSame( array(), $this->people( $c ) );
+
+		// The customer submits the same cart again: WooCommerce resumes the failed order.
+		WC()->session->set( 'order_awaiting_payment', $id );
+		$this->assertSame( $id, WC()->checkout()->create_order( $data ) );
+		$this->assertTrue( wc_get_order( $id )->has_status( 'pending' ) );
+		$this->assertSame( array( WcCoupon::person_key( $a ) ), $this->people( $c ) );
+		$this->assertTrue( $this->lock_is_free( $this->lock_name( $c, $a ) ) );
 	}
 
 	public function test_shop_managers_can_add_coupons_to_orders_by_hand(): void {
