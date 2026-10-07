@@ -2,6 +2,7 @@
 namespace VerifyBlind;
 
 use VerifyBlind\Vendor\phpseclib3\Crypt\RSA;
+use VerifyBlind\Vendor\phpseclib3\Crypt\PublicKeyLoader;
 
 /**
  * RSA-PSS, SHA-256, MGF1-SHA-256, salt length 32 — the contract for both the enclave result signature
@@ -19,7 +20,7 @@ final class SignatureVerifier {
 		// phpseclib would otherwise "discover" the salt length and accept salt=16 signatures.
 		RSA::disableSaltLengthDiscovery();
 		try {
-			$key = RSA::load( $pem )
+			$key = PublicKeyLoader::loadPublicKey( $pem )
 				->withPadding( RSA::SIGNATURE_PSS )
 				->withHash( 'sha256' )
 				->withMGFHash( 'sha256' )
