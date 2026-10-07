@@ -168,15 +168,11 @@ final class WcProductTest extends WcTestCase {
 		$this->assertNull( WcProduct::blocking( $this->pid ), 'the memo answers without recomputing' );
 	}
 
-	public function test_a_logged_in_customer_gets_redacted_descriptions_from_rest_v3(): void {
-		$customer = $this->make_user( 'customer' );
-		wp_set_current_user( $customer );
-		get_user_by( 'id', $customer )->add_cap( 'read_private_products' );
-		$res = rest_do_request( new \WP_REST_Request( 'GET', '/wc/v3/products/' . $this->pid ) );
-		if ( 200 !== $res->get_status() ) {
-			// wc/v3 needs a read capability for products; fall back to the Store API (same getters).
-			$res = $this->store_api( 'GET', 'products/' . $this->pid );
-		}
+	public function test_a_logged_in_customer_gets_redacted_descriptions_from_the_store_api(): void {
+		// wc/v3 refuses customers (woocommerce_rest_cannot_view, checked on the test site); the Store API serves them
+		// through the same product getters.
+		wp_set_current_user( $this->make_user( 'customer' ) );
+		$res = $this->store_api( 'GET', 'products/' . $this->pid );
 		$this->assertSame( 200, $res->get_status() );
 		$data = $res->get_data();
 		$this->assertStringNotContainsString( 'SECRET-DESC', $data['description'] );

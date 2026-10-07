@@ -12,6 +12,17 @@ use VerifyBlind\Targets;
 use VerifyBlind\Widget;
 
 final class PlacementsFoundationTest extends WcTestCase {
+	/** @var int[] post categories to delete (deleted children first) */
+	private $categories = array();
+
+	protected function tearDown(): void {
+		foreach ( array_reverse( $this->categories ) as $id ) {
+			wp_delete_term( $id, 'category' );
+		}
+		$this->categories = array();
+		parent::tearDown(); // deletes $this->wc_posts
+	}
+
 	public function test_enabled_lists_only_switched_on_rules_of_one_placement(): void {
 		$on = $this->rule( array( 'name' => 'On' ) );
 		$this->rule( array( 'name' => 'Off', 'enabled' => false ) );
@@ -20,10 +31,14 @@ final class PlacementsFoundationTest extends WcTestCase {
 	}
 
 	public function test_targets_cover_post_ids_and_descendant_terms(): void {
-		$parent = wp_insert_term( 'VB T parent ' . wp_generate_password( 4, false ), 'category' );
-		$child  = wp_insert_term( 'VB T child ' . wp_generate_password( 4, false ), 'category', array( 'parent' => $parent['term_id'] ) );
-		$a      = wp_insert_post( array( 'post_title' => 'a', 'post_status' => 'publish' ) );
-		$b      = wp_insert_post( array( 'post_title' => 'b', 'post_status' => 'publish' ) );
+		$parent             = wp_insert_term( 'VB T parent ' . wp_generate_password( 4, false ), 'category' );
+		$this->categories[] = (int) $parent['term_id'];
+		$child              = wp_insert_term( 'VB T child ' . wp_generate_password( 4, false ), 'category', array( 'parent' => $parent['term_id'] ) );
+		$this->categories[] = (int) $child['term_id'];
+		$a                  = wp_insert_post( array( 'post_title' => 'a', 'post_status' => 'publish' ) );
+		$this->wc_posts[]   = $a;
+		$b                  = wp_insert_post( array( 'post_title' => 'b', 'post_status' => 'publish' ) );
+		$this->wc_posts[]   = $b;
 		wp_set_post_categories( $b, array( $child['term_id'] ) );
 		$rule = array( 'targets' => array( 'post_ids' => array( $a ), 'term_ids' => array( (int) $parent['term_id'] ) ) );
 		$this->assertTrue( Targets::covers( get_post( $a ), $rule ) );
@@ -31,10 +46,6 @@ final class PlacementsFoundationTest extends WcTestCase {
 		$this->assertFalse( Targets::covers( get_post( $b ), array( 'targets' => array( 'post_ids' => array( $a ), 'term_ids' => array() ) ) ) );
 		$this->assertTrue( Targets::is_empty( array( 'targets' => array( 'post_ids' => array(), 'term_ids' => array() ) ) ) );
 		$this->assertFalse( Targets::is_empty( $rule ) );
-		wp_delete_post( $a, true );
-		wp_delete_post( $b, true );
-		wp_delete_term( $child['term_id'], 'category' );
-		wp_delete_term( $parent['term_id'], 'category' );
 	}
 
 	public function test_product_targets_follow_categories_and_variations(): void {

@@ -7,6 +7,8 @@ use VerifyBlind\Roles;
 final class AdminSaveTest extends TestCase {
 	/** @var string */
 	private $redirect = '';
+	/** @var int[] pages to delete */
+	private $pages = array();
 
 	protected function tearDown(): void {
 		remove_role( 'vb_privileged_test' );
@@ -17,6 +19,9 @@ final class AdminSaveTest extends TestCase {
 		remove_role( 'vb_orphan_test' );
 		remove_role( 'vb_ok_test' );
 		remove_all_filters( 'wp_redirect' );
+		foreach ( $this->pages as $id ) {
+			wp_delete_post( $id, true );
+		}
 		$_GET     = array();
 		$_POST    = array();
 		$_REQUEST = array();
@@ -24,7 +29,8 @@ final class AdminSaveTest extends TestCase {
 	}
 
 	public function test_form_input_is_mapped_to_a_rule(): void {
-		$page   = wp_insert_post( array( 'post_type' => 'page', 'post_title' => 'x', 'post_status' => 'publish' ) );
+		$page          = wp_insert_post( array( 'post_type' => 'page', 'post_title' => 'x', 'post_status' => 'publish' ) );
+		$this->pages[] = $page;
 		$parsed = RulesPage::input_from_post(
 			array(
 				'id'               => '',
@@ -53,7 +59,6 @@ final class AdminSaveTest extends TestCase {
 		$rule = \VerifyBlind\Rules::save( $in );
 		$this->assertSame( array( $page, 12, 13 ), $rule['targets']['post_ids'] );
 		$this->assertSame( 365, $rule['validity_days'] );
-		wp_delete_post( $page, true );
 	}
 
 	public function test_privileged_roles_are_not_grantable(): void {

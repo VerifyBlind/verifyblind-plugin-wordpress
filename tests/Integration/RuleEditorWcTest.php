@@ -106,6 +106,7 @@ final class RuleEditorWcTest extends WcTestCase {
 		$cat = $this->category( 'VB foreign' );
 		$c   = $this->coupon();
 		$pg  = wp_insert_post( array( 'post_type' => 'page', 'post_title' => 'VB foreign', 'post_status' => 'publish' ) );
+		$this->wc_posts[] = $pg;
 		$all = array(
 			'name'            => 'Foreign',
 			'age_type'        => 'at_least',
@@ -129,7 +130,6 @@ final class RuleEditorWcTest extends WcTestCase {
 		$reg = RulesPage::input_from_post( $all + array( 'placement' => 'registration' ) );
 		$this->assertSame( array(), $reg['input']['targets']['post_ids'] );
 		$this->assertSame( array(), $reg['input']['targets']['term_ids'] );
-		wp_delete_post( $pg, true );
 	}
 
 	public function test_editor_preselects_require_account_for_a_checkout_rule(): void {

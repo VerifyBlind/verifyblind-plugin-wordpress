@@ -8,6 +8,8 @@ use VerifyBlind\Results;
 final class GateTest extends TestCase {
 	/** @var int[] */
 	private $posts = array();
+	/** @var int[] post categories to delete (children last, deleted first) */
+	private $categories = array();
 	/** @var int */
 	private $inner_runs = 0;
 
@@ -20,6 +22,9 @@ final class GateTest extends TestCase {
 		remove_shortcode( 'vb_test_inner' );
 		foreach ( $this->posts as $id ) {
 			wp_delete_post( $id, true );
+		}
+		foreach ( array_reverse( $this->categories ) as $id ) {
+			wp_delete_term( $id, 'category' );
 		}
 		parent::tearDown();
 	}
@@ -50,14 +55,14 @@ final class GateTest extends TestCase {
 	}
 
 	public function test_category_target(): void {
-		$cat  = wp_insert_term( 'VB Adult ' . wp_generate_password( 4, false ), 'category' );
+		$cat                = wp_insert_term( 'VB Adult ' . wp_generate_password( 4, false ), 'category' );
+		$this->categories[] = (int) $cat['term_id'];
 		$post = $this->post( 'CAT-BODY' );
 		wp_set_post_categories( $post->ID, array( $cat['term_id'] ) );
 		$this->rule( array( 'targets' => array( 'term_ids' => array( $cat['term_id'] ) ) ) );
 		$this->assertStringNotContainsString( 'CAT-BODY', $this->render( $post ) );
 		Results::add( (string) Owner::current( true ), '21+', true, 'n', false );
 		$this->assertStringContainsString( 'CAT-BODY', $this->render( $post ) );
-		wp_delete_term( $cat['term_id'], 'category' );
 	}
 
 	public function test_shortcode_and_block(): void {
@@ -115,14 +120,14 @@ final class GateTest extends TestCase {
 	}
 
 	public function test_child_category_is_locked_by_parent_target(): void {
-		$parent = wp_insert_term( 'VB Parent ' . wp_generate_password( 4, false ), 'category' );
-		$child  = wp_insert_term( 'VB Child ' . wp_generate_password( 4, false ), 'category', array( 'parent' => $parent['term_id'] ) );
+		$parent             = wp_insert_term( 'VB Parent ' . wp_generate_password( 4, false ), 'category' );
+		$this->categories[] = (int) $parent['term_id'];
+		$child              = wp_insert_term( 'VB Child ' . wp_generate_password( 4, false ), 'category', array( 'parent' => $parent['term_id'] ) );
+		$this->categories[] = (int) $child['term_id'];
 		$post   = $this->post( 'CHILD-BODY' );
 		wp_set_post_categories( $post->ID, array( $child['term_id'] ) );
 		$this->rule( array( 'targets' => array( 'term_ids' => array( $parent['term_id'] ) ) ) );
 		$this->assertStringNotContainsString( 'CHILD-BODY', $this->render( $post ) );
-		wp_delete_term( $child['term_id'], 'category' );
-		wp_delete_term( $parent['term_id'], 'category' );
 	}
 
 	public function test_locked_shortcode_does_not_run_inner_shortcodes(): void {
