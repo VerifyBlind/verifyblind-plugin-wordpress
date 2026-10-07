@@ -1,6 +1,7 @@
 <?php
 namespace VerifyBlind\Tests\Integration;
 
+use VerifyBlind\Gate;
 use VerifyBlind\Messages;
 use VerifyBlind\Placements\Comments;
 use VerifyBlind\Placements\WcReview;
@@ -101,6 +102,41 @@ final class CommentsTest extends WcTestCase {
 		$this->assertStringContainsString( 'verifyblind-box', (string) ob_get_clean() );
 		$this->verify_guest( '18+' );
 		$this->assertIsInt( $this->comment( $product ) );
+	}
+
+	public function test_covered_pages_are_never_cached_whatever_the_visitor(): void {
+		$post    = $this->post();
+		$product = $this->product();
+		$this->rule( array( 'placement' => Comments::KEY, 'age' => '18+' ) );
+		$this->rule( array( 'placement' => WcReview::KEY, 'age' => '18+' ) );
+		$this->verify_guest( '18+' ); // this visitor meets both rules: no box is shown to them
+
+		foreach ( array( 'post' => $post, 'product' => $product ) as $what => $id ) {
+			Gate::reset_no_cache_flag();
+			$this->query_post( $id );
+			Gate::maybe_no_cache();
+			$this->assertTrue( Gate::no_cache_requested(), $what . ': marked at template_redirect' );
+			Gate::reset_no_cache_flag();
+			ob_start();
+			do_action( 'comment_form_before' );
+			$this->assertSame( '', (string) ob_get_clean(), $what . ': no box for this visitor' );
+			$this->assertTrue( Gate::no_cache_requested(), $what . ': marked by the comment form too' );
+		}
+
+		$closed           = wp_insert_post( array( 'post_title' => 'VB closed', 'post_status' => 'publish', 'comment_status' => 'closed' ) );
+		$this->wc_posts[] = $closed;
+		Gate::reset_no_cache_flag();
+		$this->query_post( $closed );
+		Gate::maybe_no_cache();
+		$this->assertFalse( Gate::no_cache_requested(), 'closed comments: no form, nothing per visitor' );
+
+		$q                       = new \WP_Query( array( 'post__in' => array( $post ) ) );
+		$GLOBALS['wp_query']     = $q;
+		$GLOBALS['wp_the_query'] = $q;
+		$this->assertFalse( is_singular() );
+		Gate::reset_no_cache_flag();
+		Gate::maybe_no_cache();
+		$this->assertFalse( Gate::no_cache_requested(), 'archives have no comment form' );
 	}
 
 	public function test_a_comment_rule_does_not_touch_product_reviews(): void {

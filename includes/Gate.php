@@ -109,6 +109,11 @@ final class Gate {
 		if ( is_singular() ) {
 			$queried = get_queried_object();
 			if ( $queried instanceof \WP_Post ) {
+				// The comment form of a covered post shows a box or not depending on the visitor (archives have no form).
+				if ( \VerifyBlind\Placements\CommentGate::covers( $queried ) ) {
+					self::no_cache();
+					return;
+				}
 				$posts[] = $queried;
 			}
 		}

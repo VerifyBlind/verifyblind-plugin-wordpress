@@ -34,11 +34,26 @@ final class CommentGate {
 		return ( 'product' === $post->post_type ) === $products;
 	}
 
+	/**
+	 * Whether $post has an open comment form that a comments (posts) or wc_review (products) rule covers. Such a
+	 * page is per-visitor (box or no box), so it is never cached - whether or not this visitor sees the box.
+	 */
+	public static function covers( \WP_Post $post ): bool {
+		if ( ! comments_open( $post ) ) {
+			return false;
+		}
+		// Literals for Comments::KEY / WcReview::KEY: wc_review rules only exist while WooCommerce is active.
+		return array() !== self::rules_for( 'product' === $post->post_type ? 'wc_review' : 'comments', $post );
+	}
+
 	/** comment_form_before: the box above (outside) the form, without reload so a typed comment stays. */
 	public static function render( string $placement, bool $products, string $title ): void {
 		$post = get_post();
 		if ( ! $post || ! self::matches( $post, $products ) ) {
 			return;
+		}
+		if ( self::rules_for( $placement, $post ) ) {
+			Gate::no_cache(); // also when this visitor meets the rule: the next one may not
 		}
 		$rule = self::blocking( $placement, $post );
 		if ( null !== $rule ) {
