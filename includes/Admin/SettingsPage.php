@@ -5,6 +5,7 @@ defined( 'ABSPATH' ) || exit;
 
 use VerifyBlind\Plugin;
 use VerifyBlind\Rest;
+use VerifyBlind\Badge;
 
 final class SettingsPage {
 	const SLUG = 'verifyblind-settings';
@@ -39,6 +40,15 @@ final class SettingsPage {
 				)
 			);
 		}
+		// An empty submission (every box unticked) arrives as null and is stored as an empty list.
+		register_setting(
+			'verifyblind',
+			Badge::OPTION,
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( Badge::class, 'sanitize_places' ),
+			)
+		);
 	}
 
 	public static function render(): void {
@@ -81,6 +91,15 @@ final class SettingsPage {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Test mode', 'verifyblind' ); ?></th>
 						<td><label><input type="checkbox" name="verifyblind_test_mode" value="1" <?php checked( get_option( 'verifyblind_test_mode', '0' ), '1' ); ?>> <?php esc_html_e( 'Accept verifications made with the demo card. Turn off on a live site.', 'verifyblind' ); ?></label></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Verified badge', 'verifyblind' ); ?></th>
+						<td>
+							<?php foreach ( Badge::place_labels() as $place => $label ) : ?>
+								<label style="margin-right:12px"><input type="checkbox" name="<?php echo esc_attr( Badge::OPTION ); ?>[]" value="<?php echo esc_attr( $place ); ?>" <?php checked( Badge::shows_in( $place ) ); ?>> <?php echo esc_html( $label ); ?></label>
+							<?php endforeach; ?>
+							<p class="description"><?php esc_html_e( 'A small "Verified with VerifyBlind" badge next to the name of members who passed the one-person check.', 'verifyblind' ); ?></p>
+						</td>
 					</tr>
 				</table>
 				<?php submit_button(); ?>
