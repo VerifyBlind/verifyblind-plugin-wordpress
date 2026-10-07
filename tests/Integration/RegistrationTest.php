@@ -112,10 +112,9 @@ final class RegistrationTest extends TestCase {
 	}
 
 	public function test_sign_up_checks_duplicates_again(): void {
-		$taker = $this->make_user(); // created first: a user_register while the guest cookie is set would claim the held check
-		$rule  = $this->rule( array( 'placement' => Registration::KEY, 'age' => '', 'unique' => true, 'duplicate_policy' => 'block' ) );
+		$rule = $this->rule( array( 'placement' => Registration::KEY, 'age' => '', 'unique' => true, 'duplicate_policy' => 'block' ) );
 		$this->assertSame( 'ok', $this->guest_verifies( $rule, 'P-RACE' )['code'] );
-		Identities::insert( 'P-RACE', $taker, null, null, 'race' ); // another account took the person meanwhile
+		Identities::insert( 'P-RACE', $this->make_user(), null, null, 'race' ); // another account took the person meanwhile
 		$refused = $this->sign_up();
 		$this->assertInstanceOf( \WP_Error::class, $refused );
 		$this->assertContains( Messages::get( 'duplicate' ), $refused->get_error_messages() );
@@ -183,6 +182,98 @@ final class RegistrationTest extends TestCase {
 		$this->assertIsInt( $uid );
 		$this->assertNull( Identities::find_by_vb_user_id( 'DEMO' ) );
 		$this->assertContains( 'uid', Results::passed_conditions( 'u:' . $uid, 0, true ) );
+	}
+
+	public function test_an_account_created_outside_the_sign_up_form_takes_nothing_held(): void {
+		$rule  = $this->rule( array( 'placement' => Registration::KEY, 'age' => '18+', 'unique' => true ) );
+		$guest = 'g:' . self::GID;
+		$this->assertSame( 'ok', $this->guest_verifies( $rule, 'P-OUT' )['code'] );
+		$uid = $this->make_user(); // wp_insert_user in the same request, not through the gated sign-up
+
+		$this->assertSame( 'P-OUT', PendingIdentities::find( $guest )['vb_user_id'], 'the held check stays for the real sign-up' );
+		$this->assertNull( Identities::find_by_vb_user_id( 'P-OUT' ) );
+		$this->assertSame( array(), Results::passed_conditions( 'u:' . $uid, 0, true ) );
+		$this->assertNotContains( Roles::BASE, get_userdata( $uid )->roles );
+	}
+
+	public function test_a_stale_held_check_is_refused_at_sign_up(): void {
+		global $wpdb;
+		$rule  = $this->rule( array( 'placement' => Registration::KEY, 'age' => '', 'unique' => true ) );
+		$guest = 'g:' . self::GID;
+		$this->assertSame( 'ok', $this->guest_verifies( $rule, 'P-STALE' )['code'] );
+		$wpdb->update( Schema::table( 'pending' ), array( 'created_at' => gmdate( 'Y-m-d H:i:s', time() - 31 * MINUTE_IN_SECONDS ) ), array( 'owner' => $guest ) );
+
+		$refused = $this->sign_up();
+		$this->assertInstanceOf( \WP_Error::class, $refused );
+		$this->assertContains( Messages::get( 'registration_required' ), $refused->get_error_messages() );
+		$this->assertNull( Identities::find_by_vb_user_id( 'P-STALE' ) );
+	}
+
+	public function test_a_person_taken_after_the_sign_up_check_leaves_the_new_account_marked_and_unverified(): void {
+		$other = $this->make_user();
+		$rule  = $this->rule( array( 'placement' => Registration::KEY, 'age' => '18+', 'unique' => true ) );
+		$this->assertSame( 'ok', $this->guest_verifies( $rule, 'P-LATE' )['code'] );
+		$take = function ( $errors ) use ( $other ) {
+			Identities::insert( 'P-LATE', $other, null, null, 'late' ); // another sign-up wins between check and bind
+			return $errors;
+		};
+		add_filter( 'registration_errors', $take, 99 );
+		$log      = tempnam( sys_get_temp_dir(), 'vblog' );
+		$old_log  = ini_set( 'error_log', $log );
+		try {
+			$uid = $this->sign_up();
+		} finally {
+			remove_filter( 'registration_errors', $take, 99 );
+			ini_set( 'error_log', false === $old_log ? '' : $old_log );
+		}
+		$note = (string) file_get_contents( $log );
+		unlink( $log );
+
+		$this->assertIsInt( $uid );
+		$this->assertStringContainsString( 'marked as duplicate of account ' . $other, $note );
+		$this->assertStringNotContainsString( 'P-LATE', $note, 'no person code in the log' );
+		$this->assertSame( $other, (int) get_user_meta( $uid, 'verifyblind_duplicate_of', true ) );
+		$this->assertSame( $other, (int) Identities::find_by_vb_user_id( 'P-LATE' )['wp_user_id'] );
+		$this->assertNotContains( 'uid', Results::passed_conditions( 'u:' . $uid, 0, true ) );
+		$this->assertNotContains( Roles::BASE, get_userdata( $uid )->roles );
+	}
+
+	public function test_a_second_sign_up_of_the_same_person_waits_for_the_first(): void {
+		$rule = $this->rule( array( 'placement' => Registration::KEY, 'age' => '', 'unique' => true ) );
+		$this->assertSame( 'ok', $this->guest_verifies( $rule, 'P-BUSY' )['code'] );
+		// Another request (its own database connection) is binding the same person right now.
+		$other = new \mysqli( DB_HOST, DB_USER, DB_PASSWORD, DB_NAME );
+		$this->assertSame( '1', (string) $other->query( "SELECT GET_LOCK('vb_p_" . md5( 'P-BUSY' ) . "', 0)" )->fetch_row()[0] );
+		try {
+			$refused = $this->sign_up();
+		} finally {
+			$other->close(); // releases its lock
+		}
+		$this->assertInstanceOf( \WP_Error::class, $refused );
+		$this->assertContains( Messages::get( 'duplicate_busy' ), $refused->get_error_messages() );
+		$this->assertNotNull( PendingIdentities::find( 'g:' . self::GID ), 'the held check stays for a retry' );
+	}
+
+	public function test_a_demo_card_hold_is_refused_once_test_mode_is_off(): void {
+		update_option( 'verifyblind_test_mode', '1' );
+		$rule = $this->rule( array( 'placement' => Registration::KEY, 'age' => '', 'unique' => true ) );
+		$this->assertSame( 'ok', $this->guest_verifies( $rule, 'DEMO', 'reg-demo-off', true )['code'] );
+		update_option( 'verifyblind_test_mode', '0' );
+
+		$this->assertInstanceOf( \WP_Error::class, $this->sign_up() );
+		$this->assertNull( Identities::find_by_vb_user_id( 'DEMO' ) );
+	}
+
+	public function test_a_guest_who_logs_in_instead_loses_the_held_check(): void {
+		$uid   = $this->make_user();
+		$rule  = $this->rule( array( 'placement' => Registration::KEY, 'age' => '', 'unique' => true ) );
+		$guest = 'g:' . self::GID;
+		$this->assertSame( 'ok', $this->guest_verifies( $rule, 'P-LOGIN' )['code'] );
+		\VerifyBlind\Plugin::on_login( get_userdata( $uid )->user_login, get_userdata( $uid ) );
+
+		global $wpdb;
+		$this->assertSame( 0, (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . Schema::table( 'pending' ) ) );
+		$this->assertNull( Identities::find_by_vb_user_id( 'P-LOGIN' ) );
 	}
 
 	public function test_revoke_and_daily_cleanup_remove_held_checks(): void {

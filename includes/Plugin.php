@@ -31,6 +31,11 @@ final class Plugin {
 	/** @param mixed $user WP_User */
 	public static function on_login( $login, $user = null ): void {
 		if ( $user instanceof \WP_User ) {
+			$guest = Owner::guest_from_cookie();
+			if ( null !== $guest ) {
+				// Logged in instead of signing up: a person code held for a sign-up has no use any more.
+				PendingIdentities::delete( $guest );
+			}
 			self::adopt_guest( (int) $user->ID );
 		}
 	}
@@ -42,10 +47,22 @@ final class Plugin {
 		if ( $current > 0 && (int) $user_id !== $current ) {
 			return;
 		}
+		$user = get_userdata( (int) $user_id );
+		if ( ! $user ) {
+			return;
+		}
 		$guest = Owner::guest_from_cookie();
-		if ( null !== $guest && get_userdata( (int) $user_id ) ) {
-			// A one-person check made on the sign-up form now belongs to the new account.
-			PendingIdentities::claim( $guest, (int) $user_id );
+		if ( Placements\Registration::is_armed_for( (string) $user->user_email ) ) {
+			// The account that passed the sign-up gate: a one-person check held for it now belongs to it.
+			Placements\Registration::disarm();
+			$outcome = null === $guest ? '' : PendingIdentities::claim( $guest, (int) $user_id );
+			Placements\Registration::release_lock();
+			if ( '' !== $outcome && 'ok' !== $outcome ) {
+				return; // someone else took the person meanwhile: the account stays unverified (marked by claim)
+			}
+		} elseif ( null !== $guest && null !== PendingIdentities::find( $guest, Results::CARRY_OVER_SECONDS ) ) {
+			// Some other account is being created while this visitor is mid sign-up: leave their check alone.
+			return;
 		}
 		self::adopt_guest( (int) $user_id );
 	}

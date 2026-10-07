@@ -28,13 +28,17 @@ final class PendingIdentities {
 		);
 	}
 
-	public static function find( string $owner ): ?array {
+	/**
+	 * The guest's held check, or null. Sign-up uses it only while fresh: pass Results::CARRY_OVER_SECONDS
+	 * (the 24-hour TTL only decides when a row is gone for good).
+	 */
+	public static function find( string $owner, int $max_age_seconds = self::TTL ): ?array {
 		global $wpdb;
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
 				'SELECT * FROM ' . Schema::table( 'pending' ) . ' WHERE owner = %s AND created_at >= %s',
 				$owner,
-				gmdate( 'Y-m-d H:i:s', time() - self::TTL )
+				gmdate( 'Y-m-d H:i:s', time() - min( $max_age_seconds, self::TTL ) )
 			),
 			ARRAY_A
 		);
@@ -63,10 +67,13 @@ final class PendingIdentities {
 	/**
 	 * Binds the guest's held check to the account just created (same-person policy applied).
 	 *
-	 * @return string '' when nothing was held, otherwise IdentityClaim's outcome
+	 * Only a fresh hold (Results::CARRY_OVER_SECONDS) binds. When the person was taken by another account in the
+	 * meantime the new account gets no one-person pass and is marked `verifyblind_duplicate_of`.
+	 *
+	 * @return string '' when nothing usable was held, otherwise IdentityClaim's outcome
 	 */
 	public static function claim( string $guest, int $user_id ): string {
-		$p = self::find( $guest );
+		$p = self::find( $guest, Results::CARRY_OVER_SECONDS );
 		if ( null === $p ) {
 			return '';
 		}
@@ -89,7 +96,13 @@ final class PendingIdentities {
 		);
 		if ( 'ok' === $outcome ) {
 			Results::add( $owner, 'uid', true, (string) $p['nonce'], false );
+			return $outcome;
 		}
+		$existing = Identities::find_by_vb_user_id( (string) $p['vb_user_id'] );
+		$other    = $existing ? (int) $existing['wp_user_id'] : 0;
+		update_user_meta( $user_id, 'verifyblind_duplicate_of', $other );
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- operator note, user ids only.
+		error_log( sprintf( 'VerifyBlind: new account %d could not take its sign-up one-person check (%s); marked as duplicate of account %d.', $user_id, $outcome, $other ) );
 		return $outcome;
 	}
 }

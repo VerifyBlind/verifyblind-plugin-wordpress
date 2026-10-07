@@ -22,6 +22,8 @@ final class Messages {
 				return __( 'Verifications made with a demo card are not accepted on this site.', 'verifyblind' );
 			case 'duplicate':
 				return __( 'This identity is already verified on another account. Each person can verify only one account.', 'verifyblind' );
+			case 'duplicate_busy':
+				return __( 'This identity is being used to create another account right now. Please try again in a moment.', 'verifyblind' );
 			case 'different_identity':
 				return __( 'This account was verified with a different identity before.', 'verifyblind' );
 			case 'rule_not_found':

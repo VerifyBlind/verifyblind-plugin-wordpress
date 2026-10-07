@@ -3,6 +3,7 @@ namespace VerifyBlind\Tests\Integration;
 
 use PHPUnit\Framework\TestCase as Base;
 use VerifyBlind\Owner;
+use VerifyBlind\Placements\Registration;
 use VerifyBlind\Rules;
 use VerifyBlind\Schema;
 
@@ -46,6 +47,7 @@ abstract class TestCase extends Base {
 		add_filter( 'pre_wp_mail', '__return_true' );
 		wp_set_current_user( 0 );
 		unset( $_COOKIE[ Owner::COOKIE ] );
+		Registration::reset();
 	}
 
 	protected function tearDown(): void {
@@ -74,6 +76,7 @@ abstract class TestCase extends Base {
 		delete_transient( \VerifyBlind\Rest::RATE_KEY );
 		wp_set_current_user( 0 );
 		unset( $_COOKIE[ Owner::COOKIE ] );
+		Registration::reset();
 	}
 
 	protected function make_user( string $role = 'subscriber' ): int {
