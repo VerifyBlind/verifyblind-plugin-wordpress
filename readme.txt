@@ -41,4 +41,4 @@ SEO plugins that generate a description from the raw page content may include te
 
 = Does the whole-site entrance hide everything? =
 
-The whole-site entrance (age gate for the shop) hides front-end pages only. REST API responses and direct media (uploads) URLs are not hidden by it. Purge your page caches when you enable this placement, so that cached copies are not served to visitors who have not verified.
+The whole-site entrance (age gate for the shop) hides front-end pages only. REST API responses and direct media (uploads) URLs are not hidden by it. Purchases are gated on the server whatever the request: until the visitor verifies, adding to the cart and placing an order are refused (classic, AJAX and block checkout, and the Store API), and passing orders carry the verification note. Purge your page caches when you enable this placement, so that cached copies are not served to visitors who have not verified.

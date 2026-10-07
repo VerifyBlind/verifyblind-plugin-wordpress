@@ -11,6 +11,9 @@ use VerifyBlind\Rules;
  * server by a minimal page with the box — the requested page is never rendered. wp_head()/wp_footer() run so
  * the widget's scripts load. Both the gate and the open site are per-visitor: never cached.
  *
+ * Orders are gated on the server too, whatever the request: adding to the cart (WcProduct::cart_blocking) and the
+ * checkout (WcCheckout treats this rule as covering every cart) refuse until the visitor meets the rule.
+ *
  * Limits (Plan 3 readme carries this): the entrance gate hides front-end pages only. REST API responses and
  * direct media (uploads) URLs are not hidden by it, and page caches should be purged when this placement is enabled.
  */
@@ -46,6 +49,19 @@ final class WcSite {
 			return true;
 		}
 		return Gate::bypass( null );
+	}
+
+	/**
+	 * The entrance rule at add to cart (WcProduct), wherever the request comes from: the page gate alone leaves the
+	 * Store API, wc-ajax and ?add-to-cart= open. Whoever may pass the entrance without verifying (administrators) may
+	 * fill a cart; the checkout (WcCheckout) asks everyone.
+	 */
+	public static function cart_blocking(): ?array {
+		$rules = Rules::enabled( self::KEY );
+		if ( ! $rules || Gate::bypass( null ) ) {
+			return null;
+		}
+		return Gate::blocking_rule( $rules );
 	}
 
 	public static function blocking(): ?array {

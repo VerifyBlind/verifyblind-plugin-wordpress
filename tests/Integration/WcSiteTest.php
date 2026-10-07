@@ -2,6 +2,9 @@
 namespace VerifyBlind\Tests\Integration;
 
 use VerifyBlind\Gate;
+use VerifyBlind\Messages;
+use VerifyBlind\Placements\WcCheckout;
+use VerifyBlind\Placements\WcProduct;
 use VerifyBlind\Placements\WcSite;
 use VerifyBlind\Rules;
 
@@ -84,6 +87,64 @@ final class WcSiteTest extends WcTestCase {
 		$this->assertSame( 'gate', WcSite::decide() );
 		$this->verify_guest( '18+' );
 		$this->assertSame( 'open', WcSite::decide() );
+	}
+
+	public function test_the_store_api_cannot_add_to_cart_or_order_until_verified(): void {
+		$this->enable_cod();
+		$rule = $this->rule( array( 'placement' => WcSite::KEY, 'age' => '18+' ) );
+		$pid  = $this->product();
+		// The Store API runs the legacy add-to-cart filter first (400 with its notice); its own hook (403) is the second line.
+		$add = $this->store_api( 'POST', 'cart/add-item', array( 'id' => $pid, 'quantity' => 1 ) );
+		$this->assertSame( 400, $add->get_status() );
+		$this->assertSame( Messages::get( 'product_required' ), $add->get_data()['message'] );
+		$legacy = array( WcProduct::class, 'add_to_cart_validation' );
+		remove_filter( 'woocommerce_add_to_cart_validation', $legacy, 10 );
+		try {
+			$add = $this->store_api( 'POST', 'cart/add-item', array( 'id' => $pid, 'quantity' => 1 ) );
+		} finally {
+			add_filter( 'woocommerce_add_to_cart_validation', $legacy, 10, 4 );
+		}
+		$this->assertSame( 403, $add->get_status() );
+		$this->assertSame( 'verifyblind_required', $add->get_data()['code'] );
+		$this->assertTrue( WC()->cart->is_empty() );
+
+		WC()->cart->add_to_cart( $pid ); // in the cart some other way (an older session, a direct call)
+		$order = $this->place_store_api_order();
+		$this->assertSame( 409, $order->get_status() );
+		$this->assertSame( 'verifyblind_required', $order->get_data()['code'] );
+
+		$this->verify_guest( '18+' );
+		$this->assertSame( 201, $this->store_api( 'POST', 'cart/add-item', array( 'id' => $pid, 'quantity' => 1 ) )->get_status() );
+		$placed = $this->place_store_api_order();
+		$this->assertSame( 200, $placed->get_status(), (string) wp_json_encode( $placed->get_data() ) );
+		$checked = wc_get_order( $placed->get_data()['order_id'] )->get_meta( WcCheckout::META );
+		$this->assertSame( $rule['id'], $checked[0]['rule'], 'the order carries the age evidence' );
+	}
+
+	public function test_classic_add_to_cart_and_checkout_are_refused_until_verified(): void {
+		$this->rule( array( 'placement' => WcSite::KEY, 'age' => '18+' ) );
+		$pid = $this->product();
+		$this->assertFalse( apply_filters( 'woocommerce_add_to_cart_validation', true, $pid, 1 ) );
+		$this->assertContains( Messages::get( 'product_required' ), wp_list_pluck( wc_get_notices( 'error' ), 'notice' ) );
+		WC()->cart->add_to_cart( $pid );
+		$errors = new \WP_Error();
+		do_action( 'woocommerce_after_checkout_validation', array(), $errors );
+		$this->assertSame( array( Messages::get( 'checkout_required' ) ), $errors->get_error_messages( 'verifyblind_required' ) );
+		$data = array( 'payment_method' => 'cod', 'billing_email' => 'buyer@example.com', 'billing_first_name' => 'Test', 'billing_last_name' => 'Buyer', 'billing_country' => 'TR' );
+		$this->assertInstanceOf( \WP_Error::class, WC()->checkout()->create_order( $data ) );
+
+		$this->verify_guest( '18+' );
+		$this->assertTrue( apply_filters( 'woocommerce_add_to_cart_validation', true, $pid, 1 ) );
+		$id = WC()->checkout()->create_order( $data );
+		$this->assertIsInt( $id );
+		$this->wc_orders[] = $id;
+	}
+
+	public function test_without_a_site_rule_orders_are_untouched(): void {
+		$pid = $this->product();
+		$this->assertTrue( apply_filters( 'woocommerce_add_to_cart_validation', true, $pid, 1 ) );
+		WC()->cart->add_to_cart( $pid );
+		$this->assertNull( WcCheckout::blocking( WC()->cart ) );
 	}
 
 	public function test_exempt_request_with_a_rule_is_still_not_cached(): void {

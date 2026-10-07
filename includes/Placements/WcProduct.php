@@ -124,7 +124,7 @@ final class WcProduct {
 	 */
 	public static function add_to_cart_validation( $passed, $product_id = 0, $quantity = 1, $variation_id = 0 ) {
 		$id = (int) $variation_id > 0 ? (int) $variation_id : (int) $product_id;
-		if ( $passed && $id > 0 && null !== self::blocking( $id ) ) {
+		if ( $passed && $id > 0 && null !== self::cart_blocking( $id ) ) {
 			wc_add_notice( Messages::get( 'product_required' ), 'error' );
 			return false;
 		}
@@ -138,9 +138,15 @@ final class WcProduct {
 	 * @throws RouteException
 	 */
 	public static function store_api_validate( $product, $request = null ): void {
-		if ( $product instanceof \WC_Product && null !== self::blocking( (int) $product->get_id() ) ) {
+		if ( $product instanceof \WC_Product && null !== self::cart_blocking( (int) $product->get_id() ) ) {
 			throw new RouteException( 'verifyblind_required', Messages::get( 'product_required' ), 403 );
 		}
+	}
+
+	/** The rule refusing this product at add to cart: its own product rule, or a shop entrance (wc_site) rule, which covers every product. */
+	public static function cart_blocking( int $product_id ): ?array {
+		$rule = self::blocking( $product_id );
+		return null !== $rule ? $rule : WcSite::cart_blocking();
 	}
 
 	/**

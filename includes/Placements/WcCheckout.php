@@ -9,10 +9,12 @@ use VerifyBlind\Gate;
 use VerifyBlind\Messages;
 use VerifyBlind\Owner;
 use VerifyBlind\Results;
+use VerifyBlind\Rules;
 use VerifyBlind\Settings;
 
 /**
- * Checkout of carts with targeted products (by product or product category, subcategories included).
+ * Checkout of carts with targeted products (by product or product category, subcategories included), and of every
+ * cart while a shop entrance (wc_site) rule is on.
  * Classic checkout: box above the form + validation error; block checkout: box before the checkout block +
  * Store API cart error. Both are checked again when the order is created (last line). Passing orders get
  * a meta record and an order note (audit evidence). Guests' cookie results count unless the rule requires
@@ -103,16 +105,27 @@ final class WcCheckout {
 	}
 
 	/**
+	 * Rules covering the cart: the wc_checkout rules of its products, and the shop entrance (wc_site) rules, which
+	 * cover every cart - the entrance page gate alone leaves the Store API and wc-ajax checkout open.
+	 *
 	 * @param mixed $cart \WC_Cart or null
-	 * @return array[] rules covering the cart
+	 * @return array[]
 	 */
 	public static function rules_for_cart( $cart ): array {
-		return ProductTargets::rules_for_cart( $cart, self::KEY );
+		$rules = ProductTargets::rules_for_cart( $cart, self::KEY );
+		if ( $cart instanceof \WC_Cart && ! $cart->is_empty() ) {
+			$rules = array_merge( $rules, Rules::enabled( WcSite::KEY ) );
+		}
+		return $rules;
 	}
 
-	/** @return array[] rules covering the order */
+	/** @return array[] see rules_for_cart() */
 	public static function rules_for_order( \WC_Order $order ): array {
-		return ProductTargets::rules_for_order( $order, self::KEY );
+		$rules = ProductTargets::rules_for_order( $order, self::KEY );
+		if ( count( $order->get_items() ) > 0 ) {
+			$rules = array_merge( $rules, Rules::enabled( WcSite::KEY ) );
+		}
+		return $rules;
 	}
 
 	public static function cart(): ?\WC_Cart {
