@@ -70,6 +70,11 @@ abstract class WcTestCase extends TestCase {
 			}
 		}
 		foreach ( $this->wc_posts as $id ) {
+			// Comments (reviews) first: deleting a review makes WooCommerce recount and save its product, which would
+			// put the product's terms back after wp_delete_post() removed them (orphan term relationships).
+			foreach ( get_comments( array( 'post_id' => $id, 'status' => 'all', 'fields' => 'ids' ) ) as $comment_id ) {
+				wp_delete_comment( (int) $comment_id, true );
+			}
 			wp_delete_post( $id, true );
 		}
 		foreach ( array_reverse( $this->wc_terms ) as $id ) {
