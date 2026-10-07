@@ -15,6 +15,8 @@ final class Plugin {
 		Widget::hooks();
 		Cron::hooks();
 		add_action( 'deleted_user', array( self::class, 'forget_user' ) );
+		add_action( 'wp_login', array( self::class, 'on_login' ), 10, 2 );
+		add_action( 'user_register', array( self::class, 'on_register' ) );
 		if ( is_admin() ) {
 			Admin\Menu::hooks();
 		}
@@ -23,6 +25,39 @@ final class Plugin {
 	public static function forget_user( $user_id ): void {
 		Results::delete_owner( Owner::for_user( (int) $user_id ) );
 		Identities::delete_for_user( (int) $user_id );
+	}
+
+	/** @param mixed $user WP_User */
+	public static function on_login( $login, $user = null ): void {
+		if ( $user instanceof \WP_User ) {
+			self::adopt_guest( (int) $user->ID );
+		}
+	}
+
+	public static function on_register( $user_id ): void {
+		// Only a visitor creating their own account (WordPress or shop sign-up): an administrator who adds a
+		// user from a browser that once verified as a guest must not hand those results to someone else.
+		$current = get_current_user_id();
+		if ( $current > 0 && (int) $user_id !== $current ) {
+			return;
+		}
+		self::adopt_guest( (int) $user_id );
+	}
+
+	/**
+	 * Results a visitor earned as a guest (and sessions still open) follow them into the account they log
+	 * in to or create, so they do not verify (and the site does not pay) twice.
+	 */
+	public static function adopt_guest( int $user_id ): void {
+		$guest = Owner::guest_from_cookie();
+		if ( $user_id <= 0 || null === $guest || ! get_userdata( $user_id ) ) {
+			return;
+		}
+		$to = Owner::for_user( $user_id );
+		Results::reassign_owner( $guest, $to );
+		Nonces::reassign_owner( $guest, $to );
+		Owner::forget_guest();
+		Roles::sync_user( $user_id );
 	}
 
 	public static function activate(): void {

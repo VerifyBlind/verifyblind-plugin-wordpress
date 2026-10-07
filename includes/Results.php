@@ -49,6 +49,19 @@ final class Results {
 		$wpdb->delete( Schema::table( 'results' ), array( 'owner' => $owner, 'cond' => $cond ), array( '%s', '%s' ) );
 	}
 
+	/** Moves a guest's age results to an account. One-person ('uid') results never move: they are bound to an account. */
+	public static function reassign_owner( string $from, string $to ): void {
+		global $wpdb;
+		$wpdb->query(
+			$wpdb->prepare(
+				'UPDATE ' . Schema::table( 'results' ) . ' SET owner = %s WHERE owner = %s AND cond <> %s',
+				$to,
+				$from,
+				'uid'
+			)
+		);
+	}
+
 	public static function delete_owner( string $owner ): void {
 		global $wpdb;
 		$wpdb->delete( Schema::table( 'results' ), array( 'owner' => $owner ), array( '%s' ) );
