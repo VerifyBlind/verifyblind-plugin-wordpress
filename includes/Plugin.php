@@ -9,6 +9,8 @@ final class Plugin {
 		load_plugin_textdomain( 'verifyblind', false, dirname( plugin_basename( VERIFYBLIND_FILE ) ) . '/languages' );
 		Schema::maybe_upgrade();
 		add_action( 'rest_api_init', array( Rest::class, 'register' ) );
+		Gate::hooks();
+		Widget::hooks();
 	}
 
 	public static function api(): ApiClient {
