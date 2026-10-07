@@ -26,32 +26,25 @@ final class Roles {
 		return null !== add_role( $slug, $label, array( 'read' => true ) );
 	}
 
-	/** Capabilities that make a role privileged; a rule may never hand such a role out automatically. */
-	const DANGEROUS_CAPS = array(
-		'edit_posts',
-		'edit_pages',
-		'edit_others_posts',
-		'publish_posts',
-		'moderate_comments',
-		'manage_options',
-		'manage_categories',
-		'promote_users',
-		'list_users',
-		'edit_users',
-		'create_users',
-		'delete_users',
-		'remove_users',
-		'unfiltered_html',
-		'upload_files',
-		'edit_theme_options',
-		'activate_plugins',
-		'install_plugins',
-		'manage_woocommerce',
-		'edit_shop_orders',
-		'view_woocommerce_reports',
+	/**
+	 * The only capabilities a role handed out automatically may grant: reading, plus taking part in
+	 * bbPress forums as an ordinary member. Anything else (editing, moderating, shop management, any
+	 * level above 0, any plugin's own capability) makes the role privileged.
+	 */
+	const ALLOWED_CAPS = array(
+		'read',
+		'level_0',
+		'spectate',
+		'participate',
+		'read_private_forums',
+		'publish_topics',
+		'edit_topics',
+		'publish_replies',
+		'edit_replies',
+		'assign_topic_tags',
 	);
 
-	/** True only for an existing, non-privileged role. */
+	/** True only for an existing, non-administrator role whose every granted capability is allowed. */
 	public static function is_grantable( string $slug ): bool {
 		if ( '' === $slug || 'administrator' === $slug ) {
 			return false;
@@ -60,8 +53,8 @@ final class Roles {
 		if ( ! $role ) {
 			return false;
 		}
-		foreach ( self::DANGEROUS_CAPS as $cap ) {
-			if ( $role->has_cap( $cap ) ) {
+		foreach ( (array) $role->capabilities as $cap => $granted ) {
+			if ( ! empty( $granted ) && ! in_array( (string) $cap, self::ALLOWED_CAPS, true ) ) {
 				return false;
 			}
 		}
