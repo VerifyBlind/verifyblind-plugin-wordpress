@@ -11,6 +11,7 @@ final class Menu {
 		RulesPage::hooks();
 		SettingsPage::hooks();
 		MembersPage::hooks();
+		Notices::hooks();
 		if ( Registry::woocommerce_active() ) {
 			ProductRulesBox::hooks();
 		}

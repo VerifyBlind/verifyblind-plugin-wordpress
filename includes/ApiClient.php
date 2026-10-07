@@ -128,11 +128,9 @@ final class ApiClient implements KeySource {
 			case 200:
 				return array( 'ok' => true, 'message' => __( 'Connected. Your API key works.', 'verifyblind' ) );
 			case 401:
-				return array( 'ok' => false, 'message' => __( 'The API key was rejected. Copy it again from partner.verifyblind.com → Settings.', 'verifyblind' ) );
 			case 402:
-				return array( 'ok' => false, 'message' => __( 'The free monthly quota is used up and there is no balance. Add balance in the partner portal.', 'verifyblind' ) );
 			case 403:
-				return array( 'ok' => false, 'message' => __( 'The partner account is not ready yet (for example, its e-mail address is not verified).', 'verifyblind' ) );
+				return array( 'ok' => false, 'message' => ApiErrors::text( (int) $up['status'] ) );
 			default:
 				/* translators: %d: HTTP status code */
 				return array( 'ok' => false, 'message' => sprintf( __( 'Unexpected response from VerifyBlind (HTTP %d).', 'verifyblind' ), $up['status'] ) );
