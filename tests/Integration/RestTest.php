@@ -2,7 +2,10 @@
 namespace VerifyBlind\Tests\Integration;
 
 use VerifyBlind\Nonces;
+use VerifyBlind\Owner;
+use VerifyBlind\Rest;
 use VerifyBlind\Results;
+use VerifyBlind\Schema;
 
 final class RestTest extends TestCase {
 	private function post( string $route, array $body = array(), array $query = array(), array $headers = array(), ?string $raw = null ): \WP_REST_Response {
@@ -36,6 +39,7 @@ final class RestTest extends TestCase {
 	}
 
 	public function test_generate_passes_upstream_errors_through(): void {
+		update_option( 'verifyblind_captcha', '0' );
 		$rule = $this->rule();
 		$this->mock_http(
 			function () {
@@ -46,6 +50,132 @@ final class RestTest extends TestCase {
 		$this->assertSame( 429, $res->get_status() );
 		$this->assertSame( '12', $res->get_headers()['Retry-After'] );
 		$this->assertSame( 'slow down', $res->get_data()['error'] );
+		$this->assertNull( Owner::current( false ), 'no guest cookie for a session that did not start' );
+		$this->assertSame( 0, $this->nonce_rows() );
+	}
+
+	public function test_generate_requires_bot_token_when_captcha_is_on(): void {
+		update_option( 'verifyblind_captcha', '1' );
+		$rule  = $this->rule();
+		$calls = 0;
+		$this->mock_http(
+			function () use ( &$calls ) {
+				++$calls;
+				return array( 'body' => '{"nonce":"cap-1"}' );
+			}
+		);
+		foreach ( array( array( 'public_key' => 'PK' ), array( 'public_key' => 'PK', 'cf_token' => '' ), array( 'public_key' => 'PK', 'cf_token' => 123 ) ) as $body ) {
+			$res = $this->post( 'generate', $body, array( 'rule' => $rule['id'] ) );
+			$this->assertSame( 400, $res->get_status() );
+			$this->assertSame( 'captcha_required', $res->get_data()['code'] );
+			$this->assertSame( 'Bot check could not be completed. Please reload the page and try again.', $res->get_data()['error'] );
+		}
+		$this->assertSame( 0, $calls, 'nothing is sent to VerifyBlind without a bot token' );
+		$this->assertNull( Owner::current( false ) );
+
+		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK', 'cf_token' => 'CF' ), array( 'rule' => $rule['id'] ) )->get_status() );
+		update_option( 'verifyblind_captcha', '0' );
+		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) )->get_status() );
+		$this->assertSame( 2, $calls );
+	}
+
+	public function test_generate_has_a_site_wide_per_minute_cap(): void {
+		update_option( 'verifyblind_captcha', '0' );
+		$this->away_from_minute_edge();
+		$rule  = $this->rule();
+		$calls = 0;
+		$this->mock_http(
+			function () use ( &$calls ) {
+				++$calls;
+				return array( 'body' => '{"nonce":"cap-' . $calls . '"}' );
+			}
+		);
+		add_filter( 'verifyblind_generate_per_minute', function () {
+			return 2;
+		} );
+		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) )->get_status() );
+		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) )->get_status() );
+		$res = $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) );
+		$this->assertSame( 429, $res->get_status() );
+		$this->assertSame( 'rate_limited', $res->get_data()['code'] );
+		$this->assertSame( 'Too many verification attempts right now. Please try again in a minute.', $res->get_data()['error'] );
+		$this->assertSame( '60', $res->get_headers()['Retry-After'] );
+		$this->assertSame( 2, $calls );
+	}
+
+	public function test_generate_cap_defaults_to_30_and_counts_failed_upstream_attempts(): void {
+		update_option( 'verifyblind_captcha', '0' );
+		$this->away_from_minute_edge();
+		$rule = $this->rule();
+		$this->mock_http(
+			function () {
+				return array( 'code' => 503, 'body' => '{"error":"down"}' );
+			}
+		);
+		for ( $i = 0; $i < 30; $i++ ) {
+			$this->assertSame( 503, $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) )->get_status() );
+		}
+		$this->assertSame( 429, $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) )->get_status() );
+		// Requests rejected before VerifyBlind is called do not use up the cap.
+		$this->assertSame( 400, $this->post( 'generate', array(), array( 'rule' => $rule['id'] ) )->get_status() );
+	}
+
+	public function test_generate_slot_resets_every_minute(): void {
+		add_filter( 'verifyblind_generate_per_minute', function () {
+			return 1;
+		} );
+		$this->assertTrue( Rest::take_generate_slot( 6000 ) );
+		$this->assertFalse( Rest::take_generate_slot( 6059 ) );
+		$this->assertTrue( Rest::take_generate_slot( 6060 ) );
+		remove_all_filters( 'verifyblind_generate_per_minute' );
+		add_filter( 'verifyblind_generate_per_minute', '__return_zero' );
+		$this->assertTrue( Rest::take_generate_slot( 6060 ), '0 turns the cap off' );
+	}
+
+	public function test_generate_upstream_200_without_a_nonce_is_an_error(): void {
+		update_option( 'verifyblind_captcha', '0' );
+		$rule = $this->rule();
+		foreach ( array( '{"foo":1}', 'not json', '{"nonce":""}', '{"nonce":5}' ) as $body ) {
+			remove_all_filters( 'pre_http_request' );
+			$this->mock_http(
+				function () use ( $body ) {
+					return array( 'body' => $body );
+				}
+			);
+			$res = $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) );
+			$this->assertSame( 502, $res->get_status(), $body );
+			$this->assertSame( 'api_unreachable', $res->get_data()['code'] );
+		}
+		$this->assertSame( 0, $this->nonce_rows() );
+		$this->assertNull( Owner::current( false ) );
+	}
+
+	public function test_generate_binds_a_logged_in_user_without_a_guest_cookie(): void {
+		update_option( 'verifyblind_captcha', '0' );
+		$uid = $this->make_user();
+		wp_set_current_user( $uid );
+		$rule = $this->rule();
+		$this->mock_http(
+			function () {
+				return array( 'body' => '{"nonce":"user-n"}' );
+			}
+		);
+		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) )->get_status() );
+		$this->assertArrayNotHasKey( Owner::COOKIE, $_COOKIE );
+		$this->assertNotNull( Nonces::consume( 'user-n', 'u:' . $uid ) );
+	}
+
+	private function nonce_rows(): int {
+		global $wpdb;
+		return (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . Schema::table( 'nonces' ) );
+	}
+
+	/** The cap counts per clock minute: do not start a counting test in the last seconds of one. */
+	private function away_from_minute_edge(): void {
+		$s = time() % 60;
+		if ( $s >= 55 ) {
+			sleep( 61 - $s );
+		}
 	}
 
 	public function test_generate_guards(): void {

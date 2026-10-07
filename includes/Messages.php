@@ -30,6 +30,10 @@ final class Messages {
 				return __( 'Verification is not set up on this site yet.', 'verifyblind' );
 			case 'login_required':
 				return __( 'Please log in to verify your account.', 'verifyblind' );
+			case 'captcha_required':
+				return __( 'Bot check could not be completed. Please reload the page and try again.', 'verifyblind' );
+			case 'rate_limited':
+				return __( 'Too many verification attempts right now. Please try again in a minute.', 'verifyblind' );
 			default: // key_unavailable, api_unreachable, anything new
 				return __( 'Verification is not available right now. Please try again shortly.', 'verifyblind' );
 		}

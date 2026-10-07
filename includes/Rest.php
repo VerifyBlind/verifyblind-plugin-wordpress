@@ -4,7 +4,8 @@ namespace VerifyBlind;
 defined( 'ABSPATH' ) || exit;
 
 final class Rest {
-	const NS = 'verifyblind/v1';
+	const NS       = 'verifyblind/v1';
+	const RATE_KEY = 'verifyblind_generate_rate';
 
 	public static function register(): void {
 		register_rest_route( self::NS, '/generate', array( 'methods' => 'POST', 'callback' => array( self::class, 'generate' ), 'permission_callback' => '__return_true' ) );
@@ -44,14 +45,27 @@ final class Rest {
 				$forward[ $k ] = $json[ $k ];
 			}
 		}
-		$owner = Owner::current( true );
+		// VerifyBlind checks the bot token only when one is sent, so the site enforces that it is sent.
+		if ( Settings::captcha() && ( ! isset( $forward['cf_token'] ) || '' === $forward['cf_token'] ) ) {
+			return self::error( 400, 'captcha_required' );
+		}
+		if ( ! self::take_generate_slot( time() ) ) {
+			$res = self::error( 429, 'rate_limited' );
+			$res->header( 'Retry-After', '60' );
+			return $res;
+		}
 		try {
 			$up = Plugin::api()->generate( $forward, (string) $req->get_header( 'accept-language' ) );
 		} catch ( \RuntimeException $e ) {
 			return self::error( 502, 'api_unreachable' );
 		}
 		$body = json_decode( $up['body'], true );
-		if ( 200 === $up['status'] && is_array( $body ) && isset( $body['nonce'] ) && is_string( $body['nonce'] ) && '' !== $body['nonce'] ) {
+		if ( 200 === $up['status'] ) {
+			if ( ! is_array( $body ) || ! isset( $body['nonce'] ) || ! is_string( $body['nonce'] ) || '' === $body['nonce'] ) {
+				return self::error( 502, 'api_unreachable' );
+			}
+			// A guest gets an owner cookie only for a session that really started.
+			$owner = Owner::current( true );
 			Nonces::put( $body['nonce'], $rule['id'], $rule['age'], ! empty( $rule['unique'] ), (string) $owner, 960 );
 		}
 		$res = new \WP_REST_Response( is_array( $body ) ? $body : array( 'error' => Messages::get( 'api_unreachable' ) ), $up['status'] );
@@ -59,6 +73,27 @@ final class Rest {
 			$res->header( 'Retry-After', $up['retry_after'] );
 		}
 		return $res;
+	}
+
+	/**
+	 * Site-wide soft cap on sessions started per minute, so a script cannot burn the site's VerifyBlind
+	 * rate limit and session quota. Deliberately not per visitor: no visitor IP address is stored anywhere.
+	 * The filter `verifyblind_generate_per_minute` changes the cap (default 30; 0 or less turns it off).
+	 * One transient holds the current minute and its count (not one row per minute).
+	 */
+	public static function take_generate_slot( int $now ): bool {
+		$limit = (int) apply_filters( 'verifyblind_generate_per_minute', 30 );
+		if ( $limit <= 0 ) {
+			return true;
+		}
+		$minute = (int) floor( $now / 60 );
+		$state  = get_transient( self::RATE_KEY );
+		$count  = is_array( $state ) && isset( $state['m'], $state['n'] ) && (int) $state['m'] === $minute ? (int) $state['n'] : 0;
+		if ( $count >= $limit ) {
+			return false;
+		}
+		set_transient( self::RATE_KEY, array( 'm' => $minute, 'n' => $count + 1 ), 2 * MINUTE_IN_SECONDS );
+		return true;
 	}
 
 	public static function verify( \WP_REST_Request $req ): \WP_REST_Response {

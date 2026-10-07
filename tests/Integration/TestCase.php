@@ -33,6 +33,7 @@ abstract class TestCase extends Base {
 		delete_transient( 'verifyblind_webhook_key' );
 		delete_transient( 'verifyblind_enclave_key_refreshed' );
 		delete_transient( 'verifyblind_webhook_key_refreshed' );
+		delete_transient( \VerifyBlind\Rest::RATE_KEY );
 		wp_set_current_user( 0 );
 		unset( $_COOKIE[ Owner::COOKIE ] );
 	}
@@ -51,6 +52,8 @@ abstract class TestCase extends Base {
 		}
 		remove_all_filters( 'pre_http_request' );
 		remove_all_filters( 'verifyblind_key_source' );
+		remove_all_filters( 'verifyblind_generate_per_minute' );
+		delete_transient( \VerifyBlind\Rest::RATE_KEY );
 		wp_set_current_user( 0 );
 		unset( $_COOKIE[ Owner::COOKIE ] );
 	}
