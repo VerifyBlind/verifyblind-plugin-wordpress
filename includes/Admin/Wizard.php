@@ -301,21 +301,21 @@ final class Wizard {
 
 	public static function handle_connect(): void {
 		self::guard( 'verifyblind_wizard_connect' );
-		$key = isset( $_POST['verifyblind_api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['verifyblind_api_key'] ) ) : '';
+		$key = isset( $_POST['verifyblind_api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['verifyblind_api_key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce and capability are checked by guard() on the line above
 		set_transient( self::RESULT . get_current_user_id(), self::save_connection( $key ), MINUTE_IN_SECONDS );
 		self::go( self::url( 'connect' ) );
 	}
 
 	public static function handle_site(): void {
 		self::guard( 'verifyblind_wizard_site' );
-		$keys = isset( $_POST['presets'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['presets'] ) ) : array();
+		$keys = isset( $_POST['presets'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['presets'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce and capability are checked by guard() on the line above
 		Presets::apply( $keys );
 		self::go( self::url( 'review' ) );
 	}
 
 	public static function handle_review(): void {
 		self::guard( 'verifyblind_wizard_review' );
-		$ids = isset( $_POST['enabled'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['enabled'] ) ) : array();
+		$ids = isset( $_POST['enabled'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['enabled'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce and capability are checked by guard() on the line above
 		self::apply_toggles( $ids );
 		self::go( self::url( 'finish' ) );
 	}

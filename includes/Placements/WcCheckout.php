@@ -308,7 +308,7 @@ final class WcCheckout {
 		$judge = ( self::$classic_creating && is_user_logged_in() ) ? self::account_rules( $rules ) : $rules;
 		$rule  = self::refusing_rule( $judge );
 		if ( null !== $rule ) {
-			throw new \Exception( self::message( $rule ) );
+			throw new \Exception( self::message( $rule ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- plain text from Messages::get(), not output here; WooCommerce escapes notices when it prints them
 		}
 		self::record( $order, $rules ); // the note follows in add_note() once the order has an id
 	}
@@ -332,7 +332,7 @@ final class WcCheckout {
 		$creating = $request instanceof \WP_REST_Request ? self::request_creates_account( $request ) : self::store_api_creates_account();
 		$rule     = self::refusing_rule( $rules, $creating );
 		if ( null !== $rule ) {
-			throw new RouteException( 'verifyblind_required', self::message( $rule, $creating ), 403 );
+			throw new RouteException( 'verifyblind_required', self::message( $rule, $creating ), 403 ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- plain text from Messages::get(), not output here; WooCommerce escapes notices when it prints them
 		}
 		if ( $creating ) {
 			return;
@@ -358,7 +358,7 @@ final class WcCheckout {
 		}
 		$rule = self::refusing_rule( self::account_rules( $rules ) );
 		if ( null !== $rule ) {
-			throw new RouteException( 'verifyblind_required', self::message( $rule ), 403 );
+			throw new RouteException( 'verifyblind_required', self::message( $rule ), 403 ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- plain text from Messages::get(), not output here; WooCommerce escapes notices when it prints them
 		}
 		self::record( $order, $rules );
 		// Saved here: the payment step that follows loads its own copy of the order (a resumed order may already be noted).

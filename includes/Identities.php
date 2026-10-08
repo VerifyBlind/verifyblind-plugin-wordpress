@@ -3,17 +3,21 @@ namespace VerifyBlind;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- this class reads and writes the plugin's own table; results must be current (one-time nonces, uniqueness).
+
 /** One VerifyBlind person code (user_id) <-> one WordPress account. UNIQUE on vb_user_id. */
 final class Identities {
 	public static function find_by_vb_user_id( string $vb ): ?array {
 		global $wpdb;
-		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . Schema::table( 'identities' ) . ' WHERE vb_user_id = %s', $vb ), ARRAY_A );
+		$t   = Schema::table( 'identities' );
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$t} WHERE vb_user_id = %s", $vb ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $t is $wpdb->prefix plus a fixed name
 		return $row ? $row : null;
 	}
 
 	public static function find_by_wp_user( int $wp ): ?array {
 		global $wpdb;
-		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . Schema::table( 'identities' ) . ' WHERE wp_user_id = %d', $wp ), ARRAY_A );
+		$t   = Schema::table( 'identities' );
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$t} WHERE wp_user_id = %d", $wp ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $t is $wpdb->prefix plus a fixed name
 		return $row ? $row : null;
 	}
 
@@ -56,7 +60,7 @@ final class Identities {
 	public static function delete_by_nonce( string $nonce ): array {
 		global $wpdb;
 		$t     = Schema::table( 'identities' );
-		$users = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT wp_user_id FROM $t WHERE nonce = %s", $nonce ) ) );
+		$users = array_map( 'intval', $wpdb->get_col( $wpdb->prepare( "SELECT wp_user_id FROM {$t} WHERE nonce = %s", $nonce ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $t is $wpdb->prefix plus a fixed name
 		$wpdb->delete( $t, array( 'nonce' => $nonce ), array( '%s' ) );
 		return $users;
 	}

@@ -140,7 +140,7 @@ final class WcCoupon {
 		if ( null !== $refusal['rule'] ) {
 			self::remember( $refusal['rule'] );
 		}
-		throw new \Exception( $refusal['message'] );
+		throw new \Exception( $refusal['message'] ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- plain text from Messages::get(), not output here; WooCommerce escapes notices when it prints them
 	}
 
 	/** A keyed hash of the account's person code (identity row, or the code a flag-accepted duplicate carries). */
@@ -163,10 +163,10 @@ final class WcCoupon {
 		$autoload = function_exists( 'wp_determine_option_autoload_value' ) ? 'off' : 'no';
 		$fresh    = wp_generate_password( 64, true, true );
 		// INSERT IGNORE: when two requests create it at once the first key stays (add_option would overwrite it).
-		$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, %s)", self::KEY_OPTION, $fresh, $autoload ) );
+		$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, %s)", self::KEY_OPTION, $fresh, $autoload ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- atomic insert of the site key; the first writer must win
 		// An empty key counts as missing and is replaced (only while it is still empty, so concurrent requests agree).
 		// Losing or replacing the key forgets every recorded use: the hashes on coupons and orders no longer match anyone.
-		$replaced = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value = %s, autoload = %s WHERE option_name = %s AND option_value = ''", $fresh, $autoload, self::KEY_OPTION ) );
+		$replaced = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->options} SET option_value = %s, autoload = %s WHERE option_name = %s AND option_value = ''", $fresh, $autoload, self::KEY_OPTION ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- replaces the key only while it is still empty (atomic)
 		if ( $replaced ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- operator note, no personal data.
 			error_log( 'VerifyBlind: the one-person coupon key was empty and has been replaced; coupon uses recorded before it are forgotten.' );
@@ -178,7 +178,7 @@ final class WcCoupon {
 			wp_cache_set( 'notoptions', $notoptions, 'options' );
 		}
 		wp_cache_delete( self::KEY_OPTION, 'options' );
-		return (string) $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", self::KEY_OPTION ) );
+		return (string) $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", self::KEY_OPTION ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- must read the current row, the key was just written past the object cache
 	}
 
 	/** @return string[] the person hashes recorded on the coupon */
@@ -188,7 +188,7 @@ final class WcCoupon {
 
 	public static function has_person( int $coupon_id, string $person ): bool {
 		global $wpdb;
-		return null !== $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s AND meta_value = %s LIMIT 1", $coupon_id, self::META, $person ) );
+		return null !== $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s AND meta_value = %s LIMIT 1", $coupon_id, self::META, $person ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- must read the current row; a coupon's person records are not cached
 	}
 
 	/**
@@ -336,7 +336,7 @@ final class WcCoupon {
 		}
 		$refusal = self::claim( $order );
 		if ( null !== $refusal ) {
-			throw new \Exception( $refusal['message'] );
+			throw new \Exception( $refusal['message'] ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- plain text from Messages::get(), not output here; WooCommerce escapes notices when it prints them
 		}
 		if ( self::released_with_coupon( $order ) ) {
 			// A resumed failed order: WooCommerce saves it right after this hook, and that records the use.
@@ -369,9 +369,9 @@ final class WcCoupon {
 		// Plain text: the Store API escapes error messages where it shows them.
 		$class = '\Automattic\WooCommerce\StoreApi\Exceptions\RouteException';
 		if ( class_exists( $class ) ) {
-			throw new $class( 'verifyblind_' . $refusal['code'], $refusal['message'], 409 );
+			throw new $class( 'verifyblind_' . $refusal['code'], $refusal['message'], 409 ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- plain text from Messages::get(), not output here; WooCommerce escapes notices when it prints them
 		}
-		throw new \Exception( $refusal['message'] );
+		throw new \Exception( $refusal['message'] ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- plain text from Messages::get(), not output here; WooCommerce escapes notices when it prints them
 	}
 
 	/**
@@ -457,7 +457,7 @@ final class WcCoupon {
 			}
 			return true;
 		}
-		if ( '1' !== (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $name, self::LOCK_WAIT ) ) ) {
+		if ( '1' !== (string) $wpdb->get_var( $wpdb->prepare( 'SELECT GET_LOCK(%s, %d)', $name, self::LOCK_WAIT ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- named lock, not table data
 			return false;
 		}
 		self::$locks[ $name ] = array( $owner );
@@ -478,7 +478,7 @@ final class WcCoupon {
 				continue;
 			}
 			if ( array() === $left ) {
-				$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $name ) );
+				$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- named lock, not table data
 				unset( self::$locks[ $name ] );
 			} else {
 				self::$locks[ $name ] = $left;
@@ -490,7 +490,7 @@ final class WcCoupon {
 	public static function release_locks(): void {
 		global $wpdb;
 		foreach ( array_keys( self::$locks ) as $name ) {
-			$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $name ) );
+			$wpdb->query( $wpdb->prepare( 'SELECT RELEASE_LOCK(%s)', $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- named lock, not table data
 		}
 		self::$locks = array();
 	}
@@ -516,7 +516,7 @@ final class WcCoupon {
 		}
 		$column = $wpdb->postmeta === $table ? 'post_id' : 'order_id';
 		// The table and column names come from WordPress/WooCommerce, not from input.
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- order meta must be read current; the names come from WooCommerce
 		$ids = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT {$column} FROM {$table} WHERE meta_key = %s AND meta_value LIKE %s AND {$column} <> %d", self::ORDER_META, '%' . $wpdb->esc_like( $person ) . '%', $exclude ) );
 		$out = array();
 		foreach ( $ids as $id ) {

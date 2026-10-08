@@ -3,6 +3,8 @@ namespace VerifyBlind;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- this class reads and writes the plugin's own table; results must be current (one-time nonces, uniqueness).
+
 /**
  * A one-person check a guest made on the sign-up form, waiting for the account that is about to be created.
  * One row per guest (the latest check wins); it lives as long as the guest cookie (24 hours).
@@ -34,14 +36,17 @@ final class PendingIdentities {
 	 */
 	public static function find( string $owner, int $max_age_seconds = self::TTL ): ?array {
 		global $wpdb;
+		$t = Schema::table( 'pending' );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $t is $wpdb->prefix plus a fixed name
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
-				'SELECT * FROM ' . Schema::table( 'pending' ) . ' WHERE owner = %s AND created_at >= %s',
+				"SELECT * FROM {$t} WHERE owner = %s AND created_at >= %s",
 				$owner,
 				gmdate( 'Y-m-d H:i:s', time() - min( $max_age_seconds, self::TTL ) )
 			),
 			ARRAY_A
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		if ( ! $row ) {
 			return null;
 		}
@@ -61,7 +66,10 @@ final class PendingIdentities {
 
 	public static function purge( int $max_age_seconds ): void {
 		global $wpdb;
-		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . Schema::table( 'pending' ) . ' WHERE created_at < %s', gmdate( 'Y-m-d H:i:s', time() - $max_age_seconds ) ) );
+		$t = Schema::table( 'pending' );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $t is $wpdb->prefix plus a fixed name
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$t} WHERE created_at < %s", gmdate( 'Y-m-d H:i:s', time() - $max_age_seconds ) ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 	}
 
 	/**

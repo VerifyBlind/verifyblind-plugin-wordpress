@@ -101,7 +101,7 @@ final class Privacy {
 		$key = get_option( Placements\WcCoupon::KEY_OPTION );
 		// Without the site's key no use was ever recorded (and asking for the person code would create the key).
 		$person = ( is_string( $key ) && '' !== $key ) ? Placements\WcCoupon::person_key( $user_id ) : null;
-		if ( null !== $person && null !== $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s LIMIT 1", Placements\WcCoupon::META, $person ) ) ) {
+		if ( null !== $person && null !== $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s LIMIT 1", Placements\WcCoupon::META, $person ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- must read the current row; coupon person records are not cached
 			$out[] = __( 'One-person coupon uses are kept as a keyed code of the person (no identity data), so that each offer stays once per person.', 'verifyblind' );
 		}
 		$orders = wc_get_orders(

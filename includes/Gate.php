@@ -76,7 +76,7 @@ final class Gate {
 	public static function no_cache(): void {
 		self::$no_cache_requested = true;
 		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
-			define( 'DONOTCACHEPAGE', true );
+			define( 'DONOTCACHEPAGE', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- the constant page-cache plugins read
 		}
 		if ( ! headers_sent() ) {
 			nocache_headers();

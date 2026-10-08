@@ -71,7 +71,7 @@ final class Rules {
 		if ( '' !== $id && ! preg_match( '/^r_[a-f0-9]{8}$/', $id ) ) {
 			throw new \InvalidArgumentException( 'bad_id' );
 		}
-		$name = trim( strip_tags( (string) ( isset( $in['name'] ) ? $in['name'] : '' ) ) );
+		$name = trim( strip_tags( (string) ( isset( $in['name'] ) ? $in['name'] : '' ) ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- pure function, unit-tested without WordPress; names are plain text
 		if ( '' === $name ) {
 			throw new \InvalidArgumentException( 'empty_name' );
 		}

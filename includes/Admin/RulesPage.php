@@ -43,9 +43,9 @@ final class RulesPage {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
+		$action = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only selects what this screen shows
 		if ( 'new' === $action || 'edit' === $action ) {
-			$id = isset( $_GET['rule'] ) ? sanitize_text_field( wp_unslash( $_GET['rule'] ) ) : '';
+			$id = isset( $_GET['rule'] ) ? sanitize_text_field( wp_unslash( $_GET['rule'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only selects what this screen shows
 			self::render_edit( 'edit' === $action ? Rules::get( $id ) : null );
 			return;
 		}
@@ -55,7 +55,7 @@ final class RulesPage {
 	private static function render_list(): void {
 		$placements = Rules::placements() + Registry::unavailable();
 		$policies   = self::policy_labels();
-		$msg        = isset( $_GET['vb_msg'] ) ? sanitize_key( wp_unslash( $_GET['vb_msg'] ) ) : '';
+		$msg        = isset( $_GET['vb_msg'] ) ? sanitize_key( wp_unslash( $_GET['vb_msg'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only selects what this screen shows
 		?>
 		<div class="wrap">
 			<h1 class="wp-heading-inline"><?php esc_html_e( 'Rules', 'verifyblind' ); ?></h1>
@@ -132,7 +132,7 @@ final class RulesPage {
 		}
 		$coupon_ids = array_map( 'intval', wp_list_pluck( $coupons, 'ID' ) );
 		$other_ids  = array_diff( $rule['targets']['post_ids'], $page_ids, $products, $coupon_ids );
-		$err        = isset( $_GET['vb_err'] ) ? sanitize_key( wp_unslash( $_GET['vb_err'] ) ) : '';
+		$err        = isset( $_GET['vb_err'] ) ? sanitize_key( wp_unslash( $_GET['vb_err'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only selects what this screen shows
 		?>
 		<div class="wrap">
 			<h1><?php echo '' === $rule['id'] ? esc_html__( 'Add rule', 'verifyblind' ) : esc_html__( 'Edit rule', 'verifyblind' ); ?></h1>

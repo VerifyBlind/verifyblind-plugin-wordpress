@@ -121,7 +121,7 @@ final class Roles {
 
 	/** Re-evaluate everyone this plugin ever granted a role to (rule edits, validity expiry). */
 	public static function sync_all(): void {
-		$ids = get_users( array( 'meta_key' => self::META, 'fields' => 'ID', 'number' => -1 ) );
+		$ids = get_users( array( 'meta_key' => self::META, 'fields' => 'ID', 'number' => -1 ) ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- only users this plugin gave a role (rule edits, daily cron)
 		foreach ( $ids as $id ) {
 			self::sync_user( (int) $id );
 		}

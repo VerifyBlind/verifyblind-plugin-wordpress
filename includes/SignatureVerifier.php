@@ -28,7 +28,7 @@ final class SignatureVerifier {
 				->withMGFHash( 'sha256' )
 				->withSaltLength( 32 );
 		} catch ( \Throwable $e ) {
-			throw new \RuntimeException( 'unreadable_public_key', 0, $e );
+			throw new \RuntimeException( 'unreadable_public_key', 0, $e ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- a fixed code string; the previous exception is not printed
 		}
 		$signature = base64_decode( $signature_b64, true );
 		if ( false === $signature || '' === $signature ) {

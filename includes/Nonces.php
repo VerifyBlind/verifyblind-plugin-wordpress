@@ -3,6 +3,8 @@ namespace VerifyBlind;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- this class reads and writes the plugin's own table; results must be current (one-time nonces, uniqueness).
+
 final class Nonces {
 	public static function put( string $nonce, string $rule_id, string $age_cond, bool $want_uid, string $owner, int $ttl ): void {
 		global $wpdb;
@@ -25,11 +27,11 @@ final class Nonces {
 		global $wpdb;
 		$t   = Schema::table( 'nonces' );
 		$now = gmdate( 'Y-m-d H:i:s' );
-		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $t WHERE nonce = %s AND owner = %s AND expires_at > %s", $nonce, $owner, $now ), ARRAY_A );
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$t} WHERE nonce = %s AND owner = %s AND expires_at > %s", $nonce, $owner, $now ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $t is $wpdb->prefix plus a fixed name
 		if ( ! $row ) {
 			return null;
 		}
-		$deleted = $wpdb->query( $wpdb->prepare( "DELETE FROM $t WHERE nonce = %s AND owner = %s AND expires_at > %s", $nonce, $owner, $now ) );
+		$deleted = $wpdb->query( $wpdb->prepare( "DELETE FROM {$t} WHERE nonce = %s AND owner = %s AND expires_at > %s", $nonce, $owner, $now ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $t is $wpdb->prefix plus a fixed name
 		if ( 1 !== $deleted ) {
 			return null; // a concurrent request consumed it first
 		}
@@ -44,6 +46,7 @@ final class Nonces {
 
 	public static function purge_expired(): void {
 		global $wpdb;
-		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . Schema::table( 'nonces' ) . ' WHERE expires_at <= %s', gmdate( 'Y-m-d H:i:s' ) ) );
+		$t = Schema::table( 'nonces' );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$t} WHERE expires_at <= %s", gmdate( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $t is $wpdb->prefix plus a fixed name
 	}
 }

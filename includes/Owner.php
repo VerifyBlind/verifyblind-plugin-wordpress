@@ -35,7 +35,7 @@ final class Owner {
 
 	/** The guest owner this request's cookie names (whoever is logged in), or null. */
 	public static function guest_from_cookie(): ?string {
-		$gid = isset( $_COOKIE[ self::COOKIE ] ) ? (string) $_COOKIE[ self::COOKIE ] : '';
+		$gid = isset( $_COOKIE[ self::COOKIE ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ self::COOKIE ] ) ) : '';
 		return preg_match( '/^[a-f0-9]{32}$/', $gid ) ? 'g:' . $gid : null;
 	}
 

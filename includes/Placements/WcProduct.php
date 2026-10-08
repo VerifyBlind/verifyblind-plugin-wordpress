@@ -139,7 +139,7 @@ final class WcProduct {
 	 */
 	public static function store_api_validate( $product, $request = null ): void {
 		if ( $product instanceof \WC_Product && null !== self::cart_blocking( (int) $product->get_id() ) ) {
-			throw new RouteException( 'verifyblind_required', Messages::get( 'product_required' ), 403 );
+			throw new RouteException( 'verifyblind_required', Messages::get( 'product_required' ), 403 ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- plain text from Messages::get(), not output here; WooCommerce escapes notices when it prints them
 		}
 	}
 

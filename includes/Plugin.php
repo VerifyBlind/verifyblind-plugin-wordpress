@@ -8,7 +8,7 @@ final class Plugin {
 	private static $api;
 
 	public static function boot(): void {
-		load_plugin_textdomain( 'verifyblind', false, dirname( plugin_basename( VERIFYBLIND_FILE ) ) . '/languages' );
+		load_plugin_textdomain( 'verifyblind', false, dirname( plugin_basename( VERIFYBLIND_FILE ) ) . '/languages' ); // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- translations ship in languages/ for installs outside WordPress.org (GitHub releases)
 		Schema::maybe_upgrade();
 		add_action( 'rest_api_init', array( Rest::class, 'register' ) );
 		Gate::hooks();

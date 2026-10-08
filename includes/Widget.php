@@ -18,7 +18,7 @@ final class Widget {
 	public static function register(): void {
 		// Loaded from VerifyBlind's CDN (WordPress.org guideline 8 allows a documented service's code),
 		// pinned to an immutable version and an SRI hash.
-		wp_register_script( 'verifyblind-sdk', self::SDK_URL, array(), null, true );
+		wp_register_script( 'verifyblind-sdk', self::SDK_URL, array(), null, true ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- the version is in the immutable CDN path and an SRI hash pins the content
 		wp_register_script( 'verifyblind-front', VERIFYBLIND_URL . 'assets/js/front.js', array( 'verifyblind-sdk' ), VERIFYBLIND_VERSION, true );
 		wp_register_style( 'verifyblind-front', VERIFYBLIND_URL . 'assets/css/front.css', array(), VERIFYBLIND_VERSION );
 	}

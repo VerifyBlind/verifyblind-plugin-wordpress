@@ -3,6 +3,8 @@ namespace VerifyBlind;
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- this class reads and writes the plugin's own table; results must be current (one-time nonces, uniqueness).
+
 /** Accounts that have VerifyBlind results or a bound identity, for the "Verified members" screen. */
 final class Members {
 	/** @return array{rows: array[], total: int} newest verification first */
@@ -10,12 +12,14 @@ final class Members {
 		global $wpdb;
 		$r     = Schema::table( 'results' );
 		$i     = Schema::table( 'identities' );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $r and $i are $wpdb->prefix plus fixed names; $union is prepared here and only wrapped below
 		$union = $wpdb->prepare(
-			"SELECT CAST(SUBSTRING(owner, 3) AS UNSIGNED) AS uid, verified_at AS at FROM $r WHERE LEFT(owner, 2) = %s UNION ALL SELECT wp_user_id AS uid, verified_at AS at FROM $i",
+			"SELECT CAST(SUBSTRING(owner, 3) AS UNSIGNED) AS uid, verified_at AS at FROM {$r} WHERE LEFT(owner, 2) = %s UNION ALL SELECT wp_user_id AS uid, verified_at AS at FROM {$i}",
 			'u:'
 		);
-		$total = (int) $wpdb->get_var( "SELECT COUNT(DISTINCT uid) FROM ( $union ) m" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $union is prepared above
-		$ids   = $wpdb->get_col( $wpdb->prepare( "SELECT uid FROM ( $union ) m GROUP BY uid ORDER BY MAX(at) DESC, uid DESC LIMIT %d OFFSET %d", $per_page, max( 0, ( $paged - 1 ) * $per_page ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$total = (int) $wpdb->get_var( "SELECT COUNT(DISTINCT uid) FROM ( $union ) m" );
+		$ids   = $wpdb->get_col( $wpdb->prepare( "SELECT uid FROM ( $union ) m GROUP BY uid ORDER BY MAX(at) DESC, uid DESC LIMIT %d OFFSET %d", $per_page, max( 0, ( $paged - 1 ) * $per_page ) ) );
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$rows  = array();
 		foreach ( $ids as $id ) {
 			$id     = (int) $id;
