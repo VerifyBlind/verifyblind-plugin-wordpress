@@ -18,12 +18,27 @@ final class Roles {
 		}
 	}
 
+	/** Roles this plugin created (from the rule editor's "new role"); uninstall removes them. */
+	const CREATED_OPTION = 'verifyblind_created_roles';
+
 	public static function create( string $slug, string $label ): bool {
 		$slug = sanitize_key( $slug );
 		if ( '' === $slug || 'administrator' === $slug || get_role( $slug ) ) {
 			return false;
 		}
-		return null !== add_role( $slug, $label, array( 'read' => true ) );
+		if ( null === add_role( $slug, $label, array( 'read' => true ) ) ) {
+			return false;
+		}
+		$created   = self::created();
+		$created[] = $slug;
+		update_option( self::CREATED_OPTION, array_values( array_unique( $created ) ), false );
+		return true;
+	}
+
+	/** @return string[] */
+	public static function created(): array {
+		$value = get_option( self::CREATED_OPTION, array() );
+		return is_array( $value ) ? array_values( array_filter( array_map( 'strval', $value ) ) ) : array();
 	}
 
 	/**

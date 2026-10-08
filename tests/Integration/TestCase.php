@@ -12,7 +12,7 @@ use VerifyBlind\Schema;
  * restores the options it touched. E-mail is never sent (the container has no sendmail).
  */
 abstract class TestCase extends Base {
-	const OPTIONS = array( 'verifyblind_rules', 'verifyblind_api_key', 'verifyblind_test_mode', 'verifyblind_captcha', 'verifyblind_cap_hits', 'verifyblind_badge_places', 'verifyblind_last_api_error', 'verifyblind_api_error_mailed', 'verifyblind_wizard_done' );
+	const OPTIONS = array( 'verifyblind_rules', 'verifyblind_api_key', 'verifyblind_test_mode', 'verifyblind_captcha', 'verifyblind_cap_hits', 'verifyblind_badge_places', 'verifyblind_last_api_error', 'verifyblind_api_error_mailed', 'verifyblind_wizard_done', 'verifyblind_created_roles' );
 	const TABLES  = array( 'nonces', 'results', 'identities', 'pending' );
 
 	/** @var array */

@@ -6,6 +6,9 @@ defined( 'ABSPATH' ) || exit;
 final class Schema {
 	const DB_VERSION = '2';
 
+	/** The plugin's own tables (Schema::table() adds the site prefix and "verifyblind_"). */
+	const TABLES = array( 'nonces', 'results', 'identities', 'pending' );
+
 	public static function table( string $name ): string {
 		global $wpdb;
 		return $wpdb->prefix . 'verifyblind_' . $name;
