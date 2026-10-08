@@ -130,6 +130,7 @@ final class ApiClient implements KeySource {
 			case 401:
 			case 402:
 			case 403:
+			case 426:
 				return array( 'ok' => false, 'message' => ApiErrors::text( (int) $up['status'] ) );
 			default:
 				/* translators: %d: HTTP status code */

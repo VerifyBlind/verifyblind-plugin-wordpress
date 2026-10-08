@@ -60,6 +60,8 @@ final class Messages {
 				return __( 'This coupon needs a one-person verification on your account. Verify again with your own ID card.', 'verifyblind' );
 			case 'coupon_busy':
 				return __( 'This coupon is being used in another order right now. Please try again in a moment.', 'verifyblind' );
+			case 'upgrade_required':
+				return __( 'Verification on this site needs a plugin update. Please try again later.', 'verifyblind' );
 			default: // key_unavailable, api_unreachable, anything new
 				return __( 'Verification is not available right now. Please try again shortly.', 'verifyblind' );
 		}

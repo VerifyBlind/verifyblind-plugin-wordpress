@@ -63,6 +63,10 @@ final class Rest {
 		}
 		$body = json_decode( $up['body'], true );
 		ApiErrors::record( (int) $up['status'], is_array( $body ) && isset( $body['code'] ) && is_string( $body['code'] ) ? $body['code'] : '' );
+		if ( 426 === (int) $up['status'] ) {
+			// VerifyBlind no longer accepts this plugin version: a plain message for the visitor, a notice for the admin.
+			return self::error( 426, 'upgrade_required' );
+		}
 		if ( 200 === $up['status'] ) {
 			if ( ! is_array( $body ) || ! isset( $body['nonce'] ) || ! is_string( $body['nonce'] ) || '' === $body['nonce'] ) {
 				return self::error( 502, 'api_unreachable' );
