@@ -4,8 +4,8 @@ namespace VerifyBlind;
 defined( 'ABSPATH' ) || exit;
 
 final class Widget {
-	const SDK_URL = 'https://cdn.verifyblind.com/sdk/v1.0.1/verifyblind.js';
-	const SDK_SRI = 'sha384-DkPyvLVGNq29kFGtgdih7jgC8YhOpGoyIK6PPPSe2atkZju7SlMbKRPLbp/1gYw1';
+	const SDK_URL = 'https://cdn.verifyblind.com/sdk/v1.0.2/verifyblind.js';
+	const SDK_SRI = 'sha384-WsoGN17VWvGw/+kEmXv4Y2wlsuNpMyIdT3UBDgeAxtGIgOrlQvgoSj/IuPh747NK';
 
 	/** @var bool */
 	private static $localized = false;
