@@ -234,6 +234,7 @@ final class Gate {
 			VERIFYBLIND_VERSION,
 			true
 		);
+		wp_set_script_translations( 'verifyblind-gate-block', 'verifyblind', VERIFYBLIND_DIR . 'languages' );
 		$choices = array();
 		foreach ( Rules::all() as $r ) {
 			$choices[] = array( 'value' => $r['id'], 'label' => $r['name'] );

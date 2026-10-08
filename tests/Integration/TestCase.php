@@ -23,6 +23,13 @@ abstract class TestCase extends Base {
 	protected $created_users = array();
 
 	protected function setUp(): void {
+		// The test site speaks Turkish; tests compare against the English source unless they switch locale themselves.
+		switch_to_locale( 'en_US' );
+		// WooCommerce customer e-mails switch to the site locale and restore afterwards. While a locale is
+		// already switched the switch is a no-op but the restore still pops ours, leaving the rest of the
+		// test in Turkish — so e-mails keep the test's locale.
+		add_filter( 'woocommerce_allow_switching_email_locale', '__return_false' );
+		add_filter( 'woocommerce_allow_restoring_email_locale', '__return_false' );
 		global $wpdb;
 		wp_cache_flush();
 		foreach ( self::OPTIONS as $o ) {
@@ -80,6 +87,11 @@ abstract class TestCase extends Base {
 		wp_set_current_user( 0 );
 		unset( $_COOKIE[ Owner::COOKIE ] );
 		Registration::reset();
+		remove_filter( 'woocommerce_allow_switching_email_locale', '__return_false' );
+		remove_filter( 'woocommerce_allow_restoring_email_locale', '__return_false' );
+		while ( is_locale_switched() ) {
+			restore_previous_locale();
+		}
 	}
 
 	protected function make_user( string $role = 'subscriber' ): int {

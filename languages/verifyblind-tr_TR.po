@@ -1,0 +1,1089 @@
+# Copyright (C) 2026 VerifyBlind
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: VerifyBlind 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/verifyblind\n"
+"Last-Translator: VerifyBlind <support@verifyblind.com>\n"
+"Language-Team: Turkish\n"
+"Language: tr_TR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-08T09:14:55+00:00\n"
+"PO-Revision-Date: 2026-10-09 12:00+0000\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: verifyblind\n"
+
+#. Plugin Name of the plugin
+#. Author of the plugin
+#: verifyblind.php
+msgid "VerifyBlind"
+msgstr "VerifyBlind"
+
+#. Plugin URI of the plugin
+#: verifyblind.php
+msgid "https://verifyblind.com/en/developers"
+msgstr "https://verifyblind.com/en/developers"
+
+#. Description of the plugin
+#: verifyblind.php
+msgid "Age and one-person-one-account verification with a chipped Turkish ID card — the site only receives an eligible / not eligible answer."
+msgstr "Çipli T.C. kimlik kartıyla yaş ve tek kişi tek hesap doğrulaması — site yalnızca \"uygun / uygun değil\" yanıtını alır."
+
+#. Author URI of the plugin
+#: verifyblind.php
+msgid "https://verifyblind.com"
+msgstr "https://verifyblind.com"
+
+#: includes/Admin/MembersPage.php:25
+#: includes/Admin/Menu.php:24
+msgid "Verified members"
+msgstr "Doğrulanmış üyeler"
+
+#: includes/Admin/MembersPage.php:27
+msgid "Verification removed."
+msgstr "Doğrulama kaldırıldı."
+
+#: includes/Admin/MembersPage.php:29
+msgid "Accounts with a VerifyBlind result. The site only keeps eligible / not eligible answers and pseudonymous codes — never identity data."
+msgstr "VerifyBlind sonucu olan hesaplar. Site yalnızca \"uygun / uygun değil\" yanıtlarını ve kişiye özel kodları (takma ad) saklar; kimlik bilgilerini asla saklamaz."
+
+#: includes/Admin/MembersPage.php:32
+msgid "Account"
+msgstr "Hesap"
+
+#: includes/Admin/MembersPage.php:33
+msgid "Passed"
+msgstr "Geçtiği koşullar"
+
+#: includes/Admin/MembersPage.php:34
+msgid "Last verified (UTC)"
+msgstr "Son doğrulama (UTC)"
+
+#: includes/Admin/MembersPage.php:35
+msgid "One person"
+msgstr "Tek kişi"
+
+#: includes/Admin/MembersPage.php:36
+msgid "Same person as"
+msgstr "Aynı kişinin diğer hesabı"
+
+#: includes/Admin/MembersPage.php:37
+msgid "Demo card"
+msgstr "Demo kart"
+
+#: includes/Admin/MembersPage.php:42
+msgid "No verified members yet."
+msgstr "Henüz doğrulanmış üye yok."
+
+#: includes/Admin/MembersPage.php:53
+#: includes/Admin/MembersPage.php:61
+msgid "Yes"
+msgstr "Evet"
+
+#: includes/Admin/MembersPage.php:62
+msgid "Remove this account's VerifyBlind verification?"
+msgstr "Bu hesabın VerifyBlind doğrulaması kaldırılsın mı?"
+
+#: includes/Admin/MembersPage.php:62
+msgid "Remove verification"
+msgstr "Doğrulamayı kaldır"
+
+#: includes/Admin/MembersPage.php:89
+#: includes/Admin/RulesPage.php:92
+#: includes/Admin/Wizard.php:285
+msgid "one person"
+msgstr "tek kişi"
+
+#: includes/Admin/MembersPage.php:99
+msgid "This account does not exist."
+msgstr "Böyle bir hesap yok."
+
+#: includes/Admin/Menu.php:23
+#: includes/Admin/RulesPage.php:61
+msgid "Rules"
+msgstr "Kurallar"
+
+#: includes/Admin/Menu.php:25
+msgid "Settings"
+msgstr "Ayarlar"
+
+#: includes/Admin/Menu.php:26
+msgid "Setup wizard"
+msgstr "Kurulum sihirbazı"
+
+#: includes/Admin/Notices.php:26
+msgid "VerifyBlind is not connected yet: enter your API key under VerifyBlind → Settings. Until then visitors see \"Verification is not set up on this site yet.\""
+msgstr "VerifyBlind henüz bağlı değil: API anahtarınızı VerifyBlind → Ayarlar bölümüne yazın. O zamana kadar ziyaretçiler \"Bu sitede doğrulama henüz kurulmadı.\" mesajını görür."
+
+#: includes/Admin/Notices.php:35
+#: includes/ApiErrors.php:74
+msgid "Visitors cannot verify until this is fixed."
+msgstr "Bu sorun düzelene kadar ziyaretçiler doğrulama yapamaz."
+
+#. translators: %d: number of verification starts turned away
+#: includes/Admin/Notices.php:46
+#, php-format
+msgid "%d verification start was turned away because too many started in the same minute (site-wide limit). If real visitors were affected, raise the limit with the verifyblind_generate_per_minute filter."
+msgid_plural "%d verification starts were turned away because too many started in the same minute (site-wide limit). If real visitors were affected, raise the limit with the verifyblind_generate_per_minute filter."
+msgstr[0] "Aynı dakikada çok fazla doğrulama başlatıldığı için %d doğrulama başlatma isteği geri çevrildi (tüm site için geçerli sınır). Gerçek ziyaretçiler etkilendiyse sınırı verifyblind_generate_per_minute filtresiyle yükseltin."
+msgstr[1] "Aynı dakikada çok fazla doğrulama başlatıldığı için %d doğrulama başlatma isteği geri çevrildi (tüm site için geçerli sınır). Gerçek ziyaretçiler etkilendiyse sınırı verifyblind_generate_per_minute filtresiyle yükseltin."
+
+#: includes/Admin/Notices.php:66
+msgid "Dismiss"
+msgstr "Kapat"
+
+#: includes/Admin/ProductRulesBox.php:53
+msgid "No WooCommerce rules yet."
+msgstr "Henüz WooCommerce kuralı yok."
+
+#: includes/Admin/ProductRulesBox.php:55
+#: includes/Admin/RulesPage.php:62
+#: includes/Admin/RulesPage.php:138
+msgid "Add rule"
+msgstr "Kural ekle"
+
+#: includes/Admin/ProductRulesBox.php:59
+msgid "Tick the rules that apply to this product."
+msgstr "Bu üründe geçerli olacak kuralları işaretleyin."
+
+#: includes/Admin/ProductRulesBox.php:66
+msgid "Applies to all products — edit the rule to narrow it"
+msgstr "Tüm ürünlerde geçerli — daraltmak için kuralı düzenleyin"
+
+#: includes/Admin/ProductRulesBox.php:78
+msgid "already applies through a category"
+msgstr "bir kategori üzerinden zaten geçerli"
+
+#. translators: %s: rule names
+#: includes/Admin/ProductRulesBox.php:138
+#, php-format
+msgid "VerifyBlind: the product was kept in %s because removing the last product would make the review rule apply to every product. Edit the rule to change that."
+msgstr "VerifyBlind: Ürün şu kuraldan çıkarılmadı: %s. Son ürün de çıkarılsaydı değerlendirme kuralı tüm ürünlerde geçerli olurdu. Bunu değiştirmek için kuralı düzenleyin."
+
+#: includes/Admin/RulesPage.php:25
+msgid "Reject the verification — the account stays, no badge or role"
+msgstr "Doğrulamayı reddet — hesap kalır, rozet ya da rol verilmez"
+
+#: includes/Admin/RulesPage.php:26
+msgid "Block the action — e.g. sign-up or coupon is refused"
+msgstr "İşlemi engelle — ör. üye kaydı ya da kupon reddedilir"
+
+#: includes/Admin/RulesPage.php:27
+msgid "Accept and notify the admin — both accounts are marked \"same person\""
+msgstr "Kabul et ve yöneticiye bildir — iki hesap da \"aynı kişi\" olarak işaretlenir"
+
+#: includes/Admin/RulesPage.php:28
+msgid "Move to the new account — the old account loses its verification"
+msgstr "Yeni hesaba taşı — eski hesabın doğrulaması kalkar"
+
+#: includes/Admin/RulesPage.php:34
+msgid "Give the rule a name."
+msgstr "Kurala bir ad verin."
+
+#: includes/Admin/RulesPage.php:35
+msgid "Choose where the rule applies."
+msgstr "Kuralın nerede geçerli olacağını seçin."
+
+#: includes/Admin/RulesPage.php:36
+msgid "The age condition is not valid (ages 1–150; a range needs a lower and a higher age)."
+msgstr "Yaş koşulu geçersiz (yaş 1–150 arası olmalı; aralık için bir alt ve bir üst yaş gerekir)."
+
+#: includes/Admin/RulesPage.php:37
+msgid "Ask for an age condition, the one-person check, or both."
+msgstr "Bir yaş koşulu, tek kişi kontrolü ya da ikisini birden isteyin."
+
+#: includes/Admin/RulesPage.php:39
+msgid "The rule could not be saved."
+msgstr "Kural kaydedilemedi."
+
+#: includes/Admin/RulesPage.php:65
+msgid "Rule saved."
+msgstr "Kural kaydedildi."
+
+#: includes/Admin/RulesPage.php:65
+msgid "Rule deleted."
+msgstr "Kural silindi."
+
+#: includes/Admin/RulesPage.php:69
+#: includes/Admin/Wizard.php:224
+#: assets/js/gate-block.js:27
+msgid "Rule"
+msgstr "Kural"
+
+#: includes/Admin/RulesPage.php:70
+#: includes/Admin/Wizard.php:225
+msgid "Where"
+msgstr "Nerede"
+
+#: includes/Admin/RulesPage.php:71
+#: includes/Admin/Wizard.php:226
+msgid "Asks for"
+msgstr "İstenen"
+
+#: includes/Admin/RulesPage.php:72
+msgid "Same person on another account"
+msgstr "Aynı kişi başka bir hesapta"
+
+#: includes/Admin/RulesPage.php:73
+msgid "Role for those who pass"
+msgstr "Geçenlere verilecek rol"
+
+#: includes/Admin/RulesPage.php:74
+msgid "Status"
+msgstr "Durum"
+
+#: includes/Admin/RulesPage.php:75
+msgid "Shortcode"
+msgstr "Kısa kod"
+
+#: includes/Admin/RulesPage.php:79
+msgid "No rules yet."
+msgstr "Henüz kural yok."
+
+#: includes/Admin/RulesPage.php:99
+#: includes/Admin/RulesPage.php:149
+#: includes/Admin/Wizard.php:223
+msgid "On"
+msgstr "Açık"
+
+#: includes/Admin/RulesPage.php:99
+msgid "Off"
+msgstr "Kapalı"
+
+#: includes/Admin/RulesPage.php:105
+msgid "A role is optional. It is only needed to connect another plugin (forum, membership, courses) that restricts access by role."
+msgstr "Rol isteğe bağlıdır. Yalnızca erişimi role göre sınırlayan başka bir eklentiyi (forum, üyelik, kurs) bağlamak için gerekir."
+
+#: includes/Admin/RulesPage.php:138
+msgid "Edit rule"
+msgstr "Kuralı düzenle"
+
+#: includes/Admin/RulesPage.php:147
+msgid "Name"
+msgstr "Ad"
+
+#: includes/Admin/RulesPage.php:151
+msgid "1 · Where?"
+msgstr "1 · Nerede?"
+
+#: includes/Admin/RulesPage.php:152
+msgid "Applies to"
+msgstr "Geçerli olduğu yer"
+
+#. translators: %s: placement name
+#: includes/Admin/RulesPage.php:158
+#, php-format
+msgid "%s — needs WooCommerce"
+msgstr "%s — WooCommerce gerekir"
+
+#: includes/Admin/RulesPage.php:161
+msgid "For a lock you can also place the \"VerifyBlind lock\" block or the shortcode in any content."
+msgstr "Kilit için \"VerifyBlind kilidi\" bloğunu ya da kısa kodu herhangi bir içeriğe de ekleyebilirsiniz."
+
+#: includes/Admin/RulesPage.php:162
+msgid "Pages"
+msgstr "Sayfalar"
+
+#: includes/Admin/RulesPage.php:168
+msgid "A comment rule with nothing chosen here applies to every post."
+msgstr "Burada hiçbir şey seçilmezse yorum kuralı tüm yazılarda geçerli olur."
+
+#: includes/Admin/RulesPage.php:169
+msgid "Categories"
+msgstr "Kategoriler"
+
+#: includes/Admin/RulesPage.php:173
+msgid "Other post IDs"
+msgstr "Diğer yazı ID'leri"
+
+#: includes/Admin/RulesPage.php:176
+msgid "Product IDs"
+msgstr "Ürün ID'leri"
+
+#: includes/Admin/RulesPage.php:178
+msgid "You can also tick the rule in the VerifyBlind box on the product edit screen. Checkout and product-page rules apply only to the products and categories chosen here; a review rule with nothing chosen applies to every product."
+msgstr "Kuralı ürün düzenleme ekranındaki VerifyBlind kutusundan da işaretleyebilirsiniz. Ödeme ve ürün sayfası kuralları yalnızca burada seçilen ürün ve kategorilerde geçerlidir; hiçbir şey seçilmemiş bir değerlendirme kuralı tüm ürünlerde geçerlidir."
+
+#: includes/Admin/RulesPage.php:179
+msgid "Product categories"
+msgstr "Ürün kategorileri"
+
+#: includes/Admin/RulesPage.php:183
+msgid "Subcategories are included."
+msgstr "Alt kategoriler de dahildir."
+
+#: includes/Admin/RulesPage.php:184
+msgid "Coupons"
+msgstr "Kuponlar"
+
+#: includes/Admin/RulesPage.php:187
+msgid "No coupons yet."
+msgstr "Henüz kupon yok."
+
+#: includes/Admin/RulesPage.php:193
+msgid "Guests"
+msgstr "Misafirler"
+
+#: includes/Admin/RulesPage.php:195
+msgid "Guests verify at checkout (kept for 24 hours in their browser)"
+msgstr "Misafirler ödeme sırasında doğrular (sonuç tarayıcılarında 24 saat saklanır)"
+
+#: includes/Admin/RulesPage.php:196
+msgid "Require a customer account for these products"
+msgstr "Bu ürünler için müşteri hesabı zorunlu olsun"
+
+#: includes/Admin/RulesPage.php:200
+msgid "2 · What is asked?"
+msgstr "2 · Ne isteniyor?"
+
+#: includes/Admin/RulesPage.php:201
+msgid "Age condition"
+msgstr "Yaş koşulu"
+
+#: includes/Admin/RulesPage.php:203
+msgid "No age"
+msgstr "Yaş koşulu yok"
+
+#: includes/Admin/RulesPage.php:204
+msgid "At least"
+msgstr "En az"
+
+#: includes/Admin/RulesPage.php:205
+msgid "Younger than"
+msgstr "Şu yaştan küçük"
+
+#: includes/Admin/RulesPage.php:206
+msgid "From … up to (not including)"
+msgstr "Şu yaştan … şu yaşa kadar (üst yaş hariç)"
+
+#: includes/Admin/RulesPage.php:209
+msgid "upper"
+msgstr "üst yaş"
+
+#: includes/Admin/RulesPage.php:210
+#: includes/Privacy.php:51
+msgid "One-person check"
+msgstr "Tek kişi kontrolü"
+
+#: includes/Admin/RulesPage.php:211
+msgid "Recognise the same person across accounts (visitors log in first; on the sign-up form they verify while creating the account)"
+msgstr "Farklı hesaplardaki aynı kişiyi tanı (ziyaretçiler önce giriş yapar; üye kaydı formunda ise hesabı oluştururken doğrular)"
+
+#: includes/Admin/RulesPage.php:212
+#: includes/Admin/Wizard.php:251
+msgid "Each requested item counts as one verification: age = 1, one-person check = 1. 2,000 verifications a month are free."
+msgstr "İstenen her öğe bir doğrulama sayılır: yaş = 1, tek kişi kontrolü = 1. Ayda 2.000 doğrulama ücretsizdir."
+
+#: includes/Admin/RulesPage.php:214
+msgid "3 · Same person on another account"
+msgstr "3 · Aynı kişi başka bir hesapta"
+
+#: includes/Admin/RulesPage.php:219
+msgid "Only used when the one-person check is on."
+msgstr "Yalnızca tek kişi kontrolü açıkken kullanılır."
+
+#: includes/Admin/RulesPage.php:221
+msgid "4 · For those who pass"
+msgstr "4 · Geçenler için"
+
+#: includes/Admin/RulesPage.php:222
+msgid "Add role"
+msgstr "Rol ekle"
+
+#: includes/Admin/RulesPage.php:223
+msgid "— none —"
+msgstr "— yok —"
+
+#: includes/Admin/RulesPage.php:233
+msgid "or new role:"
+msgstr "ya da yeni rol:"
+
+#. translators: %s: role slug
+#: includes/Admin/RulesPage.php:235
+#, php-format
+msgid "The role %s can no longer be granted automatically because it has editing or admin rights; choose another role."
+msgstr "%s rolü düzenleme ya da yönetim yetkisi taşıdığı için artık otomatik verilemez; başka bir rol seçin."
+
+#: includes/Admin/RulesPage.php:237
+msgid "Added next to the existing role (Customer, Subscriber…), never replacing it. Only roles without editing or management powers are offered. What the role may do is set in the plugin that uses it."
+msgstr "Mevcut rolün (Müşteri, Abone…) yanına eklenir, onun yerine geçmez. Yalnızca düzenleme ya da yönetim yetkisi olmayan roller sunulur. Rolün neler yapabileceği, onu kullanan eklentide ayarlanır."
+
+#: includes/Admin/RulesPage.php:238
+msgid "Valid for"
+msgstr "Geçerlilik süresi"
+
+#: includes/Admin/RulesPage.php:240
+msgid "No expiry"
+msgstr "Süresiz"
+
+#: includes/Admin/RulesPage.php:241
+msgid "6 months"
+msgstr "6 ay"
+
+#: includes/Admin/RulesPage.php:242
+msgid "1 year"
+msgstr "1 yıl"
+
+#: includes/Admin/RulesPage.php:245
+msgid "Save rule"
+msgstr "Kuralı kaydet"
+
+#: includes/Admin/RulesPage.php:248
+msgid "Delete this rule?"
+msgstr "Bu kural silinsin mi?"
+
+#: includes/Admin/RulesPage.php:252
+msgid "Delete rule"
+msgstr "Kuralı sil"
+
+#: includes/Admin/SettingsPage.php:64
+msgid "VerifyBlind settings"
+msgstr "VerifyBlind ayarları"
+
+#: includes/Admin/SettingsPage.php:72
+#: includes/Admin/Wizard.php:177
+msgid "API key"
+msgstr "API anahtarı"
+
+#: includes/Admin/SettingsPage.php:75
+#: includes/Admin/Wizard.php:179
+msgid "Saved — leave empty to keep it"
+msgstr "Kayıtlı — aynı kalsın istiyorsanız boş bırakın"
+
+#. translators: %s: partner portal link
+#: includes/Admin/SettingsPage.php:80
+#, php-format
+msgid "Get it from %s → Settings. Free account; 2,000 verifications a month are free."
+msgstr "Anahtarı %s → Ayarlar bölümünden alın. Hesap ücretsiz; ayda 2.000 doğrulama da ücretsiz."
+
+#: includes/Admin/SettingsPage.php:88
+msgid "Bot protection"
+msgstr "Bot koruması"
+
+#: includes/Admin/SettingsPage.php:89
+msgid "Invisible bot check before a verification starts (recommended)"
+msgstr "Doğrulama başlamadan önce görünmez bot kontrolü (önerilir)"
+
+#: includes/Admin/SettingsPage.php:92
+msgid "Test mode"
+msgstr "Test modu"
+
+#: includes/Admin/SettingsPage.php:93
+msgid "Accept verifications made with the demo card. Turn off on a live site."
+msgstr "Demo kartla yapılan doğrulamaları kabul et. Canlı sitede kapatın."
+
+#: includes/Admin/SettingsPage.php:96
+msgid "Verified badge"
+msgstr "Doğrulama rozeti"
+
+#: includes/Admin/SettingsPage.php:101
+msgid "A small \"Verified with VerifyBlind\" badge next to the name of members who passed the one-person check."
+msgstr "Tek kişi kontrolünü geçen üyelerin adının yanında küçük bir \"VerifyBlind ile doğrulandı\" rozeti."
+
+#: includes/Admin/SettingsPage.php:108
+msgid "Connection"
+msgstr "Bağlantı"
+
+#: includes/Admin/SettingsPage.php:112
+msgid "Test connection"
+msgstr "Bağlantıyı test et"
+
+#: includes/Admin/SettingsPage.php:115
+#: includes/Admin/Wizard.php:261
+msgid "Revoke URL"
+msgstr "İptal bildirimi adresi"
+
+#: includes/Admin/SettingsPage.php:116
+#: includes/Admin/Wizard.php:262
+msgid "Paste this address into the partner portal → Settings → Revoke URL. When a person withdraws consent in the VerifyBlind app, their result is removed here automatically. It must be HTTPS on your registered domain."
+msgstr "Bu adresi partner portalında Ayarlar → Revoke URL alanına yapıştırın. Kişi VerifyBlind uygulamasında onayını geri çektiğinde, sonucu buradan da otomatik olarak silinir. Adres, kayıtlı alan adınızda ve HTTPS olmalıdır."
+
+#: includes/Admin/Wizard.php:118
+msgid "Applies to nothing yet: choose pages or categories, or put the \"VerifyBlind lock\" block on a page."
+msgstr "Henüz hiçbir yerde geçerli değil: sayfa ya da kategori seçin veya bir sayfaya \"VerifyBlind kilidi\" bloğunu ekleyin."
+
+#: includes/Admin/Wizard.php:121
+msgid "Applies to nothing yet: choose the products or product categories."
+msgstr "Henüz hiçbir yerde geçerli değil: ürünleri ya da ürün kategorilerini seçin."
+
+#: includes/Admin/Wizard.php:123
+msgid "Applies to nothing yet: choose the coupons."
+msgstr "Henüz hiçbir yerde geçerli değil: kuponları seçin."
+
+#: includes/Admin/Wizard.php:135
+msgid "VerifyBlind setup"
+msgstr "VerifyBlind kurulumu"
+
+#. translators: 1: number of the current step, 2: number of steps
+#: includes/Admin/Wizard.php:137
+#, php-format
+msgid "Step %1$d of %2$d"
+msgstr "Adım %1$d / %2$d"
+
+#: includes/Admin/Wizard.php:152
+msgid "Skip the setup wizard"
+msgstr "Kurulum sihirbazını atla"
+
+#: includes/Admin/Wizard.php:161
+msgid "1 · Connect your site"
+msgstr "1 · Sitenizi bağlayın"
+
+#. translators: %s: partner portal link
+#: includes/Admin/Wizard.php:166
+#, php-format
+msgid "Create a free partner account at %s and copy the API key from Settings. 2,000 verifications a month are free."
+msgstr "%s adresinde ücretsiz bir partner hesabı açın ve API anahtarını Ayarlar bölümünden kopyalayın. Ayda 2.000 doğrulama ücretsizdir."
+
+#: includes/Admin/Wizard.php:180
+msgid "Save and test the connection"
+msgstr "Kaydet ve bağlantıyı test et"
+
+#: includes/Admin/Wizard.php:182
+msgid "Next"
+msgstr "İleri"
+
+#: includes/Admin/Wizard.php:189
+msgid "2 · What kind of site is this?"
+msgstr "2 · Siteniz ne tür bir site?"
+
+#: includes/Admin/Wizard.php:190
+msgid "Choose all that apply. Each choice adds ready-made rules that you can change later."
+msgstr "Size uyanların hepsini seçin. Her seçim, sonradan değiştirebileceğiniz hazır kurallar ekler."
+
+#: includes/Admin/Wizard.php:200
+msgid "needs WooCommerce"
+msgstr "WooCommerce gerekir"
+
+#: includes/Admin/Wizard.php:205
+msgid "Add these rules"
+msgstr "Bu kuralları ekle"
+
+#: includes/Admin/Wizard.php:206
+msgid "Skip this step"
+msgstr "Bu adımı atla"
+
+#: includes/Admin/Wizard.php:216
+msgid "3 · Review your rules"
+msgstr "3 · Kurallarınızı gözden geçirin"
+
+#: includes/Admin/Wizard.php:217
+msgid "Switch rules on or off here. Open a rule to choose its pages, products or coupons, or to change what it asks."
+msgstr "Kuralları buradan açıp kapatın. Bir kuralın sayfalarını, ürünlerini ya da kuponlarını seçmek veya ne istediğini değiştirmek için kuralı açın."
+
+#: includes/Admin/Wizard.php:230
+msgid "No rules yet. Go back a step to add ready-made rules, or add your own under VerifyBlind → Rules."
+msgstr "Henüz kural yok. Hazır kurallar eklemek için bir adım geri gidin ya da VerifyBlind → Kurallar bölümünden kendi kuralınızı ekleyin."
+
+#: includes/Admin/Wizard.php:252
+msgid "Save and continue"
+msgstr "Kaydet ve devam et"
+
+#: includes/Admin/Wizard.php:260
+msgid "4 · Finish"
+msgstr "4 · Bitiş"
+
+#: includes/Admin/Wizard.php:264
+msgid "Copied"
+msgstr "Kopyalandı"
+
+#: includes/Admin/Wizard.php:264
+msgid "Copy"
+msgstr "Kopyala"
+
+#: includes/Admin/Wizard.php:265
+#: includes/Placements/WcSite.php:127
+msgid "Privacy policy"
+msgstr "Gizlilik politikası"
+
+#: includes/Admin/Wizard.php:266
+msgid "A suggested paragraph for your privacy policy is in the WordPress privacy policy guide, under \"VerifyBlind\"."
+msgstr "Gizlilik politikanız için önerilen paragrafı WordPress gizlilik politikası rehberinde, \"VerifyBlind\" başlığı altında bulabilirsiniz."
+
+#: includes/Admin/Wizard.php:267
+msgid "Open the policy guide"
+msgstr "Politika rehberini aç"
+
+#: includes/Admin/Wizard.php:268
+msgid "Trying it out"
+msgstr "Denemek için"
+
+#: includes/Admin/Wizard.php:269
+msgid "Test mode (VerifyBlind → Settings) accepts the demo card of the VerifyBlind app. The demo card only works with a test partner account (ask support@verifyblind.com); with your regular partner account, verify with your own ID card. Turn test mode off on a live site."
+msgstr "Test modu (VerifyBlind → Ayarlar) VerifyBlind uygulamasındaki demo kartı kabul eder. Demo kart yalnızca test partner hesabıyla çalışır (support@verifyblind.com adresinden isteyin); normal partner hesabınızla kendi kimlik kartınızla doğrulayın. Canlı sitede test modunu kapatın."
+
+#: includes/Admin/Wizard.php:273
+msgid "Finish"
+msgstr "Bitir"
+
+#: includes/ApiClient.php:120
+msgid "Enter your API key first."
+msgstr "Önce API anahtarınızı yazın."
+
+#: includes/ApiClient.php:125
+msgid "VerifyBlind could not be reached from this server."
+msgstr "Bu sunucudan VerifyBlind'a ulaşılamadı."
+
+#: includes/ApiClient.php:129
+msgid "Connected. Your API key works."
+msgstr "Bağlantı kuruldu. API anahtarınız çalışıyor."
+
+#. translators: %d: HTTP status code
+#: includes/ApiClient.php:137
+#: includes/ApiErrors.php:66
+#, php-format
+msgid "Unexpected response from VerifyBlind (HTTP %d)."
+msgstr "VerifyBlind'dan beklenmeyen bir yanıt geldi (HTTP %d)."
+
+#: includes/ApiErrors.php:57
+msgid "The API key was rejected. Copy it again from partner.verifyblind.com → Settings."
+msgstr "API anahtarı kabul edilmedi. Anahtarı partner.verifyblind.com → Ayarlar bölümünden yeniden kopyalayın."
+
+#: includes/ApiErrors.php:59
+msgid "The free monthly quota is used up and there is no balance. Add balance in the partner portal."
+msgstr "Aylık ücretsiz kota doldu ve bakiye yok. Partner portalından bakiye yükleyin."
+
+#: includes/ApiErrors.php:61
+msgid "The partner account is not ready yet (for example, its e-mail address is not verified)."
+msgstr "Partner hesabı henüz hazır değil (örneğin e-posta adresi doğrulanmamış)."
+
+#: includes/ApiErrors.php:63
+msgid "A security update of the VerifyBlind plugin is required: VerifyBlind no longer accepts this version. Update the plugin under Plugins → Installed plugins, or download the latest version from github.com/VerifyBlind/verifyblind-plugin-wordpress/releases."
+msgstr "VerifyBlind eklentisi için bir güvenlik güncellemesi gerekiyor: VerifyBlind artık bu sürümü kabul etmiyor. Eklentiyi Eklentiler → Yüklü eklentiler bölümünden güncelleyin ya da en son sürümü github.com/VerifyBlind/verifyblind-plugin-wordpress/releases adresinden indirin."
+
+#. translators: %s: site name
+#: includes/ApiErrors.php:73
+#, php-format
+msgid "[%s] VerifyBlind verifications are failing"
+msgstr "[%s] VerifyBlind doğrulamaları başarısız oluyor"
+
+#: includes/Badge.php:28
+msgid "Comments"
+msgstr "Yorumlar"
+
+#: includes/Badge.php:29
+msgid "Product reviews"
+msgstr "Ürün değerlendirmeleri"
+
+#: includes/Badge.php:30
+msgid "Author box"
+msgstr "Yazar kutusu"
+
+#: includes/Badge.php:66
+msgid "Verified with VerifyBlind"
+msgstr "VerifyBlind ile doğrulandı"
+
+#: includes/Gate.php:129
+msgid "This content requires verification. Open the page to verify."
+msgstr "Bu içerik doğrulama gerektiriyor. Doğrulamak için sayfayı açın."
+
+#: includes/Messages.php:10
+msgid "Verification complete."
+msgstr "Doğrulama tamamlandı."
+
+#: includes/Messages.php:12
+msgid "Verification complete, but the requirement for this content was not met."
+msgstr "Doğrulama tamamlandı, ancak bu içeriğin koşulu karşılanmadı."
+
+#: includes/Messages.php:16
+msgid "The verification result could not be read. Please try again."
+msgstr "Doğrulama sonucu okunamadı. Lütfen tekrar deneyin."
+
+#: includes/Messages.php:18
+msgid "The verification could not be confirmed."
+msgstr "Doğrulama onaylanamadı."
+
+#: includes/Messages.php:20
+msgid "This verification session has expired or was already used. Please try again."
+msgstr "Bu doğrulama oturumunun süresi doldu ya da oturum zaten kullanıldı. Lütfen tekrar deneyin."
+
+#: includes/Messages.php:22
+msgid "Verifications made with a demo card are not accepted on this site."
+msgstr "Bu site demo kartla yapılan doğrulamaları kabul etmiyor."
+
+#: includes/Messages.php:24
+msgid "This identity is already verified on another account. Each person can verify only one account."
+msgstr "Bu kimlik başka bir hesapta zaten doğrulanmış. Her kişi yalnızca bir hesabı doğrulayabilir."
+
+#: includes/Messages.php:26
+msgid "This identity is being used to create another account right now. Please try again in a moment."
+msgstr "Bu kimlikle şu anda başka bir hesap oluşturuluyor. Lütfen biraz sonra tekrar deneyin."
+
+#: includes/Messages.php:28
+msgid "This account was verified with a different identity before."
+msgstr "Bu hesap daha önce başka bir kimlikle doğrulanmış."
+
+#: includes/Messages.php:30
+msgid "This verification is no longer available."
+msgstr "Bu doğrulama artık geçerli değil."
+
+#: includes/Messages.php:32
+msgid "Verification is not set up on this site yet."
+msgstr "Bu sitede doğrulama henüz kurulmadı."
+
+#: includes/Messages.php:34
+msgid "Please log in to verify your account."
+msgstr "Hesabınızı doğrulamak için lütfen giriş yapın."
+
+#: includes/Messages.php:36
+msgid "The verification answered a different question than this site asked. Please try again."
+msgstr "Doğrulama, bu sitenin sorduğundan farklı bir soruyu yanıtladı. Lütfen tekrar deneyin."
+
+#: includes/Messages.php:38
+msgid "Bot check could not be completed. Please reload the page and try again."
+msgstr "Bot kontrolü tamamlanamadı. Lütfen sayfayı yenileyip tekrar deneyin."
+
+#: includes/Messages.php:40
+msgid "Too many verification attempts right now. Please try again in a minute."
+msgstr "Şu anda çok fazla doğrulama denemesi var. Lütfen bir dakika sonra tekrar deneyin."
+
+#: includes/Messages.php:42
+msgid "Please verify with VerifyBlind before creating an account. The verification box is on the registration form."
+msgstr "Hesap oluşturmadan önce lütfen VerifyBlind ile doğrulayın. Doğrulama kutusu kayıt formunda."
+
+#: includes/Messages.php:44
+msgid "Verify with VerifyBlind above to create your account."
+msgstr "Hesabınızı oluşturmak için yukarıdan VerifyBlind ile doğrulayın."
+
+#: includes/Messages.php:46
+msgid "Please verify with VerifyBlind before posting."
+msgstr "Göndermeden önce lütfen VerifyBlind ile doğrulayın."
+
+#: includes/Messages.php:48
+msgid "Your cart contains products that need verification with VerifyBlind. Please verify on the checkout page, then place the order."
+msgstr "Sepetinizde VerifyBlind ile doğrulama gerektiren ürünler var. Lütfen ödeme sayfasında doğrulayın, ardından siparişi verin."
+
+#: includes/Messages.php:50
+msgid "Please log in or create an account to buy the products in your cart."
+msgstr "Sepetinizdeki ürünleri almak için lütfen giriş yapın ya da hesap oluşturun."
+
+#: includes/Messages.php:52
+msgid "This product needs verification with VerifyBlind before it can be added to the cart."
+msgstr "Bu ürünü sepete eklemeden önce VerifyBlind ile doğrulama yapmanız gerekiyor."
+
+#: includes/Messages.php:54
+msgid "This coupon is only for customers verified with VerifyBlind."
+msgstr "Bu kupon yalnızca VerifyBlind ile doğrulanmış müşteriler içindir."
+
+#: includes/Messages.php:56
+msgid "Please log in to use this coupon."
+msgstr "Bu kuponu kullanmak için lütfen giriş yapın."
+
+#: includes/Messages.php:58
+msgid "This coupon was already used by the same person."
+msgstr "Bu kupon aynı kişi tarafından zaten kullanıldı."
+
+#: includes/Messages.php:60
+msgid "This coupon needs a one-person verification on your account. Verify again with your own ID card."
+msgstr "Bu kupon için hesabınızda tek kişi doğrulaması gerekiyor. Kendi kimlik kartınızla yeniden doğrulayın."
+
+#: includes/Messages.php:62
+msgid "This coupon is being used in another order right now. Please try again in a moment."
+msgstr "Bu kupon şu anda başka bir siparişte kullanılıyor. Lütfen biraz sonra tekrar deneyin."
+
+#: includes/Messages.php:64
+msgid "Verification on this site needs a plugin update. Please try again later."
+msgstr "Bu sitede doğrulama için bir eklenti güncellemesi gerekiyor. Lütfen daha sonra tekrar deneyin."
+
+#: includes/Messages.php:66
+msgid "Verification is not available right now. Please try again shortly."
+msgstr "Doğrulama şu anda yapılamıyor. Lütfen biraz sonra tekrar deneyin."
+
+#: includes/Placements/Comments.php:11
+msgid "Comments (every post, or the chosen pages, posts and categories)"
+msgstr "Yorumlar (tüm yazılar ya da seçilen sayfalar, yazılar ve kategoriler)"
+
+#: includes/Placements/Comments.php:20
+msgid "Verify with VerifyBlind to comment."
+msgstr "Yorum yapmak için VerifyBlind ile doğrulayın."
+
+#: includes/Placements/Registration.php:35
+msgid "Sign-up (WordPress and WooCommerce registration)"
+msgstr "Üye kaydı (WordPress ve WooCommerce kaydı)"
+
+#: includes/Placements/Registration.php:53
+msgid "Verify with VerifyBlind to create an account."
+msgstr "Hesap oluşturmak için VerifyBlind ile doğrulayın."
+
+#: includes/Placements/WcCheckout.php:30
+msgid "WooCommerce checkout (chosen products or categories in the cart)"
+msgstr "WooCommerce ödeme (sepetteki seçilen ürünler ya da kategoriler)"
+
+#: includes/Placements/WcCheckout.php:152
+msgid "Some products in your cart need verification before you can order."
+msgstr "Sepetinizdeki bazı ürünler için sipariş vermeden önce doğrulama gerekiyor."
+
+#. translators: %s: age condition such as 18+
+#: includes/Placements/WcCheckout.php:401
+#, php-format
+msgid "Age verified (%s) with VerifyBlind."
+msgstr "Yaş VerifyBlind ile doğrulandı (%s)."
+
+#: includes/Placements/WcCheckout.php:404
+msgid "One-person check passed with VerifyBlind."
+msgstr "Tek kişi kontrolü VerifyBlind ile geçildi."
+
+#: includes/Placements/WcCoupon.php:55
+msgid "WooCommerce coupons (chosen coupons)"
+msgstr "WooCommerce kuponları (seçilen kuponlar)"
+
+#. translators: 1: coupon code, 2: order number
+#: includes/Placements/WcCoupon.php:431
+#, php-format
+msgid "VerifyBlind: this person already used coupon %1$s on order #%2$s."
+msgstr "VerifyBlind: Bu kişi %1$s kuponunu #%2$s numaralı siparişte zaten kullandı."
+
+#: includes/Placements/WcCoupon.php:627
+msgid "Verify with VerifyBlind to use this coupon."
+msgstr "Bu kuponu kullanmak için VerifyBlind ile doğrulayın."
+
+#: includes/Placements/WcProduct.php:20
+msgid "WooCommerce product page (chosen products or categories)"
+msgstr "WooCommerce ürün sayfası (seçilen ürünler ya da kategoriler)"
+
+#: includes/Placements/WcProduct.php:76
+msgid "Verify with VerifyBlind to see and buy this product."
+msgstr "Bu ürünü görmek ve satın almak için VerifyBlind ile doğrulayın."
+
+#: includes/Placements/WcReview.php:11
+msgid "WooCommerce product reviews (every product, or the chosen products and categories)"
+msgstr "WooCommerce ürün değerlendirmeleri (tüm ürünler ya da seçilen ürünler ve kategoriler)"
+
+#: includes/Placements/WcReview.php:20
+msgid "Verify with VerifyBlind to write a review."
+msgstr "Değerlendirme yazmak için VerifyBlind ile doğrulayın."
+
+#: includes/Placements/WcSite.php:24
+msgid "Whole site entrance (age gate for the shop)"
+msgstr "Site girişi (mağazanın tamamı için yaş kapısı)"
+
+#: includes/Placements/WcSite.php:107
+msgid "Verify with VerifyBlind to enter this site."
+msgstr "Bu siteye girmek için VerifyBlind ile doğrulayın."
+
+#: includes/Presets.php:18
+msgid "Shop selling alcohol, tobacco or adult products"
+msgstr "Alkol, tütün ya da yetişkin ürünleri satan mağaza"
+
+#: includes/Presets.php:19
+msgid "Age 18+ at checkout for the products or categories you choose."
+msgstr "Seçtiğiniz ürün ya da kategorilerde ödeme sırasında 18+ yaş koşulu."
+
+#: includes/Presets.php:22
+msgid "Age 18+ at checkout"
+msgstr "Ödemede 18+ yaş koşulu"
+
+#: includes/Presets.php:27
+msgid "Age-restricted content"
+msgstr "Yaş sınırlı içerik"
+
+#: includes/Presets.php:28
+msgid "Pages, posts or categories you choose open at age 18+."
+msgstr "Seçtiğiniz sayfalar, yazılar ya da kategoriler yalnızca 18 yaş ve üzerine açılır."
+
+#: includes/Presets.php:31
+msgid "Age 18+ content"
+msgstr "18+ içerik"
+
+#: includes/Presets.php:36
+msgid "Forum, community or classifieds"
+msgstr "Forum, topluluk ya da ilan sitesi"
+
+#: includes/Presets.php:37
+msgid "One account per person at sign-up, with a verified badge."
+msgstr "Üye kaydında kişi başına tek hesap ve doğrulama rozeti."
+
+#: includes/Presets.php:40
+msgid "One account per person at sign-up"
+msgstr "Üye kaydında kişi başına tek hesap"
+
+#: includes/Presets.php:45
+msgid "Comments and reviews"
+msgstr "Yorumlar ve değerlendirmeler"
+
+#: includes/Presets.php:46
+msgid "Comments and product reviews from verified people (one person, one account), with a verified badge."
+msgstr "Yalnızca doğrulanmış kişilerden yorum ve ürün değerlendirmesi (tek kişi, tek hesap) ve doğrulama rozeti."
+
+#: includes/Presets.php:49
+msgid "Comments from verified people"
+msgstr "Doğrulanmış kişilerden yorumlar"
+
+#: includes/Presets.php:50
+msgid "Product reviews from verified people"
+msgstr "Doğrulanmış kişilerden ürün değerlendirmeleri"
+
+#: includes/Presets.php:55
+msgid "Campaigns and coupons"
+msgstr "Kampanyalar ve kuponlar"
+
+#: includes/Presets.php:56
+msgid "Coupons you choose can be used once per person."
+msgstr "Seçtiğiniz kuponlar kişi başına bir kez kullanılabilir."
+
+#: includes/Presets.php:59
+msgid "Coupons once per person"
+msgstr "Kişi başına bir kez kupon"
+
+#: includes/Privacy.php:18
+#: includes/Privacy.php:28
+#: includes/Privacy.php:43
+msgid "VerifyBlind verifications"
+msgstr "VerifyBlind doğrulamaları"
+
+#: includes/Privacy.php:51
+msgid "Checked"
+msgstr "Kontrol edilen"
+
+#: includes/Privacy.php:52
+msgid "Result"
+msgstr "Sonuç"
+
+#: includes/Privacy.php:52
+msgid "Eligible"
+msgstr "Uygun"
+
+#: includes/Privacy.php:52
+msgid "Not eligible"
+msgstr "Uygun değil"
+
+#: includes/Privacy.php:53
+#: includes/Privacy.php:65
+msgid "Verified at (UTC)"
+msgstr "Doğrulama zamanı (UTC)"
+
+#: includes/Privacy.php:64
+msgid "Person code (pseudonymous, issued for this site only)"
+msgstr "Kişiye özel kod (takma ad; yalnızca bu site için üretilir)"
+
+#: includes/Privacy.php:105
+msgid "One-person coupon uses are kept as a keyed code of the person (no identity data), so that each offer stays once per person."
+msgstr "Tek kişilik kupon kullanımları, her teklif kişi başına bir kez kalsın diye kişiye özel bir kodla (kimlik bilgisi olmadan) saklanır."
+
+#: includes/Privacy.php:121
+msgid "Verification records on orders (which check passed, and when) are kept with the orders as part of the purchase record."
+msgstr "Siparişlerdeki doğrulama kayıtları (hangi kontrolün ne zaman geçildiği), satın alma kaydının bir parçası olarak siparişlerle birlikte saklanır."
+
+#: includes/Privacy.php:128
+msgid "This site may ask you to verify your age, or that you are one person with one account, with VerifyBlind. You verify in the VerifyBlind app with your chipped ID card. The verification runs in a sealed environment, so your identity data does not reach this site, nor VerifyBlind. This site receives only an eligible / not eligible answer and, when the one-person check is used, pseudonymous codes issued for this site only. They let us recognise the same person across accounts without knowing who that person is."
+msgstr "Bu site, yaşınızı ya da tek hesabı olan tek bir kişi olduğunuzu VerifyBlind ile doğrulamanızı isteyebilir. Doğrulamayı VerifyBlind uygulamasında çipli kimlik kartınızla yaparsınız. Doğrulama kapalı ve korumalı bir ortamda çalışır; bu yüzden kimlik bilgileriniz ne bu siteye ne de VerifyBlind'a ulaşır. Bu site yalnızca \"uygun / uygun değil\" yanıtını alır; tek kişi kontrolü kullanıldığında ayrıca yalnızca bu site için üretilen kişiye özel kodları (takma ad) alır. Bu kodlar, kişinin kim olduğunu bilmeden farklı hesaplardaki aynı kişiyi tanımamızı sağlar."
+
+#: includes/Privacy.php:129
+msgid "We keep these results with your account (results of visitors without an account are deleted after 24 hours) and delete them when you delete your account or withdraw your consent in the VerifyBlind app."
+msgstr "Bu sonuçları hesabınızla birlikte saklarız (hesabı olmayan ziyaretçilerin sonuçları 24 saat sonra silinir). Hesabınızı sildiğinizde ya da VerifyBlind uygulamasında onayınızı geri çektiğinizde sonuçları sileriz."
+
+#. translators: %s: link to the VerifyBlind data processing terms
+#: includes/Privacy.php:131
+#, php-format
+msgid "More information: %s"
+msgstr "Daha fazla bilgi: %s"
+
+#: includes/Rules.php:18
+msgid "Page, post or category lock"
+msgstr "Sayfa, yazı ya da kategori kilidi"
+
+#: includes/Rules.php:19
+msgid "Only grant a role (used by another plugin)"
+msgstr "Yalnızca rol ver (başka bir eklenti kullanır)"
+
+#: includes/Widget.php:63
+msgid "Verified. Reloading…"
+msgstr "Doğrulandı. Sayfa yenileniyor…"
+
+#: includes/Widget.php:64
+msgid "Verified. You can continue."
+msgstr "Doğrulandı. Devam edebilirsiniz."
+
+#: includes/Widget.php:65
+msgid "Verification could not be completed. Please try again."
+msgstr "Doğrulama tamamlanamadı. Lütfen tekrar deneyin."
+
+#: includes/Widget.php:74
+msgid "This content is available to verified members."
+msgstr "Bu içerik doğrulanmış üyelere açıktır."
+
+#. translators: %d: minimum age
+#: includes/Widget.php:78
+#, php-format
+msgid "This content is available to visitors aged %d and over."
+msgstr "Bu içerik %d yaş ve üzerindeki ziyaretçilere açıktır."
+
+#. translators: %d: age limit
+#: includes/Widget.php:82
+#, php-format
+msgid "This content is available to visitors under %d."
+msgstr "Bu içerik %d yaşından küçük ziyaretçilere açıktır."
+
+#. translators: 1: minimum age, 2: maximum age (inclusive)
+#: includes/Widget.php:85
+#, php-format
+msgid "This content is available to visitors aged %1$d to %2$d."
+msgstr "Bu içerik %1$d ile %2$d yaş arasındaki ziyaretçilere açıktır."
+
+#. translators: %d: minimum age
+#: includes/Widget.php:95
+#, php-format
+msgid "Age %d or over."
+msgstr "%d yaş ve üzeri."
+
+#. translators: %d: age limit
+#: includes/Widget.php:98
+#, php-format
+msgid "Under %d."
+msgstr "%d yaşından küçük."
+
+#. translators: 1: minimum age, 2: maximum age (inclusive)
+#: includes/Widget.php:101
+#, php-format
+msgid "Age %1$d to %2$d."
+msgstr "%1$d–%2$d yaş arası."
+
+#: includes/Widget.php:105
+msgid "One person, one account."
+msgstr "Tek kişi, tek hesap."
+
+#: includes/Widget.php:124
+msgid "Verify without sharing your identity data. The site only receives an eligible / not eligible answer."
+msgstr "Kimlik bilgileriniz bu siteye ulaşmadan doğrulama yapın. Site yalnızca \"uygun / uygun değil\" yanıtını alır."
+
+#: includes/Widget.php:125
+msgid "Verify with VerifyBlind"
+msgstr "VerifyBlind ile doğrula"
+
+#: includes/Widget.php:128
+msgid "How does it work?"
+msgstr "Nasıl çalışır?"
+
+#: includes/Widget.php:140
+msgid "Log in"
+msgstr "Giriş yap"
+
+#: includes/Widget.php:143
+msgid "Create an account"
+msgstr "Hesap oluştur"
+
+#: includes/Widget.php:150
+msgid "This check needs an account: log in first, then verify."
+msgstr "Bu kontrol için hesap gerekiyor: önce giriş yapın, sonra doğrulayın."
+
+#: assets/js/gate-block.js:16
+msgid "VerifyBlind lock"
+msgstr "VerifyBlind kilidi"
+
+#: assets/js/gate-block.js:17
+msgid "Shows the inner blocks only to visitors who meet a VerifyBlind rule."
+msgstr "İçindeki blokları yalnızca bir VerifyBlind kuralını karşılayan ziyaretçilere gösterir."
+
+#: assets/js/gate-block.js:22
+msgid "Choose a rule"
+msgstr "Bir kural seçin"
+
+#: assets/js/gate-block.js:25
+msgid "VerifyBlind rule"
+msgstr "VerifyBlind kuralı"
+
+#: assets/js/gate-block.js:33
+msgid "Choose a rule in the block settings"
+msgstr "Blok ayarlarından bir kural seçin"
