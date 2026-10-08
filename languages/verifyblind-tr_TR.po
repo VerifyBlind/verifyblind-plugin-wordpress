@@ -462,8 +462,8 @@ msgid "Bot protection"
 msgstr "Bot koruması"
 
 #: includes/Admin/SettingsPage.php:89
-msgid "Invisible bot check before a verification starts (recommended)"
-msgstr "Doğrulama başlamadan önce görünmez bot kontrolü (önerilir)"
+msgid "Invisible bot check before a verification starts. Only works on domains VerifyBlind has enabled for bot protection — leave it off unless VerifyBlind confirmed your domain."
+msgstr "Doğrulama başlamadan önce görünmez bot kontrolü. Yalnızca VerifyBlind'ın bot koruması için açtığı alan adlarında çalışır; VerifyBlind alan adınızı onaylamadıkça kapalı bırakın."
 
 #: includes/Admin/SettingsPage.php:92
 msgid "Test mode"

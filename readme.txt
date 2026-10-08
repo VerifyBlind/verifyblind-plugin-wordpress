@@ -50,7 +50,7 @@ VerifyBlind terms of service: https://verifyblind.com/en/terms
 VerifyBlind privacy policy: https://verifyblind.com/en/privacy
 VerifyBlind data processing terms: https://verifyblind.com/en/dpa
 
-Cloudflare Turnstile (bot protection, on by default): when the verification box is shown, the widget loads https://challenges.cloudflare.com/turnstile/v0/api.js in the visitor's browser and runs an invisible bot check; its token goes to VerifyBlind with the request above. You can turn it off under VerifyBlind → Settings → Bot protection.
+Cloudflare Turnstile (bot protection, off by default): only when the site owner turns bot protection on under VerifyBlind → Settings → Bot protection, the widget loads https://challenges.cloudflare.com/turnstile/v0/api.js in the visitor's browser and runs an invisible bot check; its token goes to VerifyBlind with the request above. While bot protection is off, nothing is loaded from Cloudflare.
 
 Cloudflare terms: https://www.cloudflare.com/website-terms/
 Cloudflare Turnstile privacy policy: https://www.cloudflare.com/turnstile-privacy-policy/

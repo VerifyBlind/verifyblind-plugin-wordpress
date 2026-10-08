@@ -86,7 +86,7 @@ final class SettingsPage {
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Bot protection', 'verifyblind' ); ?></th>
-						<td><label><input type="checkbox" name="verifyblind_captcha" value="1" <?php checked( get_option( 'verifyblind_captcha', '1' ), '1' ); ?>> <?php esc_html_e( 'Invisible bot check before a verification starts (recommended)', 'verifyblind' ); ?></label></td>
+						<td><label><input type="checkbox" name="verifyblind_captcha" value="1" <?php checked( get_option( 'verifyblind_captcha', '0' ), '1' ); ?>> <?php esc_html_e( 'Invisible bot check before a verification starts. Only works on domains VerifyBlind has enabled for bot protection — leave it off unless VerifyBlind confirmed your domain.', 'verifyblind' ); ?></label></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Test mode', 'verifyblind' ); ?></th>

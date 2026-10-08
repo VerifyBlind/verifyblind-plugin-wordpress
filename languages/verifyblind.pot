@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-08T10:08:03+00:00\n"
+"POT-Creation-Date: 2026-10-08T10:50:45+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: verifyblind\n"
@@ -466,7 +466,7 @@ msgid "Bot protection"
 msgstr ""
 
 #: includes/Admin/SettingsPage.php:89
-msgid "Invisible bot check before a verification starts (recommended)"
+msgid "Invisible bot check before a verification starts. Only works on domains VerifyBlind has enabled for bot protection — leave it off unless VerifyBlind confirmed your domain."
 msgstr ""
 
 #: includes/Admin/SettingsPage.php:92

@@ -11,6 +11,6 @@ final class Settings {
 
 	/** Ask the widget for invisible Cloudflare Turnstile bot protection. */
 	public static function captcha(): bool {
-		return '1' === get_option( 'verifyblind_captcha', '1' );
+		return '1' === get_option( 'verifyblind_captcha', '0' );
 	}
 }

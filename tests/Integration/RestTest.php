@@ -54,6 +54,18 @@ final class RestTest extends TestCase {
 		$this->assertSame( 0, $this->nonce_rows() );
 	}
 
+	public function test_bot_protection_is_off_when_the_option_is_absent(): void {
+		delete_option( 'verifyblind_captcha' );
+		$this->assertFalse( \VerifyBlind\Settings::captcha() );
+		$rule = $this->rule();
+		$this->mock_http(
+			function () {
+				return array( 'body' => '{"nonce":"nocap-1"}' );
+			}
+		);
+		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) )->get_status() );
+	}
+
 	public function test_generate_requires_bot_token_when_captcha_is_on(): void {
 		update_option( 'verifyblind_captcha', '1' );
 		$rule  = $this->rule();
