@@ -12,6 +12,7 @@ final class Menu {
 		SettingsPage::hooks();
 		MembersPage::hooks();
 		Notices::hooks();
+		Wizard::hooks();
 		if ( Registry::woocommerce_active() ) {
 			ProductRulesBox::hooks();
 		}
@@ -22,5 +23,6 @@ final class Menu {
 		add_submenu_page( RulesPage::SLUG, __( 'Rules', 'verifyblind' ), __( 'Rules', 'verifyblind' ), 'manage_options', RulesPage::SLUG, array( RulesPage::class, 'render' ) );
 		add_submenu_page( RulesPage::SLUG, __( 'Verified members', 'verifyblind' ), __( 'Verified members', 'verifyblind' ), 'manage_options', MembersPage::SLUG, array( MembersPage::class, 'render' ) );
 		add_submenu_page( RulesPage::SLUG, __( 'Settings', 'verifyblind' ), __( 'Settings', 'verifyblind' ), 'manage_options', SettingsPage::SLUG, array( SettingsPage::class, 'render' ) );
+		add_submenu_page( RulesPage::SLUG, __( 'Setup wizard', 'verifyblind' ), __( 'Setup wizard', 'verifyblind' ), 'manage_options', Wizard::SLUG, array( Wizard::class, 'render' ) );
 	}
 }

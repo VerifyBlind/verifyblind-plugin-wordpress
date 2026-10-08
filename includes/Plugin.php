@@ -89,9 +89,13 @@ final class Plugin {
 		Roles::sync_user( $user_id );
 	}
 
-	public static function activate(): void {
+	/** @param bool $network_wide true when activated for a whole multisite network: no wizard redirect then */
+	public static function activate( $network_wide = false ): void {
 		Schema::install();
 		Cron::schedule();
+		if ( ! $network_wide ) {
+			Admin\Wizard::queue_redirect();
+		}
 	}
 
 	public static function deactivate(): void {
