@@ -27,6 +27,13 @@ if [ -n "$bad" ]; then
 	echo "$bad" >&2
 	exit 1
 fi
+# File types WordPress.org refuses (build scripts, archives, executables, signing keys).
+forbidden=$(unzip -Z1 "$out" | grep -i -E '\.(sh|bat|cmd|ps1|exe|com|phar|pubkey|asc|zip|gz|tar|7z|rar|jar|dll|so|py|rb|pl)$|/psalm\.xml$' || true)
+if [ -n "$forbidden" ]; then
+	echo "files WordPress.org does not allow in $out:" >&2
+	echo "$forbidden" >&2
+	exit 1
+fi
 for f in verifyblind.php uninstall.php readme.txt LICENSE includes/Plugin.php includes/autoload.php vendor-prefixed/autoload.php languages/verifyblind-tr_TR.mo; do
 	if ! unzip -Z1 "$out" | grep -qx "verifyblind/$f"; then
 		echo "missing verifyblind/$f in $out" >&2

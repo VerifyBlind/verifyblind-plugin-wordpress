@@ -9,3 +9,13 @@
 /phpunit.xml.dist             export-ignore
 /phpunit-integration.xml.dist export-ignore
 /tests                        export-ignore
+# Third-party development files inside the bundled libraries (not needed at runtime; WordPress.org rejects some of them)
+/vendor-prefixed/paragonie/random_compat/build-phar.sh export-ignore
+/vendor-prefixed/paragonie/random_compat/dist         export-ignore
+/vendor-prefixed/paragonie/random_compat/psalm.xml    export-ignore
+/vendor-prefixed/**/README.md                         export-ignore
+/vendor-prefixed/**/BACKERS.md                        export-ignore
+/vendor-prefixed/**/SECURITY.md                       export-ignore
+/vendor-prefixed/**/AUTHORS                           export-ignore
+/vendor-prefixed/paragonie/random_compat/other          export-ignore
+/vendor-prefixed/paragonie/random_compat/psalm-autoload.php export-ignore
