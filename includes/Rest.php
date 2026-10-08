@@ -42,14 +42,8 @@ final class Rest {
 			$validations['user_id'] = true;
 		}
 		$forward = array( 'public_key' => $public_key, 'validations' => $validations );
-		foreach ( array( 'cf_token', 'sdk_version' ) as $k ) {
-			if ( isset( $json[ $k ] ) && is_string( $json[ $k ] ) ) {
-				$forward[ $k ] = $json[ $k ];
-			}
-		}
-		// VerifyBlind checks the bot token only when one is sent, so the site enforces that it is sent.
-		if ( Settings::captcha() && ( ! isset( $forward['cf_token'] ) || 1 !== preg_match( '/^[\x21-\x7E]{1,4096}$/', $forward['cf_token'] ) ) ) {
-			return self::error( 400, 'captcha_required' );
+		if ( isset( $json['sdk_version'] ) && is_string( $json['sdk_version'] ) ) {
+			$forward['sdk_version'] = $json['sdk_version'];
 		}
 		if ( ! self::take_generate_slot( time() ) ) {
 			$res = self::error( 429, 'rate_limited' );

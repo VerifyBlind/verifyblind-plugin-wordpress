@@ -41,7 +41,6 @@
 			// The widget's own fetch cannot add headers: the REST nonce travels as _wpnonce so the
 			// logged-in user is recognised. The server ignores any validations the browser sends.
 			generateUrl: withParams(cfg.generateUrl, genParams),
-			captcha: cfg.captcha === '1',
 			containerId: container.id,
 			locale: cfg.locale,
 			onSuccess: function (data) {

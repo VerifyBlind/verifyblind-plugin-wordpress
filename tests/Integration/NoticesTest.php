@@ -88,8 +88,7 @@ final class NoticesTest extends TestCase {
 		$this->assertNotContains( 'api_error', $this->ids() );
 	}
 
-	public function test_a_failed_bot_check_is_not_an_account_error(): void {
-		ApiErrors::record( 403, 'CAPTCHA_FAILED' );
+	public function test_rate_limiting_is_not_an_account_error(): void {
 		ApiErrors::record( 429, '' );
 		$this->assertCount( 0, $this->mails );
 		$this->assertNull( ApiErrors::recent() );
@@ -99,7 +98,6 @@ final class NoticesTest extends TestCase {
 	}
 
 	public function test_generate_records_upstream_account_errors(): void {
-		update_option( 'verifyblind_captcha', '0' );
 		$rule = $this->rule();
 		$this->mock_http(
 			function () {
@@ -116,7 +114,6 @@ final class NoticesTest extends TestCase {
 	}
 
 	public function test_a_successful_generate_clears_the_account_error(): void {
-		update_option( 'verifyblind_captcha', '0' );
 		$rule = $this->rule();
 		ApiErrors::record( 402, 'INSUFFICIENT_BALANCE' );
 		$this->assertNotNull( ApiErrors::recent() );

@@ -50,7 +50,6 @@ final class UpgradeRequiredTest extends TestCase {
 	}
 
 	public function test_visitor_gets_the_upgrade_message_and_the_admin_is_told(): void {
-		update_option( 'verifyblind_captcha', '0' );
 		$rule = $this->rule();
 		$this->upstream_426();
 		$req = new \WP_REST_Request( 'POST', '/verifyblind/v1/generate' );

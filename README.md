@@ -35,7 +35,7 @@ WordPress 6.0+, PHP 7.4+, WooCommerce 8.0+ (isteğe bağlı) ve ücretsiz bir Ve
 Sihirbazı sonra **VerifyBlind → Kurulum sihirbazı** menüsünden yeniden açabilirsiniz.
 
 ### Dış servisler
-Eklentinin VerifyBlind'a ve Cloudflare Turnstile'a neyi ne zaman gönderdiği [`readme.txt`](readme.txt) dosyasının **External services** bölümünde tek tek yazılıdır.
+Eklentinin VerifyBlind'a neyi ne zaman gönderdiği [`readme.txt`](readme.txt) dosyasının **External services** bölümünde tek tek yazılıdır.
 
 ### Geliştirme
 ```bash
@@ -78,7 +78,7 @@ WordPress 6.0+, PHP 7.4+, WooCommerce 8.0+ (optional) and a free VerifyBlind par
 You can open the wizard again under **VerifyBlind → Setup wizard**.
 
 ### External services
-What the plugin sends to VerifyBlind and Cloudflare Turnstile, and when, is listed in the **External services** section of [`readme.txt`](readme.txt).
+What the plugin sends to VerifyBlind, and when, is listed in the **External services** section of [`readme.txt`](readme.txt).
 
 ### Development
 ```bash

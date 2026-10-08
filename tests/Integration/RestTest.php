@@ -28,18 +28,38 @@ final class RestTest extends TestCase {
 				return array( 'body' => '{"nonce":"srv-nonce-1"}' );
 			}
 		);
-		// A tampering browser asks for "1+" — it must not reach VerifyBlind.
-		$res = $this->post( 'generate', array( 'public_key' => 'PK', 'validations' => array( 'age' => '1+' ), 'cf_token' => 'CF', 'sdk_version' => '1.0.1', 'additional_data' => 'x' ), array( 'rule' => $rule['id'] ) );
+		// A tampering browser asks for "1+" and adds extra fields (even a bot token) — only public_key, validations and sdk_version reach VerifyBlind.
+		$res = $this->post( 'generate', array( 'public_key' => 'PK', 'validations' => array( 'age' => '1+' ), 'sdk_version' => '1.0.1', 'additional_data' => 'x', 'bot_token' => 'BT' ), array( 'rule' => $rule['id'] ) );
 		$this->assertSame( 200, $res->get_status() );
 		$this->assertSame( array( 'nonce' => 'srv-nonce-1' ), $res->get_data() );
-		$this->assertSame( array( 'public_key' => 'PK', 'validations' => array( 'age' => '18+' ), 'cf_token' => 'CF', 'sdk_version' => '1.0.1' ), $sent );
+		$this->assertSame( array( 'public_key' => 'PK', 'validations' => array( 'age' => '18+' ), 'sdk_version' => '1.0.1' ), $sent );
 		$owner = \VerifyBlind\Owner::current( false );
 		$this->assertNotNull( $owner );
 		$this->assertSame( '18+', Nonces::consume( 'srv-nonce-1', $owner )['age_cond'] );
 	}
 
+	public function test_generate_forwards_exactly_public_key_validations_and_sdk_version(): void {
+		$rule = $this->rule( array( 'age' => '18+' ) );
+		$sent = array();
+		$this->mock_http(
+			function ( $url, $args ) use ( &$sent ) {
+				$sent[] = json_decode( $args['body'], true );
+				return array( 'body' => '{"nonce":"fwd-' . count( $sent ) . '"}' );
+			}
+		);
+		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK', 'sdk_version' => '1.0.1', 'bot_token' => 'BT', 'extra' => 'x' ), array( 'rule' => $rule['id'] ) )->get_status() );
+		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK', 'bot_token' => 'BT' ), array( 'rule' => $rule['id'] ) )->get_status() );
+		$this->assertSame( array( 'public_key', 'sdk_version', 'validations' ), $this->sorted_keys( $sent[0] ) );
+		$this->assertSame( array( 'public_key', 'validations' ), $this->sorted_keys( $sent[1] ) );
+	}
+
+	private function sorted_keys( array $a ): array {
+		$k = array_keys( $a );
+		sort( $k );
+		return $k;
+	}
+
 	public function test_generate_passes_upstream_errors_through(): void {
-		update_option( 'verifyblind_captcha', '0' );
 		$rule = $this->rule();
 		$this->mock_http(
 			function () {
@@ -54,45 +74,7 @@ final class RestTest extends TestCase {
 		$this->assertSame( 0, $this->nonce_rows() );
 	}
 
-	public function test_bot_protection_is_off_when_the_option_is_absent(): void {
-		delete_option( 'verifyblind_captcha' );
-		$this->assertFalse( \VerifyBlind\Settings::captcha() );
-		$rule = $this->rule();
-		$this->mock_http(
-			function () {
-				return array( 'body' => '{"nonce":"nocap-1"}' );
-			}
-		);
-		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) )->get_status() );
-	}
-
-	public function test_generate_requires_bot_token_when_captcha_is_on(): void {
-		update_option( 'verifyblind_captcha', '1' );
-		$rule  = $this->rule();
-		$calls = 0;
-		$this->mock_http(
-			function () use ( &$calls ) {
-				++$calls;
-				return array( 'body' => '{"nonce":"cap-1"}' );
-			}
-		);
-		foreach ( array( array( 'public_key' => 'PK' ), array( 'public_key' => 'PK', 'cf_token' => '' ), array( 'public_key' => 'PK', 'cf_token' => 123 ), array( 'public_key' => 'PK', 'cf_token' => ' ' ), array( 'public_key' => 'PK', 'cf_token' => "\t" ), array( 'public_key' => 'PK', 'cf_token' => "\xC2\xA0" ), array( 'public_key' => 'PK', 'cf_token' => 'a b' ) ) as $body ) {
-			$res = $this->post( 'generate', $body, array( 'rule' => $rule['id'] ) );
-			$this->assertSame( 400, $res->get_status() );
-			$this->assertSame( 'captcha_required', $res->get_data()['code'] );
-			$this->assertSame( 'Bot check could not be completed. Please reload the page and try again.', $res->get_data()['error'] );
-		}
-		$this->assertSame( 0, $calls, 'nothing is sent to VerifyBlind without a bot token' );
-		$this->assertNull( Owner::current( false ) );
-
-		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK', 'cf_token' => 'CF' ), array( 'rule' => $rule['id'] ) )->get_status() );
-		update_option( 'verifyblind_captcha', '0' );
-		$this->assertSame( 200, $this->post( 'generate', array( 'public_key' => 'PK' ), array( 'rule' => $rule['id'] ) )->get_status() );
-		$this->assertSame( 2, $calls );
-	}
-
 	public function test_generate_has_a_site_wide_per_minute_cap(): void {
-		update_option( 'verifyblind_captcha', '0' );
 		$this->away_from_minute_edge();
 		$rule  = $this->rule();
 		$calls = 0;
@@ -121,7 +103,6 @@ final class RestTest extends TestCase {
 	}
 
 	public function test_generate_cap_defaults_to_30_and_counts_failed_upstream_attempts(): void {
-		update_option( 'verifyblind_captcha', '0' );
 		$this->away_from_minute_edge();
 		$rule = $this->rule();
 		$this->mock_http(
@@ -150,7 +131,6 @@ final class RestTest extends TestCase {
 	}
 
 	public function test_generate_upstream_200_without_a_nonce_is_an_error(): void {
-		update_option( 'verifyblind_captcha', '0' );
 		$rule = $this->rule();
 		foreach ( array( '{"foo":1}', 'not json', '{"nonce":""}', '{"nonce":5}' ) as $body ) {
 			remove_all_filters( 'pre_http_request' );
@@ -168,7 +148,6 @@ final class RestTest extends TestCase {
 	}
 
 	public function test_generate_binds_a_logged_in_user_without_a_guest_cookie(): void {
-		update_option( 'verifyblind_captcha', '0' );
 		$uid = $this->make_user();
 		wp_set_current_user( $uid );
 		$rule = $this->rule();

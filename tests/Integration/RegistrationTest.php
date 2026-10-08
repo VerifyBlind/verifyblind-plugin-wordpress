@@ -59,7 +59,6 @@ final class RegistrationTest extends TestCase {
 	}
 
 	public function test_a_guest_may_start_a_one_person_check_only_for_sign_up(): void {
-		update_option( 'verifyblind_captcha', '0' );
 		$this->mock_http(
 			function () {
 				return array( 'body' => '{"nonce":"reg-gen"}' );

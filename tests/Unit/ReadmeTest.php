@@ -58,11 +58,8 @@ final class ReadmeTest extends TestCase {
 			'https://cdn.verifyblind.com/sdk/v1.0.1/verifyblind.js',
 			'qr-code-styling.min.js',
 			'https://app.verifyblind.com',
-			'https://challenges.cloudflare.com/turnstile/v0/api.js',
 			'https://verifyblind.com/en/terms',
 			'https://verifyblind.com/en/privacy',
-			'https://www.cloudflare.com/website-terms/',
-			'https://www.cloudflare.com/turnstile-privacy-policy/',
 		);
 		foreach ( $needles as $needle ) {
 			$this->assertStringContainsString( $needle, $block, $needle );

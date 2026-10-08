@@ -28,7 +28,7 @@ final class SettingsPage {
 				},
 			)
 		);
-		foreach ( array( 'verifyblind_test_mode', 'verifyblind_captcha' ) as $opt ) {
+		foreach ( array( 'verifyblind_test_mode' ) as $opt ) {
 			register_setting(
 				'verifyblind',
 				$opt,
@@ -83,10 +83,6 @@ final class SettingsPage {
 								?>
 							</p>
 						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Bot protection', 'verifyblind' ); ?></th>
-						<td><label><input type="checkbox" name="verifyblind_captcha" value="1" <?php checked( get_option( 'verifyblind_captcha', '0' ), '1' ); ?>> <?php esc_html_e( 'Invisible bot check before a verification starts. Only works on domains VerifyBlind has enabled for bot protection — leave it off unless VerifyBlind confirmed your domain.', 'verifyblind' ); ?></label></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Test mode', 'verifyblind' ); ?></th>

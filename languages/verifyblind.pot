@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-08T10:50:45+00:00\n"
+"POT-Creation-Date: 2026-10-08T11:10:11+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: verifyblind\n"
@@ -462,43 +462,35 @@ msgid "Get it from %s → Settings. Free account; 2,000 verifications a month ar
 msgstr ""
 
 #: includes/Admin/SettingsPage.php:88
-msgid "Bot protection"
-msgstr ""
-
-#: includes/Admin/SettingsPage.php:89
-msgid "Invisible bot check before a verification starts. Only works on domains VerifyBlind has enabled for bot protection — leave it off unless VerifyBlind confirmed your domain."
-msgstr ""
-
-#: includes/Admin/SettingsPage.php:92
 msgid "Test mode"
 msgstr ""
 
-#: includes/Admin/SettingsPage.php:93
+#: includes/Admin/SettingsPage.php:89
 msgid "Accept verifications made with the demo card. Turn off on a live site."
 msgstr ""
 
-#: includes/Admin/SettingsPage.php:96
+#: includes/Admin/SettingsPage.php:92
 msgid "Verified badge"
 msgstr ""
 
-#: includes/Admin/SettingsPage.php:101
+#: includes/Admin/SettingsPage.php:97
 msgid "A small \"Verified with VerifyBlind\" badge next to the name of members who passed the one-person check."
 msgstr ""
 
-#: includes/Admin/SettingsPage.php:108
+#: includes/Admin/SettingsPage.php:104
 msgid "Connection"
 msgstr ""
 
-#: includes/Admin/SettingsPage.php:112
+#: includes/Admin/SettingsPage.php:108
 msgid "Test connection"
 msgstr ""
 
-#: includes/Admin/SettingsPage.php:115
+#: includes/Admin/SettingsPage.php:111
 #: includes/Admin/Wizard.php:261
 msgid "Revoke URL"
 msgstr ""
 
-#: includes/Admin/SettingsPage.php:116
+#: includes/Admin/SettingsPage.php:112
 #: includes/Admin/Wizard.php:262
 msgid "Paste this address into the partner portal → Settings → Revoke URL. When a person withdraws consent in the VerifyBlind app, their result is removed here automatically. It must be HTTPS on your registered domain."
 msgstr ""
@@ -734,62 +726,58 @@ msgid "The verification answered a different question than this site asked. Plea
 msgstr ""
 
 #: includes/Messages.php:38
-msgid "Bot check could not be completed. Please reload the page and try again."
-msgstr ""
-
-#: includes/Messages.php:40
 msgid "Too many verification attempts right now. Please try again in a minute."
 msgstr ""
 
-#: includes/Messages.php:42
+#: includes/Messages.php:40
 msgid "Please verify with VerifyBlind before creating an account. The verification box is on the registration form."
 msgstr ""
 
-#: includes/Messages.php:44
+#: includes/Messages.php:42
 msgid "Verify with VerifyBlind above to create your account."
 msgstr ""
 
-#: includes/Messages.php:46
+#: includes/Messages.php:44
 msgid "Please verify with VerifyBlind before posting."
 msgstr ""
 
-#: includes/Messages.php:48
+#: includes/Messages.php:46
 msgid "Your cart contains products that need verification with VerifyBlind. Please verify on the checkout page, then place the order."
 msgstr ""
 
-#: includes/Messages.php:50
+#: includes/Messages.php:48
 msgid "Please log in or create an account to buy the products in your cart."
 msgstr ""
 
-#: includes/Messages.php:52
+#: includes/Messages.php:50
 msgid "This product needs verification with VerifyBlind before it can be added to the cart."
 msgstr ""
 
-#: includes/Messages.php:54
+#: includes/Messages.php:52
 msgid "This coupon is only for customers verified with VerifyBlind."
 msgstr ""
 
-#: includes/Messages.php:56
+#: includes/Messages.php:54
 msgid "Please log in to use this coupon."
 msgstr ""
 
-#: includes/Messages.php:58
+#: includes/Messages.php:56
 msgid "This coupon was already used by the same person."
 msgstr ""
 
-#: includes/Messages.php:60
+#: includes/Messages.php:58
 msgid "This coupon needs a one-person verification on your account. Verify again with your own ID card."
 msgstr ""
 
-#: includes/Messages.php:62
+#: includes/Messages.php:60
 msgid "This coupon is being used in another order right now. Please try again in a moment."
 msgstr ""
 
-#: includes/Messages.php:64
+#: includes/Messages.php:62
 msgid "Verification on this site needs a plugin update. Please try again later."
 msgstr ""
 
-#: includes/Messages.php:66
+#: includes/Messages.php:64
 msgid "Verification is not available right now. Please try again shortly."
 msgstr ""
 
@@ -990,83 +978,83 @@ msgstr ""
 msgid "Only grant a role (used by another plugin)"
 msgstr ""
 
-#: includes/Widget.php:63
+#: includes/Widget.php:62
 msgid "Verified. Reloading…"
 msgstr ""
 
-#: includes/Widget.php:64
+#: includes/Widget.php:63
 msgid "Verified. You can continue."
 msgstr ""
 
-#: includes/Widget.php:65
+#: includes/Widget.php:64
 msgid "Verification could not be completed. Please try again."
 msgstr ""
 
-#: includes/Widget.php:74
+#: includes/Widget.php:73
 msgid "This content is available to verified members."
 msgstr ""
 
 #. translators: %d: minimum age
-#: includes/Widget.php:78
+#: includes/Widget.php:77
 #, php-format
 msgid "This content is available to visitors aged %d and over."
 msgstr ""
 
 #. translators: %d: age limit
-#: includes/Widget.php:82
+#: includes/Widget.php:81
 #, php-format
 msgid "This content is available to visitors under %d."
 msgstr ""
 
 #. translators: 1: minimum age, 2: maximum age (inclusive)
-#: includes/Widget.php:85
+#: includes/Widget.php:84
 #, php-format
 msgid "This content is available to visitors aged %1$d to %2$d."
 msgstr ""
 
 #. translators: %d: minimum age
-#: includes/Widget.php:95
+#: includes/Widget.php:94
 #, php-format
 msgid "Age %d or over."
 msgstr ""
 
 #. translators: %d: age limit
-#: includes/Widget.php:98
+#: includes/Widget.php:97
 #, php-format
 msgid "Under %d."
 msgstr ""
 
 #. translators: 1: minimum age, 2: maximum age (inclusive)
-#: includes/Widget.php:101
+#: includes/Widget.php:100
 #, php-format
 msgid "Age %1$d to %2$d."
 msgstr ""
 
-#: includes/Widget.php:105
+#: includes/Widget.php:104
 msgid "One person, one account."
 msgstr ""
 
-#: includes/Widget.php:124
+#: includes/Widget.php:123
 msgid "Verify without sharing your identity data. The site only receives an eligible / not eligible answer."
 msgstr ""
 
-#: includes/Widget.php:125
+#: includes/Widget.php:124
 msgid "Verify with VerifyBlind"
 msgstr ""
 
-#: includes/Widget.php:128
+#: includes/Widget.php:127
 msgid "How does it work?"
 msgstr ""
 
-#: includes/Widget.php:140
+#: includes/Widget.php:139
 msgid "Log in"
 msgstr ""
 
-#: includes/Widget.php:143
+#: includes/Widget.php:142
 msgid "Create an account"
 msgstr ""
 
-#: includes/Widget.php:150
+#: includes/Widget.php:149
 msgid "This check needs an account: log in first, then verify."
 msgstr ""
 

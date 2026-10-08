@@ -458,43 +458,35 @@ msgid "Get it from %s → Settings. Free account; 2,000 verifications a month ar
 msgstr "Anahtarı %s → Ayarlar bölümünden alın. Hesap ücretsiz; ayda 2.000 doğrulama da ücretsiz."
 
 #: includes/Admin/SettingsPage.php:88
-msgid "Bot protection"
-msgstr "Bot koruması"
-
-#: includes/Admin/SettingsPage.php:89
-msgid "Invisible bot check before a verification starts. Only works on domains VerifyBlind has enabled for bot protection — leave it off unless VerifyBlind confirmed your domain."
-msgstr "Doğrulama başlamadan önce görünmez bot kontrolü. Yalnızca VerifyBlind'ın bot koruması için açtığı alan adlarında çalışır; VerifyBlind alan adınızı onaylamadıkça kapalı bırakın."
-
-#: includes/Admin/SettingsPage.php:92
 msgid "Test mode"
 msgstr "Test modu"
 
-#: includes/Admin/SettingsPage.php:93
+#: includes/Admin/SettingsPage.php:89
 msgid "Accept verifications made with the demo card. Turn off on a live site."
 msgstr "Demo kartla yapılan doğrulamaları kabul et. Canlı sitede kapatın."
 
-#: includes/Admin/SettingsPage.php:96
+#: includes/Admin/SettingsPage.php:92
 msgid "Verified badge"
 msgstr "Doğrulama rozeti"
 
-#: includes/Admin/SettingsPage.php:101
+#: includes/Admin/SettingsPage.php:97
 msgid "A small \"Verified with VerifyBlind\" badge next to the name of members who passed the one-person check."
 msgstr "Tek kişi kontrolünü geçen üyelerin adının yanında küçük bir \"VerifyBlind ile doğrulandı\" rozeti."
 
-#: includes/Admin/SettingsPage.php:108
+#: includes/Admin/SettingsPage.php:104
 msgid "Connection"
 msgstr "Bağlantı"
 
-#: includes/Admin/SettingsPage.php:112
+#: includes/Admin/SettingsPage.php:108
 msgid "Test connection"
 msgstr "Bağlantıyı test et"
 
-#: includes/Admin/SettingsPage.php:115
+#: includes/Admin/SettingsPage.php:111
 #: includes/Admin/Wizard.php:261
 msgid "Revoke URL"
 msgstr "İptal bildirimi adresi"
 
-#: includes/Admin/SettingsPage.php:116
+#: includes/Admin/SettingsPage.php:112
 #: includes/Admin/Wizard.php:262
 msgid "Paste this address into the partner portal → Settings → Revoke URL. When a person withdraws consent in the VerifyBlind app, their result is removed here automatically. It must be HTTPS on your registered domain."
 msgstr "Bu adresi partner portalında Ayarlar → Revoke URL alanına yapıştırın. Kişi VerifyBlind uygulamasında onayını geri çektiğinde, sonucu buradan da otomatik olarak silinir. Adres, kayıtlı alan adınızda ve HTTPS olmalıdır."
@@ -730,62 +722,58 @@ msgid "The verification answered a different question than this site asked. Plea
 msgstr "Doğrulama, bu sitenin sorduğundan farklı bir soruyu yanıtladı. Lütfen tekrar deneyin."
 
 #: includes/Messages.php:38
-msgid "Bot check could not be completed. Please reload the page and try again."
-msgstr "Bot kontrolü tamamlanamadı. Lütfen sayfayı yenileyip tekrar deneyin."
-
-#: includes/Messages.php:40
 msgid "Too many verification attempts right now. Please try again in a minute."
 msgstr "Şu anda çok fazla doğrulama denemesi var. Lütfen bir dakika sonra tekrar deneyin."
 
-#: includes/Messages.php:42
+#: includes/Messages.php:40
 msgid "Please verify with VerifyBlind before creating an account. The verification box is on the registration form."
 msgstr "Hesap oluşturmadan önce lütfen VerifyBlind ile doğrulayın. Doğrulama kutusu kayıt formunda."
 
-#: includes/Messages.php:44
+#: includes/Messages.php:42
 msgid "Verify with VerifyBlind above to create your account."
 msgstr "Hesabınızı oluşturmak için yukarıdan VerifyBlind ile doğrulayın."
 
-#: includes/Messages.php:46
+#: includes/Messages.php:44
 msgid "Please verify with VerifyBlind before posting."
 msgstr "Göndermeden önce lütfen VerifyBlind ile doğrulayın."
 
-#: includes/Messages.php:48
+#: includes/Messages.php:46
 msgid "Your cart contains products that need verification with VerifyBlind. Please verify on the checkout page, then place the order."
 msgstr "Sepetinizde VerifyBlind ile doğrulama gerektiren ürünler var. Lütfen ödeme sayfasında doğrulayın, ardından siparişi verin."
 
-#: includes/Messages.php:50
+#: includes/Messages.php:48
 msgid "Please log in or create an account to buy the products in your cart."
 msgstr "Sepetinizdeki ürünleri almak için lütfen giriş yapın ya da hesap oluşturun."
 
-#: includes/Messages.php:52
+#: includes/Messages.php:50
 msgid "This product needs verification with VerifyBlind before it can be added to the cart."
 msgstr "Bu ürünü sepete eklemeden önce VerifyBlind ile doğrulama yapmanız gerekiyor."
 
-#: includes/Messages.php:54
+#: includes/Messages.php:52
 msgid "This coupon is only for customers verified with VerifyBlind."
 msgstr "Bu kupon yalnızca VerifyBlind ile doğrulanmış müşteriler içindir."
 
-#: includes/Messages.php:56
+#: includes/Messages.php:54
 msgid "Please log in to use this coupon."
 msgstr "Bu kuponu kullanmak için lütfen giriş yapın."
 
-#: includes/Messages.php:58
+#: includes/Messages.php:56
 msgid "This coupon was already used by the same person."
 msgstr "Bu kupon aynı kişi tarafından zaten kullanıldı."
 
-#: includes/Messages.php:60
+#: includes/Messages.php:58
 msgid "This coupon needs a one-person verification on your account. Verify again with your own ID card."
 msgstr "Bu kupon için hesabınızda tek kişi doğrulaması gerekiyor. Kendi kimlik kartınızla yeniden doğrulayın."
 
-#: includes/Messages.php:62
+#: includes/Messages.php:60
 msgid "This coupon is being used in another order right now. Please try again in a moment."
 msgstr "Bu kupon şu anda başka bir siparişte kullanılıyor. Lütfen biraz sonra tekrar deneyin."
 
-#: includes/Messages.php:64
+#: includes/Messages.php:62
 msgid "Verification on this site needs a plugin update. Please try again later."
 msgstr "Bu sitede doğrulama için bir eklenti güncellemesi gerekiyor. Lütfen daha sonra tekrar deneyin."
 
-#: includes/Messages.php:66
+#: includes/Messages.php:64
 msgid "Verification is not available right now. Please try again shortly."
 msgstr "Doğrulama şu anda yapılamıyor. Lütfen biraz sonra tekrar deneyin."
 
@@ -982,83 +970,83 @@ msgstr "Sayfa, yazı ya da kategori kilidi"
 msgid "Only grant a role (used by another plugin)"
 msgstr "Yalnızca rol ver (başka bir eklenti kullanır)"
 
-#: includes/Widget.php:63
+#: includes/Widget.php:62
 msgid "Verified. Reloading…"
 msgstr "Doğrulandı. Sayfa yenileniyor…"
 
-#: includes/Widget.php:64
+#: includes/Widget.php:63
 msgid "Verified. You can continue."
 msgstr "Doğrulandı. Devam edebilirsiniz."
 
-#: includes/Widget.php:65
+#: includes/Widget.php:64
 msgid "Verification could not be completed. Please try again."
 msgstr "Doğrulama tamamlanamadı. Lütfen tekrar deneyin."
 
-#: includes/Widget.php:74
+#: includes/Widget.php:73
 msgid "This content is available to verified members."
 msgstr "Bu içerik doğrulanmış üyelere açıktır."
 
 #. translators: %d: minimum age
-#: includes/Widget.php:78
+#: includes/Widget.php:77
 #, php-format
 msgid "This content is available to visitors aged %d and over."
 msgstr "Bu içerik %d yaş ve üzerindeki ziyaretçilere açıktır."
 
 #. translators: %d: age limit
-#: includes/Widget.php:82
+#: includes/Widget.php:81
 #, php-format
 msgid "This content is available to visitors under %d."
 msgstr "Bu içerik %d yaşından küçük ziyaretçilere açıktır."
 
 #. translators: 1: minimum age, 2: maximum age (inclusive)
-#: includes/Widget.php:85
+#: includes/Widget.php:84
 #, php-format
 msgid "This content is available to visitors aged %1$d to %2$d."
 msgstr "Bu içerik %1$d ile %2$d yaş arasındaki ziyaretçilere açıktır."
 
 #. translators: %d: minimum age
-#: includes/Widget.php:95
+#: includes/Widget.php:94
 #, php-format
 msgid "Age %d or over."
 msgstr "%d yaş ve üzeri."
 
 #. translators: %d: age limit
-#: includes/Widget.php:98
+#: includes/Widget.php:97
 #, php-format
 msgid "Under %d."
 msgstr "%d yaşından küçük."
 
 #. translators: 1: minimum age, 2: maximum age (inclusive)
-#: includes/Widget.php:101
+#: includes/Widget.php:100
 #, php-format
 msgid "Age %1$d to %2$d."
 msgstr "%1$d–%2$d yaş arası."
 
-#: includes/Widget.php:105
+#: includes/Widget.php:104
 msgid "One person, one account."
 msgstr "Tek kişi, tek hesap."
 
-#: includes/Widget.php:124
+#: includes/Widget.php:123
 msgid "Verify without sharing your identity data. The site only receives an eligible / not eligible answer."
 msgstr "Kimlik bilgileriniz bu siteye ulaşmadan doğrulama yapın. Site yalnızca \"uygun / uygun değil\" yanıtını alır."
 
-#: includes/Widget.php:125
+#: includes/Widget.php:124
 msgid "Verify with VerifyBlind"
 msgstr "VerifyBlind ile doğrula"
 
-#: includes/Widget.php:128
+#: includes/Widget.php:127
 msgid "How does it work?"
 msgstr "Nasıl çalışır?"
 
-#: includes/Widget.php:140
+#: includes/Widget.php:139
 msgid "Log in"
 msgstr "Giriş yap"
 
-#: includes/Widget.php:143
+#: includes/Widget.php:142
 msgid "Create an account"
 msgstr "Hesap oluştur"
 
-#: includes/Widget.php:150
+#: includes/Widget.php:149
 msgid "This check needs an account: log in first, then verify."
 msgstr "Bu kontrol için hesap gerekiyor: önce giriş yapın, sonra doğrulayın."
 

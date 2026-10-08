@@ -34,8 +34,6 @@ final class Messages {
 				return __( 'Please log in to verify your account.', 'verifyblind' );
 			case 'condition_mismatch':
 				return __( 'The verification answered a different question than this site asked. Please try again.', 'verifyblind' );
-			case 'captcha_required':
-				return __( 'Bot check could not be completed. Please reload the page and try again.', 'verifyblind' );
 			case 'rate_limited':
 				return __( 'Too many verification attempts right now. Please try again in a minute.', 'verifyblind' );
 			case 'registration_required':

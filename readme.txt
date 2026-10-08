@@ -33,7 +33,7 @@ This plugin connects your site to VerifyBlind (https://verifyblind.com), the ser
 
 From your site's server to the VerifyBlind API (https://api.verifyblind.com):
 
-* When a visitor presses "Verify with VerifyBlind": `POST /api/pop/generate` with your site's API key, a one-time public key created in the visitor's browser for this verification, the conditions the rule asks for (for example age 18+ and/or the one-person check), the Cloudflare Turnstile token when bot protection is on, the widget version, the language the visitor's browser asks for (the Accept-Language header), and the plugin version (header `X-VerifyBlind-Client: wordpress/1.0.0`). No name, e-mail address or IP address of the visitor is sent.
+* When a visitor presses "Verify with VerifyBlind": `POST /api/pop/generate` with your site's API key, a one-time public key created in the visitor's browser for this verification, the conditions the rule asks for (for example age 18+ and/or the one-person check), the widget version, the language the visitor's browser asks for (the Accept-Language header), and the plugin version (header `X-VerifyBlind-Client: wordpress/1.0.0`). No name, e-mail address or IP address of the visitor is sent.
 * When you test the connection (setup wizard or Settings): the same call with VerifyBlind's own public key and an age 18+ condition. The session is never used and not billed.
 * When a verification result arrives: `GET /api/public/enclave-key` (VerifyBlind's public key, kept for about a minute) to check the result's signature on your server.
 * When VerifyBlind calls your revoke address: `GET /api/public/webhook-signing-key` (kept for an hour) to check that the call really comes from VerifyBlind.
@@ -49,11 +49,6 @@ From VerifyBlind to your site: when a person withdraws consent in the VerifyBlin
 VerifyBlind terms of service: https://verifyblind.com/en/terms
 VerifyBlind privacy policy: https://verifyblind.com/en/privacy
 VerifyBlind data processing terms: https://verifyblind.com/en/dpa
-
-Cloudflare Turnstile (bot protection, off by default): only when the site owner turns bot protection on under VerifyBlind → Settings → Bot protection, the widget loads https://challenges.cloudflare.com/turnstile/v0/api.js in the visitor's browser and runs an invisible bot check; its token goes to VerifyBlind with the request above. While bot protection is off, nothing is loaded from Cloudflare.
-
-Cloudflare terms: https://www.cloudflare.com/website-terms/
-Cloudflare Turnstile privacy policy: https://www.cloudflare.com/turnstile-privacy-policy/
 
 The badge images ship with the plugin; readers' browsers never fetch them from VerifyBlind. The VerifyBlind enclave and mobile apps are published as public source code (review-only licence); the SDKs are open source and this plugin is GPL.
 
