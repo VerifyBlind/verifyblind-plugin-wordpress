@@ -11,7 +11,7 @@ WordPress ve WooCommerce için VerifyBlind eklentisi: çipli T.C. kimlik kartıy
 ### Ne yapar?
 Ziyaretçi VerifyBlind uygulamasıyla çipli kimlik kartını telefonunda okutur ve canlı yüz kontrolünden geçer. Doğrulama kapalı bir ortamda (AWS Nitro Enclave) yapılır; ad, T.C. kimlik numarası, doğum tarihi ve fotoğraf ne siteye ne de VerifyBlind'a ulaşır. Site yalnız sorduğu koşulun cevabını (ör. 18+ → uygun) ve tek kişi kontrolünde yalnız bu site için üretilen bir **kişiye özel kod** (takma ad) alır.
 
-Doğrulamanın yapıldığı enclave ve mobil uygulamalar açık kaynaktır (yalnızca inceleme amaçlı); bu eklenti ise GPL-2.0-or-later lisanslıdır.
+Doğrulamanın yapıldığı enclave'in ve mobil uygulamaların kaynak kodu herkese açıktır (yalnızca inceleme amaçlı lisans); bu eklenti ise GPL-2.0-or-later lisanslıdır.
 
 **Kurallar** neyin nerede sorulacağını belirler:
 - **Nerede:** üye kaydı (WordPress + WooCommerce), sayfa / yazı / kategori kilidi ("VerifyBlind kilidi" bloğu ve `[verifyblind_gate]` kısa kodu), yorumlar, WooCommerce ödeme, ürün sayfası, mağaza girişi, kupon, ürün değerlendirmesi ya da yalnız rol ver.
