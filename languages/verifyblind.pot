@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-08T09:14:55+00:00\n"
+"POT-Creation-Date: 2026-10-08T10:08:03+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: verifyblind\n"
@@ -90,7 +90,7 @@ msgid "Remove verification"
 msgstr ""
 
 #: includes/Admin/MembersPage.php:89
-#: includes/Admin/RulesPage.php:92
+#: includes/Admin/RulesPage.php:93
 #: includes/Admin/Wizard.php:285
 msgid "one person"
 msgstr ""
@@ -100,7 +100,7 @@ msgid "This account does not exist."
 msgstr ""
 
 #: includes/Admin/Menu.php:23
-#: includes/Admin/RulesPage.php:61
+#: includes/Admin/RulesPage.php:62
 msgid "Rules"
 msgstr ""
 
@@ -138,8 +138,8 @@ msgid "No WooCommerce rules yet."
 msgstr ""
 
 #: includes/Admin/ProductRulesBox.php:55
-#: includes/Admin/RulesPage.php:62
-#: includes/Admin/RulesPage.php:138
+#: includes/Admin/RulesPage.php:63
+#: includes/Admin/RulesPage.php:139
 msgid "Add rule"
 msgstr ""
 
@@ -190,250 +190,254 @@ msgid "The age condition is not valid (ages 1–150; a range needs a lower and a
 msgstr ""
 
 #: includes/Admin/RulesPage.php:37
+msgid "VerifyBlind verifies people aged 15 and over, so this age condition can never be met."
+msgstr ""
+
+#: includes/Admin/RulesPage.php:38
 msgid "Ask for an age condition, the one-person check, or both."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:39
+#: includes/Admin/RulesPage.php:40
 msgid "The rule could not be saved."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:65
+#: includes/Admin/RulesPage.php:66
 msgid "Rule saved."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:65
+#: includes/Admin/RulesPage.php:66
 msgid "Rule deleted."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:69
+#: includes/Admin/RulesPage.php:70
 #: includes/Admin/Wizard.php:224
 #: assets/js/gate-block.js:27
 msgid "Rule"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:70
+#: includes/Admin/RulesPage.php:71
 #: includes/Admin/Wizard.php:225
 msgid "Where"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:71
+#: includes/Admin/RulesPage.php:72
 #: includes/Admin/Wizard.php:226
 msgid "Asks for"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:72
+#: includes/Admin/RulesPage.php:73
 msgid "Same person on another account"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:73
+#: includes/Admin/RulesPage.php:74
 msgid "Role for those who pass"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:74
+#: includes/Admin/RulesPage.php:75
 msgid "Status"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:75
+#: includes/Admin/RulesPage.php:76
 msgid "Shortcode"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:79
+#: includes/Admin/RulesPage.php:80
 msgid "No rules yet."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:99
-#: includes/Admin/RulesPage.php:149
+#: includes/Admin/RulesPage.php:100
+#: includes/Admin/RulesPage.php:150
 #: includes/Admin/Wizard.php:223
 msgid "On"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:99
+#: includes/Admin/RulesPage.php:100
 msgid "Off"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:105
+#: includes/Admin/RulesPage.php:106
 msgid "A role is optional. It is only needed to connect another plugin (forum, membership, courses) that restricts access by role."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:138
+#: includes/Admin/RulesPage.php:139
 msgid "Edit rule"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:147
+#: includes/Admin/RulesPage.php:148
 msgid "Name"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:151
+#: includes/Admin/RulesPage.php:152
 msgid "1 · Where?"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:152
+#: includes/Admin/RulesPage.php:153
 msgid "Applies to"
 msgstr ""
 
 #. translators: %s: placement name
-#: includes/Admin/RulesPage.php:158
+#: includes/Admin/RulesPage.php:159
 #, php-format
 msgid "%s — needs WooCommerce"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:161
+#: includes/Admin/RulesPage.php:162
 msgid "For a lock you can also place the \"VerifyBlind lock\" block or the shortcode in any content."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:162
+#: includes/Admin/RulesPage.php:163
 msgid "Pages"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:168
+#: includes/Admin/RulesPage.php:169
 msgid "A comment rule with nothing chosen here applies to every post."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:169
+#: includes/Admin/RulesPage.php:170
 msgid "Categories"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:173
+#: includes/Admin/RulesPage.php:174
 msgid "Other post IDs"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:176
+#: includes/Admin/RulesPage.php:177
 msgid "Product IDs"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:178
+#: includes/Admin/RulesPage.php:179
 msgid "You can also tick the rule in the VerifyBlind box on the product edit screen. Checkout and product-page rules apply only to the products and categories chosen here; a review rule with nothing chosen applies to every product."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:179
+#: includes/Admin/RulesPage.php:180
 msgid "Product categories"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:183
+#: includes/Admin/RulesPage.php:184
 msgid "Subcategories are included."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:184
+#: includes/Admin/RulesPage.php:185
 msgid "Coupons"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:187
+#: includes/Admin/RulesPage.php:188
 msgid "No coupons yet."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:193
+#: includes/Admin/RulesPage.php:194
 msgid "Guests"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:195
+#: includes/Admin/RulesPage.php:196
 msgid "Guests verify at checkout (kept for 24 hours in their browser)"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:196
+#: includes/Admin/RulesPage.php:197
 msgid "Require a customer account for these products"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:200
+#: includes/Admin/RulesPage.php:201
 msgid "2 · What is asked?"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:201
+#: includes/Admin/RulesPage.php:202
 msgid "Age condition"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:203
+#: includes/Admin/RulesPage.php:204
 msgid "No age"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:204
+#: includes/Admin/RulesPage.php:205
 msgid "At least"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:205
+#: includes/Admin/RulesPage.php:206
 msgid "Younger than"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:206
+#: includes/Admin/RulesPage.php:207
 msgid "From … up to (not including)"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:209
+#: includes/Admin/RulesPage.php:210
 msgid "upper"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:210
+#: includes/Admin/RulesPage.php:211
 #: includes/Privacy.php:51
 msgid "One-person check"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:211
+#: includes/Admin/RulesPage.php:212
 msgid "Recognise the same person across accounts (visitors log in first; on the sign-up form they verify while creating the account)"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:212
+#: includes/Admin/RulesPage.php:213
 #: includes/Admin/Wizard.php:251
 msgid "Each requested item counts as one verification: age = 1, one-person check = 1. 2,000 verifications a month are free."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:214
+#: includes/Admin/RulesPage.php:215
 msgid "3 · Same person on another account"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:219
+#: includes/Admin/RulesPage.php:220
 msgid "Only used when the one-person check is on."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:221
+#: includes/Admin/RulesPage.php:222
 msgid "4 · For those who pass"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:222
+#: includes/Admin/RulesPage.php:223
 msgid "Add role"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:223
+#: includes/Admin/RulesPage.php:224
 msgid "— none —"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:233
+#: includes/Admin/RulesPage.php:234
 msgid "or new role:"
 msgstr ""
 
 #. translators: %s: role slug
-#: includes/Admin/RulesPage.php:235
+#: includes/Admin/RulesPage.php:236
 #, php-format
 msgid "The role %s can no longer be granted automatically because it has editing or admin rights; choose another role."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:237
+#: includes/Admin/RulesPage.php:238
 msgid "Added next to the existing role (Customer, Subscriber…), never replacing it. Only roles without editing or management powers are offered. What the role may do is set in the plugin that uses it."
 msgstr ""
 
-#: includes/Admin/RulesPage.php:238
+#: includes/Admin/RulesPage.php:239
 msgid "Valid for"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:240
+#: includes/Admin/RulesPage.php:241
 msgid "No expiry"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:241
+#: includes/Admin/RulesPage.php:242
 msgid "6 months"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:242
+#: includes/Admin/RulesPage.php:243
 msgid "1 year"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:245
+#: includes/Admin/RulesPage.php:246
 msgid "Save rule"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:248
+#: includes/Admin/RulesPage.php:249
 msgid "Delete this rule?"
 msgstr ""
 
-#: includes/Admin/RulesPage.php:252
+#: includes/Admin/RulesPage.php:253
 msgid "Delete rule"
 msgstr ""
 
@@ -862,7 +866,7 @@ msgid "Verify with VerifyBlind to enter this site."
 msgstr ""
 
 #: includes/Presets.php:18
-msgid "Shop selling alcohol, tobacco or adult products"
+msgid "Shop selling age-restricted products"
 msgstr ""
 
 #: includes/Presets.php:19

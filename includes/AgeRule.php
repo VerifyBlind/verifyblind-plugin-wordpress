@@ -10,6 +10,8 @@ defined( 'ABSPATH' ) || exit;
  */
 final class AgeRule {
 	const MAX_AGE = 150;
+	/** VerifyBlind verifies people aged 15 and over only (the app and the enclave refuse younger cards). */
+	const MIN_VERIFIABLE_AGE = 15;
 
 	/** @var int */
 	private $min;
@@ -37,6 +39,11 @@ final class AgeRule {
 			return ( $a < $b && $b <= self::MAX_AGE ) ? new self( $a, $b ) : null;
 		}
 		return null;
+	}
+
+	/** True when nobody VerifyBlind can verify (age >= 15) fits the interval, e.g. 15- or 10-15. */
+	public function is_unreachable(): bool {
+		return null !== $this->max && $this->max <= self::MIN_VERIFIABLE_AGE;
 	}
 
 	public function min(): int {

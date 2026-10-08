@@ -64,7 +64,7 @@ final class Rules {
 	/**
 	 * Pure: no WordPress calls.
 	 *
-	 * @throws \InvalidArgumentException bad_id|empty_name|bad_placement|bad_age|empty_request
+	 * @throws \InvalidArgumentException bad_id|empty_name|bad_placement|bad_age|age_unreachable|empty_request
 	 */
 	public static function sanitize( array $in, array $allowed_placements ): array {
 		$id = isset( $in['id'] ) ? (string) $in['id'] : '';
@@ -84,6 +84,9 @@ final class Rules {
 			$parsed = AgeRule::parse( $age );
 			if ( null === $parsed ) {
 				throw new \InvalidArgumentException( 'bad_age' );
+			}
+			if ( $parsed->is_unreachable() ) {
+				throw new \InvalidArgumentException( 'age_unreachable' );
 			}
 			$age = $parsed->to_string();
 		}

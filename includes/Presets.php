@@ -15,7 +15,7 @@ final class Presets {
 	public static function all(): array {
 		return array(
 			'age_shop'    => array(
-				'label'       => __( 'Shop selling alcohol, tobacco or adult products', 'verifyblind' ),
+				'label'       => __( 'Shop selling age-restricted products', 'verifyblind' ),
 				'help'        => __( 'Age 18+ at checkout for the products or categories you choose.', 'verifyblind' ),
 				'woocommerce' => true,
 				'rules'       => array(

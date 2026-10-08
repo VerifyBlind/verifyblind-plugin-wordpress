@@ -34,6 +34,7 @@ final class RulesPage {
 			'empty_name'    => __( 'Give the rule a name.', 'verifyblind' ),
 			'bad_placement' => __( 'Choose where the rule applies.', 'verifyblind' ),
 			'bad_age'       => __( 'The age condition is not valid (ages 1–150; a range needs a lower and a higher age).', 'verifyblind' ),
+			'age_unreachable' => __( 'VerifyBlind verifies people aged 15 and over, so this age condition can never be met.', 'verifyblind' ),
 			'empty_request' => __( 'Ask for an age condition, the one-person check, or both.', 'verifyblind' ),
 		);
 		return isset( $map[ $code ] ) ? $map[ $code ] : __( 'The rule could not be saved.', 'verifyblind' );

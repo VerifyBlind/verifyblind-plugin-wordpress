@@ -63,6 +63,23 @@ final class RulesSanitizeTest extends TestCase {
 		$this->assertSame( '', Rules::age_from_form( 'none', 18, 0 ) );
 	}
 
+	public function test_ages_nobody_verifiable_can_meet_are_refused(): void {
+		foreach ( array( '15-', '10-', '1-', '5-15', '14-15' ) as $age ) {
+			try {
+				Rules::sanitize( $this->base( array( 'age' => $age ) ), array( 'content' ) );
+				$this->fail( 'expected age_unreachable for ' . $age );
+			} catch ( \InvalidArgumentException $e ) {
+				$this->assertSame( 'age_unreachable', $e->getMessage(), $age );
+			}
+		}
+	}
+
+	public function test_ages_just_above_the_minimum_are_allowed(): void {
+		foreach ( array( '16-', '15-18', '15+', '18+' ) as $age ) {
+			$this->assertSame( $age, Rules::sanitize( $this->base( array( 'age' => $age ) ), array( 'content' ) )['age'] );
+		}
+	}
+
 	public function test_guest_mode_defaults_to_verify_each_order(): void {
 		$this->assertSame( 'verify_each_order', Rules::sanitize( $this->base(), array( 'content' ) )['guest_mode'] );
 		$this->assertSame( 'require_account', Rules::sanitize( $this->base( array( 'guest_mode' => 'require_account' ) ), array( 'content' ) )['guest_mode'] );

@@ -12,7 +12,7 @@ Age and one-person-one-account checks with a chipped Turkish ID card. Your site 
 
 == Description ==
 
-VerifyBlind lets visitors prove an age condition (for example 18+, 21+, under 15 or 60+) or that they are one person with one account, with their chipped Turkish ID card and the VerifyBlind mobile app. The card is read on the visitor's phone and matched to a live face check in a sealed environment (an AWS Nitro Enclave). Your site receives only an eligible / not eligible answer and, for the one-person check, a pseudonymous code issued for your site only. Names, ID numbers, birth dates and photos never reach your site.
+VerifyBlind lets visitors prove an age condition (for example 18+, 21+, 16-18 or 65+) or that they are one person with one account, with their chipped Turkish ID card and the VerifyBlind mobile app. The card is read on the visitor's phone and matched to a live face check in a sealed environment (an AWS Nitro Enclave). Your site receives only an eligible / not eligible answer and, for the one-person check, a pseudonymous code issued for your site only. Names, ID numbers, birth dates and photos never reach your site.
 
 **Rules** decide where a verification is asked and what is asked:
 
@@ -72,6 +72,10 @@ You can open the wizard again under VerifyBlind → Setup wizard.
 = Does my site receive identity data? =
 
 No. Your site receives only whether the visitor meets the condition the rule asks (eligible / not eligible) and, for the one-person check, a pseudonymous code issued for your site only. The same person gets a different code on every other site.
+
+= Who can be verified? =
+
+VerifyBlind verifies people aged 15 and over; a rule that only admits younger visitors can never be met.
 
 = Which documents work? =
 

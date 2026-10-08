@@ -1,18 +1,16 @@
-# Copyright (C) 2026 VerifyBlind
-# This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
 "Project-Id-Version: VerifyBlind 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/verifyblind\n"
 "Last-Translator: VerifyBlind <support@verifyblind.com>\n"
 "Language-Team: Turkish\n"
-"Language: tr_TR\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-08T09:14:55+00:00\n"
 "PO-Revision-Date: 2026-10-09 12:00+0000\n"
+"Language: tr_TR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: verifyblind\n"
 
@@ -92,7 +90,7 @@ msgid "Remove verification"
 msgstr "Doğrulamayı kaldır"
 
 #: includes/Admin/MembersPage.php:89
-#: includes/Admin/RulesPage.php:92
+#: includes/Admin/RulesPage.php:93
 #: includes/Admin/Wizard.php:285
 msgid "one person"
 msgstr "tek kişi"
@@ -102,7 +100,7 @@ msgid "This account does not exist."
 msgstr "Böyle bir hesap yok."
 
 #: includes/Admin/Menu.php:23
-#: includes/Admin/RulesPage.php:61
+#: includes/Admin/RulesPage.php:62
 msgid "Rules"
 msgstr "Kurallar"
 
@@ -140,8 +138,8 @@ msgid "No WooCommerce rules yet."
 msgstr "Henüz WooCommerce kuralı yok."
 
 #: includes/Admin/ProductRulesBox.php:55
-#: includes/Admin/RulesPage.php:62
-#: includes/Admin/RulesPage.php:138
+#: includes/Admin/RulesPage.php:63
+#: includes/Admin/RulesPage.php:139
 msgid "Add rule"
 msgstr "Kural ekle"
 
@@ -191,251 +189,251 @@ msgstr "Kuralın nerede geçerli olacağını seçin."
 msgid "The age condition is not valid (ages 1–150; a range needs a lower and a higher age)."
 msgstr "Yaş koşulu geçersiz (yaş 1–150 arası olmalı; aralık için bir alt ve bir üst yaş gerekir)."
 
-#: includes/Admin/RulesPage.php:37
+#: includes/Admin/RulesPage.php:38
 msgid "Ask for an age condition, the one-person check, or both."
 msgstr "Bir yaş koşulu, tek kişi kontrolü ya da ikisini birden isteyin."
 
-#: includes/Admin/RulesPage.php:39
+#: includes/Admin/RulesPage.php:40
 msgid "The rule could not be saved."
 msgstr "Kural kaydedilemedi."
 
-#: includes/Admin/RulesPage.php:65
+#: includes/Admin/RulesPage.php:66
 msgid "Rule saved."
 msgstr "Kural kaydedildi."
 
-#: includes/Admin/RulesPage.php:65
+#: includes/Admin/RulesPage.php:66
 msgid "Rule deleted."
 msgstr "Kural silindi."
 
-#: includes/Admin/RulesPage.php:69
+#: includes/Admin/RulesPage.php:70
 #: includes/Admin/Wizard.php:224
 #: assets/js/gate-block.js:27
 msgid "Rule"
 msgstr "Kural"
 
-#: includes/Admin/RulesPage.php:70
+#: includes/Admin/RulesPage.php:71
 #: includes/Admin/Wizard.php:225
 msgid "Where"
 msgstr "Nerede"
 
-#: includes/Admin/RulesPage.php:71
+#: includes/Admin/RulesPage.php:72
 #: includes/Admin/Wizard.php:226
 msgid "Asks for"
 msgstr "İstenen"
 
-#: includes/Admin/RulesPage.php:72
+#: includes/Admin/RulesPage.php:73
 msgid "Same person on another account"
 msgstr "Aynı kişi başka bir hesapta"
 
-#: includes/Admin/RulesPage.php:73
+#: includes/Admin/RulesPage.php:74
 msgid "Role for those who pass"
 msgstr "Geçenlere verilecek rol"
 
-#: includes/Admin/RulesPage.php:74
+#: includes/Admin/RulesPage.php:75
 msgid "Status"
 msgstr "Durum"
 
-#: includes/Admin/RulesPage.php:75
+#: includes/Admin/RulesPage.php:76
 msgid "Shortcode"
 msgstr "Kısa kod"
 
-#: includes/Admin/RulesPage.php:79
+#: includes/Admin/RulesPage.php:80
 msgid "No rules yet."
 msgstr "Henüz kural yok."
 
-#: includes/Admin/RulesPage.php:99
-#: includes/Admin/RulesPage.php:149
+#: includes/Admin/RulesPage.php:100
+#: includes/Admin/RulesPage.php:150
 #: includes/Admin/Wizard.php:223
 msgid "On"
 msgstr "Açık"
 
-#: includes/Admin/RulesPage.php:99
+#: includes/Admin/RulesPage.php:100
 msgid "Off"
 msgstr "Kapalı"
 
-#: includes/Admin/RulesPage.php:105
+#: includes/Admin/RulesPage.php:106
 msgid "A role is optional. It is only needed to connect another plugin (forum, membership, courses) that restricts access by role."
 msgstr "Rol isteğe bağlıdır. Yalnızca erişimi role göre sınırlayan başka bir eklentiyi (forum, üyelik, kurs) bağlamak için gerekir."
 
-#: includes/Admin/RulesPage.php:138
+#: includes/Admin/RulesPage.php:139
 msgid "Edit rule"
 msgstr "Kuralı düzenle"
 
-#: includes/Admin/RulesPage.php:147
+#: includes/Admin/RulesPage.php:148
 msgid "Name"
 msgstr "Ad"
 
-#: includes/Admin/RulesPage.php:151
+#: includes/Admin/RulesPage.php:152
 msgid "1 · Where?"
 msgstr "1 · Nerede?"
 
-#: includes/Admin/RulesPage.php:152
+#: includes/Admin/RulesPage.php:153
 msgid "Applies to"
 msgstr "Geçerli olduğu yer"
 
 #. translators: %s: placement name
-#: includes/Admin/RulesPage.php:158
+#: includes/Admin/RulesPage.php:159
 #, php-format
 msgid "%s — needs WooCommerce"
 msgstr "%s — WooCommerce gerekir"
 
-#: includes/Admin/RulesPage.php:161
+#: includes/Admin/RulesPage.php:162
 msgid "For a lock you can also place the \"VerifyBlind lock\" block or the shortcode in any content."
 msgstr "Kilit için \"VerifyBlind kilidi\" bloğunu ya da kısa kodu herhangi bir içeriğe de ekleyebilirsiniz."
 
-#: includes/Admin/RulesPage.php:162
+#: includes/Admin/RulesPage.php:163
 msgid "Pages"
 msgstr "Sayfalar"
 
-#: includes/Admin/RulesPage.php:168
+#: includes/Admin/RulesPage.php:169
 msgid "A comment rule with nothing chosen here applies to every post."
 msgstr "Burada hiçbir şey seçilmezse yorum kuralı tüm yazılarda geçerli olur."
 
-#: includes/Admin/RulesPage.php:169
+#: includes/Admin/RulesPage.php:170
 msgid "Categories"
 msgstr "Kategoriler"
 
-#: includes/Admin/RulesPage.php:173
+#: includes/Admin/RulesPage.php:174
 msgid "Other post IDs"
 msgstr "Diğer yazı ID'leri"
 
-#: includes/Admin/RulesPage.php:176
+#: includes/Admin/RulesPage.php:177
 msgid "Product IDs"
 msgstr "Ürün ID'leri"
 
-#: includes/Admin/RulesPage.php:178
+#: includes/Admin/RulesPage.php:179
 msgid "You can also tick the rule in the VerifyBlind box on the product edit screen. Checkout and product-page rules apply only to the products and categories chosen here; a review rule with nothing chosen applies to every product."
 msgstr "Kuralı ürün düzenleme ekranındaki VerifyBlind kutusundan da işaretleyebilirsiniz. Ödeme ve ürün sayfası kuralları yalnızca burada seçilen ürün ve kategorilerde geçerlidir; hiçbir şey seçilmemiş bir değerlendirme kuralı tüm ürünlerde geçerlidir."
 
-#: includes/Admin/RulesPage.php:179
+#: includes/Admin/RulesPage.php:180
 msgid "Product categories"
 msgstr "Ürün kategorileri"
 
-#: includes/Admin/RulesPage.php:183
+#: includes/Admin/RulesPage.php:184
 msgid "Subcategories are included."
 msgstr "Alt kategoriler de dahildir."
 
-#: includes/Admin/RulesPage.php:184
+#: includes/Admin/RulesPage.php:185
 msgid "Coupons"
 msgstr "Kuponlar"
 
-#: includes/Admin/RulesPage.php:187
+#: includes/Admin/RulesPage.php:188
 msgid "No coupons yet."
 msgstr "Henüz kupon yok."
 
-#: includes/Admin/RulesPage.php:193
+#: includes/Admin/RulesPage.php:194
 msgid "Guests"
 msgstr "Misafirler"
 
-#: includes/Admin/RulesPage.php:195
+#: includes/Admin/RulesPage.php:196
 msgid "Guests verify at checkout (kept for 24 hours in their browser)"
 msgstr "Misafirler ödeme sırasında doğrular (sonuç tarayıcılarında 24 saat saklanır)"
 
-#: includes/Admin/RulesPage.php:196
+#: includes/Admin/RulesPage.php:197
 msgid "Require a customer account for these products"
 msgstr "Bu ürünler için müşteri hesabı zorunlu olsun"
 
-#: includes/Admin/RulesPage.php:200
+#: includes/Admin/RulesPage.php:201
 msgid "2 · What is asked?"
 msgstr "2 · Ne isteniyor?"
 
-#: includes/Admin/RulesPage.php:201
+#: includes/Admin/RulesPage.php:202
 msgid "Age condition"
 msgstr "Yaş koşulu"
 
-#: includes/Admin/RulesPage.php:203
+#: includes/Admin/RulesPage.php:204
 msgid "No age"
 msgstr "Yaş koşulu yok"
 
-#: includes/Admin/RulesPage.php:204
+#: includes/Admin/RulesPage.php:205
 msgid "At least"
 msgstr "En az"
 
-#: includes/Admin/RulesPage.php:205
+#: includes/Admin/RulesPage.php:206
 msgid "Younger than"
 msgstr "Şu yaştan küçük"
 
-#: includes/Admin/RulesPage.php:206
+#: includes/Admin/RulesPage.php:207
 msgid "From … up to (not including)"
 msgstr "Şu yaştan … şu yaşa kadar (üst yaş hariç)"
 
-#: includes/Admin/RulesPage.php:209
+#: includes/Admin/RulesPage.php:210
 msgid "upper"
 msgstr "üst yaş"
 
-#: includes/Admin/RulesPage.php:210
+#: includes/Admin/RulesPage.php:211
 #: includes/Privacy.php:51
 msgid "One-person check"
 msgstr "Tek kişi kontrolü"
 
-#: includes/Admin/RulesPage.php:211
+#: includes/Admin/RulesPage.php:212
 msgid "Recognise the same person across accounts (visitors log in first; on the sign-up form they verify while creating the account)"
 msgstr "Farklı hesaplardaki aynı kişiyi tanı (ziyaretçiler önce giriş yapar; üye kaydı formunda ise hesabı oluştururken doğrular)"
 
-#: includes/Admin/RulesPage.php:212
+#: includes/Admin/RulesPage.php:213
 #: includes/Admin/Wizard.php:251
 msgid "Each requested item counts as one verification: age = 1, one-person check = 1. 2,000 verifications a month are free."
 msgstr "İstenen her öğe bir doğrulama sayılır: yaş = 1, tek kişi kontrolü = 1. Ayda 2.000 doğrulama ücretsizdir."
 
-#: includes/Admin/RulesPage.php:214
+#: includes/Admin/RulesPage.php:215
 msgid "3 · Same person on another account"
 msgstr "3 · Aynı kişi başka bir hesapta"
 
-#: includes/Admin/RulesPage.php:219
+#: includes/Admin/RulesPage.php:220
 msgid "Only used when the one-person check is on."
 msgstr "Yalnızca tek kişi kontrolü açıkken kullanılır."
 
-#: includes/Admin/RulesPage.php:221
+#: includes/Admin/RulesPage.php:222
 msgid "4 · For those who pass"
 msgstr "4 · Geçenler için"
 
-#: includes/Admin/RulesPage.php:222
+#: includes/Admin/RulesPage.php:223
 msgid "Add role"
 msgstr "Rol ekle"
 
-#: includes/Admin/RulesPage.php:223
+#: includes/Admin/RulesPage.php:224
 msgid "— none —"
 msgstr "— yok —"
 
-#: includes/Admin/RulesPage.php:233
+#: includes/Admin/RulesPage.php:234
 msgid "or new role:"
 msgstr "ya da yeni rol:"
 
 #. translators: %s: role slug
-#: includes/Admin/RulesPage.php:235
+#: includes/Admin/RulesPage.php:236
 #, php-format
 msgid "The role %s can no longer be granted automatically because it has editing or admin rights; choose another role."
 msgstr "%s rolü düzenleme ya da yönetim yetkisi taşıdığı için artık otomatik verilemez; başka bir rol seçin."
 
-#: includes/Admin/RulesPage.php:237
+#: includes/Admin/RulesPage.php:238
 msgid "Added next to the existing role (Customer, Subscriber…), never replacing it. Only roles without editing or management powers are offered. What the role may do is set in the plugin that uses it."
 msgstr "Mevcut rolün (Müşteri, Abone…) yanına eklenir, onun yerine geçmez. Yalnızca düzenleme ya da yönetim yetkisi olmayan roller sunulur. Rolün neler yapabileceği, onu kullanan eklentide ayarlanır."
 
-#: includes/Admin/RulesPage.php:238
+#: includes/Admin/RulesPage.php:239
 msgid "Valid for"
 msgstr "Geçerlilik süresi"
 
-#: includes/Admin/RulesPage.php:240
+#: includes/Admin/RulesPage.php:241
 msgid "No expiry"
 msgstr "Süresiz"
 
-#: includes/Admin/RulesPage.php:241
+#: includes/Admin/RulesPage.php:242
 msgid "6 months"
 msgstr "6 ay"
 
-#: includes/Admin/RulesPage.php:242
+#: includes/Admin/RulesPage.php:243
 msgid "1 year"
 msgstr "1 yıl"
 
-#: includes/Admin/RulesPage.php:245
+#: includes/Admin/RulesPage.php:246
 msgid "Save rule"
 msgstr "Kuralı kaydet"
 
-#: includes/Admin/RulesPage.php:248
+#: includes/Admin/RulesPage.php:249
 msgid "Delete this rule?"
 msgstr "Bu kural silinsin mi?"
 
-#: includes/Admin/RulesPage.php:252
+#: includes/Admin/RulesPage.php:253
 msgid "Delete rule"
 msgstr "Kuralı sil"
 
@@ -863,10 +861,6 @@ msgstr "Site girişi (mağazanın tamamı için yaş kapısı)"
 msgid "Verify with VerifyBlind to enter this site."
 msgstr "Bu siteye girmek için VerifyBlind ile doğrulayın."
 
-#: includes/Presets.php:18
-msgid "Shop selling alcohol, tobacco or adult products"
-msgstr "Alkol, tütün ya da yetişkin ürünleri satan mağaza"
-
 #: includes/Presets.php:19
 msgid "Age 18+ at checkout for the products or categories you choose."
 msgstr "Seçtiğiniz ürün ya da kategorilerde ödeme sırasında 18+ yaş koşulu."
@@ -1087,3 +1081,11 @@ msgstr "VerifyBlind kuralı"
 #: assets/js/gate-block.js:33
 msgid "Choose a rule in the block settings"
 msgstr "Blok ayarlarından bir kural seçin"
+
+#: includes/Admin/RulesPage.php:37
+msgid "VerifyBlind verifies people aged 15 and over, so this age condition can never be met."
+msgstr "VerifyBlind 15 yaş ve üzerindeki kişileri doğrular; bu yüzden bu yaş koşulu hiçbir zaman karşılanamaz."
+
+#: includes/Presets.php:18
+msgid "Shop selling age-restricted products"
+msgstr "Yaş sınırlı ürün satan mağaza"
