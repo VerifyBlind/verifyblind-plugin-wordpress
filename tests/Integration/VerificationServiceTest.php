@@ -28,7 +28,7 @@ final class VerificationServiceTest extends TestCase {
 		$rule  = $this->rule( array( 'age' => '18+' ) );
 		$owner = 'g:' . str_repeat( 'b', 32 );
 		$nonce = $this->session( $rule, $owner );
-		$r     = $this->svc->verify( $this->signer->token( array( 'nonce' => $nonce, 'validations' => array( 'age' => true ) ) ), $owner, false );
+		$r     = $this->svc->verify( $this->signer->token( array( 'nonce' => $nonce, 'validations' => array( 'age' => true, 'age_condition' => '18+' ) ) ), $owner, false );
 		$this->assertSame( array( 'ok' => true, 'status' => 200, 'code' => 'ok', 'passed' => true ), $r );
 		$this->assertSame( array( '18+' ), Results::passed_conditions( $owner, 0, false ) );
 	}
@@ -37,7 +37,7 @@ final class VerificationServiceTest extends TestCase {
 		$rule  = $this->rule( array( 'age' => '21+' ) );
 		$owner = 'g:' . str_repeat( 'c', 32 );
 		$nonce = $this->session( $rule, $owner );
-		$r     = $this->svc->verify( $this->signer->token( array( 'nonce' => $nonce, 'validations' => array( 'age' => false ) ) ), $owner, false );
+		$r     = $this->svc->verify( $this->signer->token( array( 'nonce' => $nonce, 'validations' => array( 'age' => false, 'age_condition' => '21+' ) ) ), $owner, false );
 		$this->assertSame( 'not_eligible', $r['code'] );
 		$this->assertFalse( $r['passed'] );
 	}
@@ -45,7 +45,7 @@ final class VerificationServiceTest extends TestCase {
 	public function test_nonce_is_single_use_and_owner_bound(): void {
 		$rule  = $this->rule();
 		$nonce = $this->session( $rule, 'g:' . str_repeat( 'd', 32 ) );
-		$token = $this->signer->token( array( 'nonce' => $nonce, 'validations' => array( 'age' => true ) ) );
+		$token = $this->signer->token( array( 'nonce' => $nonce, 'validations' => array( 'age' => true, 'age_condition' => '18+' ) ) );
 		$this->assertSame( 'nonce_invalid', $this->svc->verify( $token, 'g:' . str_repeat( 'e', 32 ), false )['code'] );
 		$this->assertSame( 'ok', $this->svc->verify( $token, 'g:' . str_repeat( 'd', 32 ), false )['code'] );
 		$this->assertSame( 'nonce_invalid', $this->svc->verify( $token, 'g:' . str_repeat( 'd', 32 ), false )['code'] );
@@ -61,7 +61,7 @@ final class VerificationServiceTest extends TestCase {
 	public function test_demo_card_needs_test_mode(): void {
 		$rule  = $this->rule();
 		$owner = 'g:' . str_repeat( 'f', 32 );
-		$v     = array( 'age' => true, 'is_test' => true );
+		$v     = array( 'age' => true, 'age_condition' => '18+', 'is_test' => true );
 		$this->assertSame( 'test_card', $this->svc->verify( $this->signer->token( array( 'nonce' => $this->session( $rule, $owner, 'a1' ), 'validations' => $v ) ), $owner, false )['code'] );
 		$this->assertSame( 'ok', $this->svc->verify( $this->signer->token( array( 'nonce' => $this->session( $rule, $owner, 'a2' ), 'validations' => $v ) ), $owner, true )['code'] );
 	}
@@ -70,7 +70,7 @@ final class VerificationServiceTest extends TestCase {
 		$rule  = $this->rule();
 		$uid   = $this->make_user();
 		$owner = 'u:' . $uid;
-		$v     = array( 'age' => true, 'is_test' => true );
+		$v     = array( 'age' => true, 'age_condition' => '18+', 'is_test' => true );
 		$this->assertSame( 'ok', $this->svc->verify( $this->signer->token( array( 'nonce' => $this->session( $rule, $owner, 'tr1' ), 'validations' => $v ) ), $owner, true )['code'] );
 		$this->assertContains( Roles::BASE, get_userdata( $uid )->roles );
 	}
@@ -163,7 +163,7 @@ final class VerificationServiceTest extends TestCase {
 		$a    = $this->make_user();
 		$owner = 'u:' . $a;
 		$this->session( $rule, $owner, 'rv' );
-		$this->svc->verify( $this->signer->token( array( 'nonce' => 'rv', 'validations' => array( 'age' => true, 'user_id' => 'PR' ) ) ), $owner, false );
+		$this->svc->verify( $this->signer->token( array( 'nonce' => 'rv', 'validations' => array( 'age' => true, 'age_condition' => '18+', 'user_id' => 'PR' ) ) ), $owner, false );
 		$this->assertContains( Roles::BASE, get_userdata( $a )->roles );
 		$this->svc->revoke( 'rv' );
 		$this->assertSame( array(), Results::passed_conditions( $owner, 0, false ) );
@@ -214,13 +214,13 @@ final class VerificationServiceTest extends TestCase {
 		$this->assertSame( 'The verification answered a different question than this site asked. Please try again.', \VerifyBlind\Messages::get( 'condition_mismatch' ) );
 	}
 
-	public function test_absent_signed_condition_keeps_the_stored_one(): void {
+	public function test_missing_signed_condition_is_rejected(): void {
 		$rule  = $this->rule( array( 'age' => '21+' ) );
 		$owner = 'g:' . str_repeat( 'a', 32 );
-		$this->session( $rule, $owner, 'old-enclave' );
-		$r = $this->svc->verify( $this->signer->token( array( 'nonce' => 'old-enclave', 'validations' => array( 'age' => true ) ) ), $owner, false );
-		$this->assertSame( 'ok', $r['code'] );
-		$this->assertSame( array( '21+' ), Results::passed_conditions( $owner, 0, false ) );
+		$this->session( $rule, $owner, 'no-condition' );
+		$r = $this->svc->verify( $this->signer->token( array( 'nonce' => 'no-condition', 'validations' => array( 'age' => true ) ) ), $owner, false );
+		$this->assertSame( 'condition_mismatch', $r['code'] );
+		$this->assertSame( array(), Results::passed_conditions( $owner, 0, false ) );
 	}
 
 	public function test_webhook_signature(): void {

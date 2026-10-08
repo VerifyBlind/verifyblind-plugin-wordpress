@@ -192,11 +192,11 @@ final class RestTest extends TestCase {
 		$rule  = $this->rule();
 		$owner = \VerifyBlind\Owner::current( true );
 		Nonces::put( 'e2e', $rule['id'], '18+', false, $owner, 960 );
-		$res = $this->post( 'verify', array( 'token' => $signer->token( array( 'nonce' => 'e2e', 'validations' => array( 'age' => true ) ) ) ) );
+		$res = $this->post( 'verify', array( 'token' => $signer->token( array( 'nonce' => 'e2e', 'validations' => array( 'age' => true, 'age_condition' => '18+' ) ) ) ) );
 		$this->assertSame( 200, $res->get_status() );
 		$this->assertTrue( $res->get_data()['passed'] );
 		$this->assertSame( array( '18+' ), Results::passed_conditions( $owner, 0, false ) );
-		$again = $this->post( 'verify', array( 'token' => $signer->token( array( 'nonce' => 'e2e', 'validations' => array( 'age' => true ) ) ) ) );
+		$again = $this->post( 'verify', array( 'token' => $signer->token( array( 'nonce' => 'e2e', 'validations' => array( 'age' => true, 'age_condition' => '18+' ) ) ) ) );
 		$this->assertSame( 401, $again->get_status() );
 		$this->assertSame( 'nonce_invalid', $again->get_data()['code'] );
 	}

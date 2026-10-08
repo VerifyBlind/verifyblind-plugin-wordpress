@@ -17,7 +17,7 @@ final class GuestCarryOverTest extends TestCase {
 		$rule                     = $this->rule( array( 'age' => '18+' ) );
 		$signer                   = new Signer();
 		Nonces::put( 'guest-n', $rule['id'], '18+', false, $guest, 960 );
-		$r = ( new VerificationService( $signer ) )->verify( $signer->token( array( 'nonce' => 'guest-n', 'validations' => array( 'age' => true ) ) ), $guest, false );
+		$r = ( new VerificationService( $signer ) )->verify( $signer->token( array( 'nonce' => 'guest-n', 'validations' => array( 'age' => true, 'age_condition' => '18+' ) ) ), $guest, false );
 		$this->assertSame( 'ok', $r['code'] );
 		$this->assertSame( array( '18+' ), Results::passed_conditions( $guest, 0, false ) );
 		return $guest;

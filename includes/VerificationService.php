@@ -41,10 +41,11 @@ final class VerificationService {
 		if ( $is_test && ! $test_mode ) {
 			return self::fail( 400, 'test_card' );
 		}
-		// Newer enclaves also sign WHICH age condition they answered. When present it must be the one this
-		// site asked (stored with the session), so nothing between us and the enclave can swap "18+" for "1+".
-		// Absent (older enclave): the stored condition is what `age` refers to.
-		if ( array_key_exists( 'age_condition', $v ) && ! self::same_condition( $v['age_condition'], $session['age_cond'] ) ) {
+		// The enclave always signs WHICH age condition it answered. It must be the one this site asked
+		// (stored with the session), so nothing between us and the enclave can swap "18+" for "1+".
+		// Any age answer must carry the condition this site asked. A missing `age` is handled below with its own code.
+		$answered_age = array_key_exists( 'age', $v ) || array_key_exists( 'age_condition', $v );
+		if ( $answered_age && ( '' === $session['age_cond'] || ! array_key_exists( 'age_condition', $v ) || ! self::same_condition( $v['age_condition'], $session['age_cond'] ) ) ) {
 			return self::fail( 409, 'condition_mismatch' );
 		}
 

@@ -29,7 +29,8 @@ final class RegistrationTest extends TestCase {
 		Nonces::put( $nonce, $rule['id'], $rule['age'], $rule['unique'], $guest, 960 );
 		$v = array( 'user_id' => $person, 'nsbd_id' => 'N-' . $person, 'doc_id' => 'D-' . $person );
 		if ( '' !== $rule['age'] ) {
-			$v['age'] = true;
+			$v['age']           = true;
+			$v['age_condition'] = $rule['age'];
 		}
 		if ( $is_test ) {
 			$v['is_test'] = true;

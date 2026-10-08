@@ -31,7 +31,7 @@ final class RegistrationCheckoutTest extends WcTestCase {
 		$signer = new Signer();
 		$nonce  = 'rc-' . wp_rand();
 		Nonces::put( $nonce, $rule['id'], $rule['age'], $rule['unique'], $guest, 960 );
-		$v   = array( 'user_id' => $person, 'nsbd_id' => 'N-' . $person, 'doc_id' => 'D-' . $person, 'age' => true );
+		$v   = array( 'user_id' => $person, 'nsbd_id' => 'N-' . $person, 'doc_id' => 'D-' . $person, 'age' => true, 'age_condition' => $rule['age'] );
 		$out = ( new VerificationService( $signer ) )->verify( $signer->token( array( 'nonce' => $nonce, 'validations' => $v ) ), $guest, false );
 		$this->assertSame( 'ok', $out['code'] );
 		$this->assertSame( $person, PendingIdentities::find( $guest )['vb_user_id'] );
