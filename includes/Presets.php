@@ -84,10 +84,12 @@ final class Presets {
 			if ( ! self::available( $key, $wc ) ) {
 				continue;
 			}
-			foreach ( $all[ $key ]['rules'] as $template ) {
-				if ( ! in_array( $template['placement'], $placements, true ) || self::exists( $template['name'], $template['placement'] ) ) {
+			foreach ( $all[ $key ]['rules'] as $index => $template ) {
+				$marker = $key . ':' . $index;
+				if ( ! in_array( $template['placement'], $placements, true ) || self::exists( $marker, $template['name'], $template['placement'] ) ) {
 					continue;
 				}
+				$template['preset'] = $marker;
 				$defaults = array(
 					'enabled'          => 'wc_site' !== $template['placement'],
 					'age'              => '',
@@ -104,8 +106,15 @@ final class Presets {
 		return $saved;
 	}
 
-	private static function exists( string $name, string $placement ): bool {
+	/** Same marker = already created (even if renamed); rules without a marker fall back to name + placement. */
+	private static function exists( string $marker, string $name, string $placement ): bool {
 		foreach ( Rules::all() as $rule ) {
+			if ( ! empty( $rule['preset'] ) ) {
+				if ( $marker === $rule['preset'] ) {
+					return true;
+				}
+				continue;
+			}
 			if ( isset( $rule['name'], $rule['placement'] ) && $name === $rule['name'] && $placement === $rule['placement'] ) {
 				return true;
 			}

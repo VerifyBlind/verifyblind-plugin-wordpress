@@ -159,6 +159,25 @@ final class WizardTest extends TestCase {
 		$this->assertSame( array( 'content', 'registration' ), array_column( array_values( Rules::all() ), 'placement' ) );
 	}
 
+	public function test_running_the_site_step_twice_creates_no_duplicates(): void {
+		$this->die_throws();
+		wp_set_current_user( $this->make_user( 'administrator' ) );
+		for ( $i = 0; $i < 2; $i++ ) {
+			$this->post( array( '_wpnonce' => wp_create_nonce( 'verifyblind_wizard_site' ), 'presets' => array( 'age_content' ) ) );
+			try {
+				Wizard::handle_site();
+			} catch ( \RuntimeException $e ) {
+				$this->assertStringContainsString( 'step=review', $e->getMessage() );
+			}
+			if ( 0 === $i ) {
+				$rule         = array_values( Rules::all() )[0];
+				$rule['name'] = 'Renamed';
+				Rules::save( $rule );
+			}
+		}
+		$this->assertCount( 1, Rules::all() );
+	}
+
 	public function test_every_step_renders_its_form_with_a_nonce(): void {
 		require_once ABSPATH . 'wp-admin/includes/template.php'; // submit_button() is admin-only
 		wp_set_current_user( $this->make_user( 'administrator' ) );

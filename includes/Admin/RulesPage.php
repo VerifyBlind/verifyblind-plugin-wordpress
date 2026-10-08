@@ -306,6 +306,11 @@ final class RulesPage {
 			'validity_days'    => (int) ( isset( $p['validity_days'] ) ? $p['validity_days'] : 0 ),
 			'guest_mode'       => sanitize_key( isset( $p['guest_mode'] ) ? (string) $p['guest_mode'] : 'verify_each_order' ),
 		);
+		// The editor has no marker field: an edited rule keeps the marker it was created with.
+		$existing = '' !== $input['id'] ? Rules::get( $input['id'] ) : null;
+		if ( $existing && ! empty( $existing['preset'] ) ) {
+			$input['preset'] = $existing['preset'];
+		}
 		return array( 'input' => $input, 'new_role' => $pending );
 	}
 

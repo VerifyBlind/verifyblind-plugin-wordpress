@@ -24,6 +24,7 @@ abstract class TestCase extends Base {
 
 	protected function setUp(): void {
 		global $wpdb;
+		wp_cache_flush();
 		foreach ( self::OPTIONS as $o ) {
 			$this->saved[ $o ] = get_option( $o, null );
 		}

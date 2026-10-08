@@ -104,8 +104,13 @@ final class Rules {
 			$guest_mode = 'verify_each_order';
 		}
 		$targets = isset( $in['targets'] ) && is_array( $in['targets'] ) ? $in['targets'] : array();
+		$preset = isset( $in['preset'] ) ? (string) $in['preset'] : '';
+		if ( ! preg_match( '/^[a-z_]+:\d+$/', $preset ) ) {
+			$preset = '';
+		}
 		return array(
 			'id'               => $id,
+			'preset'           => $preset,
 			'name'             => $name,
 			'enabled'          => ! empty( $in['enabled'] ),
 			'placement'        => $placement,

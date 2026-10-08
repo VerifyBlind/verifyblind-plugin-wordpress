@@ -41,6 +41,24 @@ final class PresetsTest extends TestCase {
 		$this->assertCount( 1, Rules::all() );
 	}
 
+	public function test_marker_survives_a_rename_and_still_prevents_a_duplicate(): void {
+		$first = Presets::apply( array( 'age_content' ) );
+		$this->assertSame( 'age_content:0', $first[0]['preset'] );
+		$renamed         = $first[0];
+		$renamed['name'] = 'My own name';
+		Rules::save( $renamed );
+		$this->assertSame( array(), Presets::apply( array( 'age_content' ) ) );
+		$this->assertCount( 1, Rules::all() );
+		$this->assertSame( 'age_content:0', Rules::get( $first[0]['id'] )['preset'] );
+	}
+
+	public function test_sanitize_keeps_only_a_valid_marker(): void {
+		$base = array( 'name' => 'X', 'placement' => 'content', 'age' => '18+' );
+		$this->assertSame( 'age_shop:0', Rules::sanitize( $base + array( 'preset' => 'age_shop:0' ), array( 'content' ) )['preset'] );
+		$this->assertSame( '', Rules::sanitize( $base + array( 'preset' => '<b>x' ), array( 'content' ) )['preset'] );
+		$this->assertSame( '', Rules::sanitize( $base, array( 'content' ) )['preset'] );
+	}
+
 	public function test_unknown_keys_are_ignored(): void {
 		$this->assertSame( array(), Presets::apply( array( 'nope', '<script>' ) ) );
 		$this->assertSame( array(), Rules::all() );
