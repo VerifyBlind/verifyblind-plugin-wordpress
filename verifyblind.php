@@ -3,7 +3,7 @@
  * Plugin Name:       VerifyBlind
  * Plugin URI:        https://verifyblind.com/en/developers
  * Description:       Age and one-person-one-account verification with a chipped Turkish ID card — the site only receives an eligible / not eligible answer.
- * Version:           1.0.2
+ * Version:           1.0.3
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * WC requires at least: 8.0
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'VERIFYBLIND_VERSION', '1.0.2' );
+define( 'VERIFYBLIND_VERSION', '1.0.3' );
 define( 'VERIFYBLIND_FILE', __FILE__ );
 define( 'VERIFYBLIND_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VERIFYBLIND_URL', plugin_dir_url( __FILE__ ) );

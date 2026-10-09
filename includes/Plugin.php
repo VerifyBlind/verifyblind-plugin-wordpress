@@ -8,7 +8,7 @@ final class Plugin {
 	private static $api;
 
 	public static function boot(): void {
-		load_plugin_textdomain( 'verifyblind', false, dirname( plugin_basename( VERIFYBLIND_FILE ) ) . '/languages' ); // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- translations ship in languages/ for installs outside WordPress.org (GitHub releases)
+		add_action( 'init', array( self::class, 'load_textdomain' ) );
 		Schema::maybe_upgrade();
 		add_action( 'rest_api_init', array( Rest::class, 'register' ) );
 		Gate::hooks();
@@ -24,6 +24,14 @@ final class Plugin {
 		if ( is_admin() ) {
 			Admin\Menu::hooks();
 		}
+	}
+
+	/**
+	 * The Turkish catalogue ships in languages/ so a site has it before translate.wordpress.org does (and for
+	 * installs from GitHub releases). Language packs from WordPress.org take precedence once they exist.
+	 */
+	public static function load_textdomain(): void {
+		load_plugin_textdomain( 'verifyblind', false, dirname( plugin_basename( VERIFYBLIND_FILE ) ) . '/languages' ); // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- see above
 	}
 
 	public static function forget_user( $user_id ): void {

@@ -5,7 +5,7 @@ use PHPUnit\Framework\TestCase;
 
 final class SmokeTest extends TestCase {
 	public function test_plugin_is_loaded_in_wordpress(): void {
-		$this->assertSame( '1.0.2', VERIFYBLIND_VERSION );
+		$this->assertSame( '1.0.3', VERIFYBLIND_VERSION );
 		$this->assertContains( 'verifyblind/verifyblind.php', (array) get_option( 'active_plugins', array() ) );
 	}
 }

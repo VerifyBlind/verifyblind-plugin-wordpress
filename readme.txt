@@ -4,7 +4,7 @@ Tags: age verification, age gate, woocommerce, one account per person, privacy
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,7 +33,7 @@ This plugin connects your site to VerifyBlind (https://verifyblind.com), the ser
 
 From your site's server to the VerifyBlind API (https://api.verifyblind.com):
 
-* When a visitor presses "Verify with VerifyBlind": `POST /api/pop/generate` with your site's API key, a one-time public key created in the visitor's browser for this verification, the conditions the rule asks for (for example age 18+ and/or the one-person check), the widget version, the language the visitor's browser asks for (the Accept-Language header), and the plugin version (header `X-VerifyBlind-Client: wordpress/1.0.2`). No name, e-mail address or IP address of the visitor is sent.
+* When a visitor presses "Verify with VerifyBlind": `POST /api/pop/generate` with your site's API key, a one-time public key created in the visitor's browser for this verification, the conditions the rule asks for (for example age 18+ and/or the one-person check), the widget version, the language the visitor's browser asks for (the Accept-Language header), and the plugin version (header `X-VerifyBlind-Client: wordpress/1.0.3`). No name, e-mail address or IP address of the visitor is sent.
 * When you test the connection (setup wizard or Settings): the same call with VerifyBlind's own public key and an age 18+ condition. The session is never used and not billed.
 * When a verification result arrives: `GET /api/public/enclave-key` (VerifyBlind's public key, kept for about a minute) to check the result's signature on your server.
 * When VerifyBlind calls your revoke address: `GET /api/public/webhook-signing-key` (kept for an hour) to check that the call really comes from VerifyBlind.
@@ -118,6 +118,9 @@ Filters: `verifyblind_bypass_gate` (bool $bypass, WP_Post $post) opens a content
 
 == Changelog ==
 
+= 1.0.3 =
+* Translations load on the init hook.
+
 = 1.0.2 =
 * An age answer is accepted only together with the signed condition this site asked (for example 18+). An answer without it is refused.
 
@@ -128,6 +131,9 @@ Filters: `verifyblind_bypass_gate` (bool $bypass, WP_Post $post) opens a content
 * First release: rules for sign-up, content lock (block and shortcode), comments, WooCommerce checkout, product pages, shop entrance, coupons and product reviews; age conditions and the one-person check; setup wizard; verified badge; verified members screen; privacy tools; revoke address; Turkish translation.
 
 == Upgrade Notice ==
+
+= 1.0.3 =
+Maintenance release. No settings change.
 
 = 1.0.2 =
 Stricter age check: the signed answer must name the condition this site asked.

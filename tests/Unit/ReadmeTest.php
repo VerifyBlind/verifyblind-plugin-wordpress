@@ -26,7 +26,7 @@ final class ReadmeTest extends TestCase {
 	}
 
 	public function test_headers(): void {
-		$this->assertSame( '1.0.2', $this->plugin_version() );
+		$this->assertSame( '1.0.3', $this->plugin_version() );
 		$this->assertSame( $this->plugin_version(), $this->header( 'Stable tag' ) );
 		$this->assertSame( '6.0', $this->header( 'Requires at least' ) );
 		$this->assertSame( '7.1', $this->header( 'Tested up to' ) );
@@ -41,7 +41,7 @@ final class ReadmeTest extends TestCase {
 	}
 
 	public function test_sections(): void {
-		foreach ( array( '== Description ==', '= External services =', '== Installation ==', '== Frequently Asked Questions ==', '== Screenshots ==', '== Changelog ==', '= 1.0.2 =', '= 1.0.1 =', '= 1.0.0 =' ) as $s ) {
+		foreach ( array( '== Description ==', '= External services =', '== Installation ==', '== Frequently Asked Questions ==', '== Screenshots ==', '== Changelog ==', '= 1.0.3 =', '= 1.0.2 =', '= 1.0.1 =', '= 1.0.0 =' ) as $s ) {
 			$this->assertStringContainsString( "\n" . $s . "\n", $this->readme, $s );
 		}
 	}
