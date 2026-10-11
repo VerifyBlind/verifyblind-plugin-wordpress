@@ -166,7 +166,7 @@ final class RulesPage {
 								<label style="display:block"><input type="checkbox" name="page_ids[]" value="<?php echo esc_attr( $p->ID ); ?>" <?php checked( in_array( (int) $p->ID, $rule['targets']['post_ids'], true ) ); ?>> <?php echo esc_html( $p->post_title ); ?></label>
 							<?php endforeach; ?>
 						</div>
-						<p class="description"><?php esc_html_e( 'A comment rule with nothing chosen here applies to every post.', 'verifyblind' ); ?></p></td></tr>
+						<p class="description" data-vb-for="comments"><?php esc_html_e( 'A comment rule with nothing chosen here applies to every post.', 'verifyblind' ); ?></p></td></tr>
 					<tr data-vb-for="<?php echo esc_attr( self::POST_TARGETS ); ?>"><th><?php esc_html_e( 'Categories', 'verifyblind' ); ?></th>
 						<td><?php foreach ( get_categories( array( 'hide_empty' => false ) ) as $c ) : ?>
 							<label style="margin-right:12px"><input type="checkbox" name="term_ids[]" value="<?php echo esc_attr( $c->term_id ); ?>" <?php checked( in_array( (int) $c->term_id, $rule['targets']['term_ids'], true ) ); ?>> <?php echo esc_html( $c->name ); ?></label>

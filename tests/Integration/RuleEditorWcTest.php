@@ -49,6 +49,8 @@ final class RuleEditorWcTest extends WcTestCase {
 			$this->assertStringContainsString( $needle, $html, $needle );
 		}
 		$this->assertStringContainsString( "querySelectorAll('[data-vb-for]')", $html );
+		// The "nothing chosen applies to every post" hint is about comment rules only.
+		$this->assertMatchesRegularExpression( '/<p class="description" data-vb-for="comments">[^<]*every post/', $html );
 	}
 
 	public function test_product_box_ticks_rules_for_one_product(): void {
