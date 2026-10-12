@@ -13,9 +13,9 @@ final class TranslationsTest extends TestCase {
 		'Verified with VerifyBlind' => 'VerifyBlind ile doğrulandı',
 		'Setup wizard' => 'Kurulum sihirbazı',
 		'VerifyBlind lock' => 'VerifyBlind kilidi',
-		'Verification is not available right now. Please try again shortly.' => 'Doğrulama şu anda yapılamıyor. Lütfen biraz sonra tekrar deneyin.',
+		'Verification is not available right now. Please try again shortly.' => 'Doğrulama şu anda yapılamıyor. Lütfen biraz sonra yeniden deneyin.',
 		'One-person check' => 'Tek kişi kontrolü',
-		'Log in' => 'Giriş yap',
+		'Log in' => 'Oturum aç',
 		'Verify without sharing your identity data. The site only receives an eligible / not eligible answer.' => 'Kimlik bilgileriniz bu siteye ulaşmadan doğrulama yapın. Site yalnızca "uygun / uygun değil" yanıtını alır.',
 		'Person code (pseudonymous, issued for this site only)' => 'Kişiye özel kod (takma ad; yalnızca bu site için üretilir)',
 	);
@@ -126,9 +126,11 @@ final class TranslationsTest extends TestCase {
 				$t = mb_strtolower( $s, 'UTF-8' );
 				$this->assertStringNotContainsString( 'anonim', $t, $e['id'] );
 				$this->assertStringNotContainsString( 'paylaş', $t, $e['id'] );
+				// WordPress Turkish glossary: log in = "oturum aç", try again = "yeniden dene"; "giriş" only for the site entrance.
 				if ( false !== strpos( $t, 'giriş' ) ) {
-					$this->assertMatchesRegularExpression( '/log ?in|logged in|entrance/', $source, '"Giriş" only for a real account log-in or the site entrance: ' . $e['id'] );
+					$this->assertStringContainsString( 'entrance', $source, '"Giriş" only for the site entrance: ' . $e['id'] );
 				}
+				$this->assertStringNotContainsString( 'tekrar dene', $t, $e['id'] );
 				if ( false !== strpos( str_replace( 'verifyblind', '', $source ), 'verif' ) ) {
 					$this->assertStringContainsString( 'doğrula', $t, $e['id'] );
 				}

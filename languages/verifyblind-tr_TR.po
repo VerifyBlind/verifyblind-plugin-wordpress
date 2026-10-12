@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: VerifyBlind 1.0.4\n"
+"Project-Id-Version: VerifyBlind 1.0.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/verifyblind\n"
 "Last-Translator: VerifyBlind <support@verifyblind.com>\n"
 "Language-Team: Turkish\n"
@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-08T09:14:55+00:00\n"
-"PO-Revision-Date: 2026-10-09 12:00+0000\n"
+"PO-Revision-Date: 2026-10-12 12:00+0000\n"
 "Language: tr_TR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: WP-CLI 2.12.0\n"
@@ -53,7 +53,7 @@ msgid "Account"
 msgstr "Hesap"
 
 #: includes/Admin/MembersPage.php:33
-msgid "Passed"
+msgid "Conditions passed"
 msgstr "Geçtiği koşullar"
 
 #: includes/Admin/MembersPage.php:34
@@ -368,7 +368,7 @@ msgstr "Tek kişi kontrolü"
 
 #: includes/Admin/RulesPage.php:212
 msgid "Recognise the same person across accounts (visitors log in first; on the sign-up form they verify while creating the account)"
-msgstr "Farklı hesaplardaki aynı kişiyi tanı (ziyaretçiler önce giriş yapar; üye kaydı formunda ise hesabı oluştururken doğrular)"
+msgstr "Farklı hesaplardaki aynı kişiyi tanı (ziyaretçiler önce oturum açar; üye kaydı formunda ise hesabı oluştururken doğrular)"
 
 #: includes/Admin/RulesPage.php:213
 #: includes/Admin/Wizard.php:251
@@ -679,7 +679,7 @@ msgstr "Doğrulama tamamlandı, ancak bu içeriğin koşulu karşılanmadı."
 
 #: includes/Messages.php:16
 msgid "The verification result could not be read. Please try again."
-msgstr "Doğrulama sonucu okunamadı. Lütfen tekrar deneyin."
+msgstr "Doğrulama sonucu okunamadı. Lütfen yeniden deneyin."
 
 #: includes/Messages.php:18
 msgid "The verification could not be confirmed."
@@ -687,7 +687,7 @@ msgstr "Doğrulama onaylanamadı."
 
 #: includes/Messages.php:20
 msgid "This verification session has expired or was already used. Please try again."
-msgstr "Bu doğrulama oturumunun süresi doldu ya da oturum zaten kullanıldı. Lütfen tekrar deneyin."
+msgstr "Bu doğrulama oturumunun süresi doldu ya da oturum zaten kullanıldı. Lütfen yeniden deneyin."
 
 #: includes/Messages.php:22
 msgid "Verifications made with a demo card are not accepted on this site."
@@ -699,7 +699,7 @@ msgstr "Bu kimlik başka bir hesapta zaten doğrulanmış. Her kişi yalnızca b
 
 #: includes/Messages.php:26
 msgid "This identity is being used to create another account right now. Please try again in a moment."
-msgstr "Bu kimlikle şu anda başka bir hesap oluşturuluyor. Lütfen biraz sonra tekrar deneyin."
+msgstr "Bu kimlikle şu anda başka bir hesap oluşturuluyor. Lütfen biraz sonra yeniden deneyin."
 
 #: includes/Messages.php:28
 msgid "This account was verified with a different identity before."
@@ -715,15 +715,15 @@ msgstr "Bu sitede doğrulama henüz kurulmadı."
 
 #: includes/Messages.php:34
 msgid "Please log in to verify your account."
-msgstr "Hesabınızı doğrulamak için lütfen giriş yapın."
+msgstr "Hesabınızı doğrulamak için lütfen oturum açın."
 
 #: includes/Messages.php:36
 msgid "The verification answered a different question than this site asked. Please try again."
-msgstr "Doğrulama, bu sitenin sorduğundan farklı bir soruyu yanıtladı. Lütfen tekrar deneyin."
+msgstr "Doğrulama, bu sitenin sorduğundan farklı bir soruyu yanıtladı. Lütfen yeniden deneyin."
 
 #: includes/Messages.php:38
 msgid "Too many verification attempts right now. Please try again in a minute."
-msgstr "Şu anda çok fazla doğrulama denemesi var. Lütfen bir dakika sonra tekrar deneyin."
+msgstr "Şu anda çok fazla doğrulama denemesi var. Lütfen bir dakika sonra yeniden deneyin."
 
 #: includes/Messages.php:40
 msgid "Please verify with VerifyBlind before creating an account. The verification box is on the registration form."
@@ -743,7 +743,7 @@ msgstr "Sepetinizde VerifyBlind ile doğrulama gerektiren ürünler var. Lütfen
 
 #: includes/Messages.php:48
 msgid "Please log in or create an account to buy the products in your cart."
-msgstr "Sepetinizdeki ürünleri almak için lütfen giriş yapın ya da hesap oluşturun."
+msgstr "Sepetinizdeki ürünleri almak için lütfen oturum açın ya da hesap oluşturun."
 
 #: includes/Messages.php:50
 msgid "This product needs verification with VerifyBlind before it can be added to the cart."
@@ -755,7 +755,7 @@ msgstr "Bu kupon yalnızca VerifyBlind ile doğrulanmış müşteriler içindir.
 
 #: includes/Messages.php:54
 msgid "Please log in to use this coupon."
-msgstr "Bu kuponu kullanmak için lütfen giriş yapın."
+msgstr "Bu kuponu kullanmak için lütfen oturum açın."
 
 #: includes/Messages.php:56
 msgid "This coupon was already used by the same person."
@@ -767,15 +767,15 @@ msgstr "Bu kupon için hesabınızda tek kişi doğrulaması gerekiyor. Kendi ki
 
 #: includes/Messages.php:60
 msgid "This coupon is being used in another order right now. Please try again in a moment."
-msgstr "Bu kupon şu anda başka bir siparişte kullanılıyor. Lütfen biraz sonra tekrar deneyin."
+msgstr "Bu kupon şu anda başka bir siparişte kullanılıyor. Lütfen biraz sonra yeniden deneyin."
 
 #: includes/Messages.php:62
 msgid "Verification on this site needs a plugin update. Please try again later."
-msgstr "Bu sitede doğrulama için bir eklenti güncellemesi gerekiyor. Lütfen daha sonra tekrar deneyin."
+msgstr "Bu sitede doğrulama için bir eklenti güncellemesi gerekiyor. Lütfen daha sonra yeniden deneyin."
 
 #: includes/Messages.php:64
 msgid "Verification is not available right now. Please try again shortly."
-msgstr "Doğrulama şu anda yapılamıyor. Lütfen biraz sonra tekrar deneyin."
+msgstr "Doğrulama şu anda yapılamıyor. Lütfen biraz sonra yeniden deneyin."
 
 #: includes/Placements/Comments.php:11
 msgid "Comments (every post, or the chosen pages, posts and categories)"
@@ -980,7 +980,7 @@ msgstr "Doğrulandı. Devam edebilirsiniz."
 
 #: includes/Widget.php:64
 msgid "Verification could not be completed. Please try again."
-msgstr "Doğrulama tamamlanamadı. Lütfen tekrar deneyin."
+msgstr "Doğrulama tamamlanamadı. Lütfen yeniden deneyin."
 
 #: includes/Widget.php:73
 msgid "This content is available to verified members."
@@ -1040,7 +1040,7 @@ msgstr "Nasıl çalışır?"
 
 #: includes/Widget.php:139
 msgid "Log in"
-msgstr "Giriş yap"
+msgstr "Oturum aç"
 
 #: includes/Widget.php:142
 msgid "Create an account"
@@ -1048,7 +1048,7 @@ msgstr "Hesap oluştur"
 
 #: includes/Widget.php:149
 msgid "This check needs an account: log in first, then verify."
-msgstr "Bu kontrol için hesap gerekiyor: önce giriş yapın, sonra doğrulayın."
+msgstr "Bu kontrol için hesap gerekiyor: önce oturum açın, sonra doğrulayın."
 
 #: assets/js/gate-block.js:16
 msgid "VerifyBlind lock"

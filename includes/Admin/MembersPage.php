@@ -30,7 +30,7 @@ final class MembersPage {
 			<table class="widefat striped">
 				<thead><tr>
 					<th><?php esc_html_e( 'Account', 'verifyblind' ); ?></th>
-					<th><?php esc_html_e( 'Passed', 'verifyblind' ); ?></th>
+					<th><?php esc_html_e( 'Conditions passed', 'verifyblind' ); ?></th>
 					<th><?php esc_html_e( 'Last verified (UTC)', 'verifyblind' ); ?></th>
 					<th><?php esc_html_e( 'One person', 'verifyblind' ); ?></th>
 					<th><?php esc_html_e( 'Same person as', 'verifyblind' ); ?></th>
