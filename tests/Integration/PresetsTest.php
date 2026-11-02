@@ -66,7 +66,7 @@ final class PresetsTest extends TestCase {
 
 	public function test_woocommerce_presets_need_woocommerce(): void {
 		$all = Presets::all();
-		$this->assertSame( array( 'age_shop', 'age_content', 'community', 'reviews', 'coupons' ), array_keys( $all ) );
+		$this->assertSame( array( 'age_shop', 'age_content', 'community', 'verified_badge', 'reviews', 'coupons' ), array_keys( $all ) );
 		$this->assertTrue( $all['age_shop']['woocommerce'] );
 		$this->assertTrue( $all['coupons']['woocommerce'] );
 		$this->assertFalse( $all['community']['woocommerce'] );

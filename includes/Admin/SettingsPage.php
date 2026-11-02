@@ -3,6 +3,7 @@ namespace VerifyBlind\Admin;
 
 defined( 'ABSPATH' ) || exit;
 
+use VerifyBlind\Settings;
 use VerifyBlind\Plugin;
 use VerifyBlind\Rest;
 use VerifyBlind\Badge;
@@ -35,6 +36,9 @@ final class SettingsPage {
 				array(
 					'type'              => 'string',
 					'sanitize_callback' => function ( $v ) {
+						if ( $v && '1' !== get_option( 'verifyblind_test_mode', '0' ) ) {
+							Settings::start_test_mode_clock();
+						}
 						return $v ? '1' : '0';
 					},
 				)
@@ -86,7 +90,7 @@ final class SettingsPage {
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Test mode', 'verifyblind' ); ?></th>
-						<td><label><input type="checkbox" name="verifyblind_test_mode" value="1" <?php checked( get_option( 'verifyblind_test_mode', '0' ), '1' ); ?>> <?php esc_html_e( 'Accept verifications made with the demo card. Turn off on a live site.', 'verifyblind' ); ?></label></td>
+						<td><label><input type="checkbox" name="verifyblind_test_mode" value="1" <?php checked( get_option( 'verifyblind_test_mode', '0' ), '1' ); ?>> <?php esc_html_e( 'Accept verifications made with the demo card. While on, the demo card also passes age rules. Turns itself off after 24 hours.', 'verifyblind' ); ?></label></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Verified badge', 'verifyblind' ); ?></th>

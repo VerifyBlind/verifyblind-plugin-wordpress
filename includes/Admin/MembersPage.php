@@ -4,6 +4,7 @@ namespace VerifyBlind\Admin;
 defined( 'ABSPATH' ) || exit;
 
 use VerifyBlind\Members;
+use VerifyBlind\Placements\Account;
 
 final class MembersPage {
 	const SLUG     = 'verifyblind-members';
@@ -11,6 +12,8 @@ final class MembersPage {
 
 	public static function hooks(): void {
 		add_action( 'admin_post_verifyblind_remove_member', array( self::class, 'remove' ) );
+		add_action( 'admin_post_verifyblind_request_verification', array( self::class, 'toggle_request' ) );
+		add_filter( 'user_row_actions', array( self::class, 'row_action' ), 10, 2 );
 	}
 
 	public static function render(): void {
@@ -83,6 +86,40 @@ final class MembersPage {
 			?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Users screen: ask one account to verify, or take the request back.
+	 *
+	 * @param mixed $actions
+	 * @param mixed $user
+	 * @return mixed
+	 */
+	public static function row_action( $actions, $user ) {
+		if ( ! is_array( $actions ) || ! $user instanceof \WP_User || ! current_user_can( 'manage_options' ) ) {
+			return $actions;
+		}
+		$url = wp_nonce_url( admin_url( 'admin-post.php?action=verifyblind_request_verification&user_id=' . $user->ID ), 'verifyblind_request_verification_' . $user->ID );
+		$actions['verifyblind_request'] = '<a href="' . esc_url( $url ) . '">' . esc_html( Account::is_requested( (int) $user->ID ) ? __( 'Cancel VerifyBlind request', 'verifyblind' ) : __( 'Ask to verify with VerifyBlind', 'verifyblind' ) ) . '</a>';
+		return $actions;
+	}
+
+	public static function toggle_request(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( '', 403 );
+		}
+		$user_id = isset( $_REQUEST['user_id'] ) ? absint( $_REQUEST['user_id'] ) : 0;
+		check_admin_referer( 'verifyblind_request_verification_' . $user_id );
+		if ( $user_id <= 0 || ! get_userdata( $user_id ) ) {
+			wp_die( esc_html__( 'This account does not exist.', 'verifyblind' ), '', array( 'response' => 400 ) );
+		}
+		if ( Account::is_requested( $user_id ) ) {
+			Account::cancel_request( $user_id );
+		} else {
+			Account::request( $user_id );
+		}
+		wp_safe_redirect( admin_url( 'users.php' ) );
+		exit;
 	}
 
 	public static function condition_label( string $cond ): string {

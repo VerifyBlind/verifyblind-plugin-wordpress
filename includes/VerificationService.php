@@ -41,6 +41,9 @@ final class VerificationService {
 		if ( $is_test && ! $test_mode ) {
 			return self::fail( 400, 'test_card' );
 		}
+		// The demo card carries no birth date and real sites get no age answer for it. While test mode is on,
+		// the site owner is trying the flow, so a missing answer counts as met (is_test keeps it apart).
+		$demo_age = $is_test && $test_mode && '' !== $session['age_cond'] && ! array_key_exists( 'age', $v );
 		// The enclave always signs WHICH age condition it answered. It must be the one this site asked
 		// (stored with the session), so nothing between us and the enclave can swap "18+" for "1+".
 		// Any age answer must carry the condition this site asked. A missing `age` is handled below with its own code.
@@ -58,7 +61,7 @@ final class VerificationService {
 		if ( $session['want_uid'] && ( '' === $person || ( $user_id <= 0 && ! $signup ) ) ) {
 			return self::fail( 502, 'incomplete' );
 		}
-		if ( '' !== $session['age_cond'] && ( ! isset( $v['age'] ) || ! is_bool( $v['age'] ) ) ) {
+		if ( '' !== $session['age_cond'] && ! $demo_age && ( ! isset( $v['age'] ) || ! is_bool( $v['age'] ) ) ) {
 			return self::fail( 502, 'incomplete' );
 		}
 
@@ -84,7 +87,7 @@ final class VerificationService {
 			Results::add( $owner, 'uid', true, $nonce, $is_test );
 		}
 		if ( '' !== $session['age_cond'] ) {
-			Results::add( $owner, $session['age_cond'], $v['age'], $nonce, $is_test );
+			Results::add( $owner, $session['age_cond'], $demo_age ? true : $v['age'], $nonce, $is_test );
 		}
 		if ( $user_id > 0 ) {
 			Roles::sync_user( $user_id, $test_mode );

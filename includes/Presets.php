@@ -41,6 +41,15 @@ final class Presets {
 				),
 				'badges'      => array( 'comments', 'author' ),
 			),
+			'verified_badge' => array(
+				'label'       => __( 'Voluntary verified badge', 'verifyblind' ),
+				'help'        => __( 'Nobody is forced. Members who want the badge verify from their WooCommerce account or from a page with the [verifyblind_verify] shortcode.', 'verifyblind' ),
+				'woocommerce' => false,
+				'rules'       => array(
+					array( 'name' => __( 'Verified member', 'verifyblind' ), 'placement' => 'account', 'unique' => true ),
+				),
+				'badges'      => array( 'comments', 'reviews', 'author' ),
+			),
 			'reviews'     => array(
 				'label'       => __( 'Comments and reviews', 'verifyblind' ),
 				'help'        => __( 'Comments and product reviews from verified people (one person, one account), with a verified badge.', 'verifyblind' ),
