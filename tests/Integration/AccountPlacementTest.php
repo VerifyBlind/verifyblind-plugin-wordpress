@@ -13,16 +13,16 @@ final class AccountPlacementTest extends TestCase {
 	}
 
 	public function test_asking_an_account_creates_the_rule_once(): void {
-		Account::request( $this->member() );
+		Account::request( $this->make_user() );
 		$first = Account::rule();
-		Account::request( $this->member() );
+		Account::request( $this->make_user() );
 		$this->assertNotNull( $first );
 		$this->assertSame( $first['id'], Account::rule()['id'] );
 		$this->assertTrue( $first['unique'] );
 	}
 
 	public function test_asked_account_cannot_comment_until_it_verifies(): void {
-		$user = $this->member();
+		$user = $this->make_user();
 		Account::request( $user );
 
 		$refused = Account::refuse_comment( 1, array( 'user_id' => $user ) );
@@ -34,26 +34,26 @@ final class AccountPlacementTest extends TestCase {
 	}
 
 	public function test_everyone_else_is_not_held_back(): void {
-		$this->assertSame( 1, Account::refuse_comment( 1, array( 'user_id' => $this->member() ) ) );
+		$this->assertSame( 1, Account::refuse_comment( 1, array( 'user_id' => $this->make_user() ) ) );
 		$this->assertSame( 1, Account::refuse_comment( 1, array( 'user_id' => 0 ) ) );
-		$moderator = (int) self::factory()->user->create( array( 'role' => 'editor' ) );
+		$moderator = $this->make_user( 'editor' );
 		Account::request( $moderator );
 		$this->assertSame( 1, Account::refuse_comment( 1, array( 'user_id' => $moderator ) ) );
 	}
 
 	public function test_cancelled_request_lets_the_account_post_again(): void {
-		$user = $this->member();
+		$user = $this->make_user();
 		Account::request( $user );
 		Account::cancel_request( $user );
 		$this->assertFalse( Account::blocked( $user ) );
 	}
 
 	public function test_forum_filter_follows_the_same_decision(): void {
-		$user = $this->member();
+		$user = $this->make_user();
 		Account::request( $user );
 		wp_set_current_user( $user );
 		$this->assertFalse( Account::can_post( true ) );
-		wp_set_current_user( $this->member() );
+		wp_set_current_user( $this->make_user() );
 		$this->assertTrue( Account::can_post( true ) );
 	}
 
