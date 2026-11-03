@@ -4,7 +4,7 @@ Tags: age verification, age gate, woocommerce, one account per person, privacy
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,14 +33,14 @@ This plugin connects your site to VerifyBlind (https://verifyblind.com), the ser
 
 From your site's server to the VerifyBlind API (https://api.verifyblind.com):
 
-* When a visitor presses "Verify with VerifyBlind": `POST /api/pop/generate` with your site's API key, a one-time public key created in the visitor's browser for this verification, the conditions the rule asks for (for example age 18+ and/or the one-person check), the widget version, the language the visitor's browser asks for (the Accept-Language header), and the plugin version (header `X-VerifyBlind-Client: wordpress/1.0.6`). No name, e-mail address or IP address of the visitor is sent.
+* When a visitor presses "Verify with VerifyBlind": `POST /api/pop/generate` with your site's API key, a one-time public key created in the visitor's browser for this verification, the conditions the rule asks for (for example age 18+ and/or the one-person check), the widget version, the language the visitor's browser asks for (the Accept-Language header), and the plugin version (header `X-VerifyBlind-Client: wordpress/1.0.7`). No name, e-mail address or IP address of the visitor is sent.
 * When you test the connection (setup wizard or Settings): the same call with VerifyBlind's own public key and an age 18+ condition. The session is never used and not billed.
 * When a verification result arrives: `GET /api/public/enclave-key` (VerifyBlind's public key, kept for about a minute) to check the result's signature on your server.
 * When VerifyBlind calls your revoke address: `GET /api/public/webhook-signing-key` (kept for an hour) to check that the call really comes from VerifyBlind.
 
 From the visitor's browser, only on pages that show a verification box:
 
-* The VerifyBlind widget https://cdn.verifyblind.com/sdk/v1.0.3/verifyblind.js (a fixed version, checked with a Subresource Integrity hash). The widget in turn loads its QR code library https://cdn.verifyblind.com/sdk/v1.0.3/vendor/qr-code-styling.min.js and logo https://cdn.verifyblind.com/images/qrlogo.png.
+* The VerifyBlind widget https://cdn.verifyblind.com/sdk/v1.0.4/verifyblind.js (a fixed version, checked with a Subresource Integrity hash). The widget in turn loads its QR code library https://cdn.verifyblind.com/sdk/v1.0.4/vendor/qr-code-styling.min.js and logo https://cdn.verifyblind.com/images/qrlogo.png.
 * While the QR code is on screen, the browser asks https://api.verifyblind.com/api/pop/result/ (followed by the session code) every two seconds for the result, which is encrypted for that browser only. Like any web request, this shows VerifyBlind the visitor's IP address; VerifyBlind does not pass it to your site.
 * The QR code holds a link to https://app.verifyblind.com that the visitor opens with the VerifyBlind app on their phone.
 
@@ -118,6 +118,9 @@ Filters: `verifyblind_bypass_gate` (bool $bypass, WP_Post $post) opens a content
 
 == Changelog ==
 
+= 1.0.7 =
+* Uses version 1.0.4 of the VerifyBlind widget: the QR code tells visitors that verification takes about 18 seconds.
+
 = 1.0.6 =
 * Moderators can ask one account to verify from the Users screen; until it does, that account cannot post.
 * New "Voluntary verified badge" choice: members verify from their account or from a page with the [verifyblind_verify] shortcode.
@@ -145,8 +148,11 @@ Filters: `verifyblind_bypass_gate` (bool $bypass, WP_Post $post) opens a content
 
 == Upgrade Notice ==
 
+= 1.0.7 =
+The widget shows how long verification takes. No settings change.
+
 = 1.0.6 =
-Translation fixes. No settings change.
+Adds voluntary and moderator-asked verification. No settings change.
 
 = 1.0.4 =
 Small wording fix in the rule editor. No settings change.
