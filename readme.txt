@@ -2,7 +2,7 @@
 Contributors: verifyblind
 Tags: age verification, age gate, woocommerce, one account per person, privacy
 Requires at least: 6.0
-Tested up to: 7.1
+Tested up to: 7.2
 Requires PHP: 7.4
 Stable tag: 1.0.7
 License: GPLv2 or later
@@ -78,7 +78,7 @@ Chipped Turkish ID cards (T.C. Kimlik Kartı). Passports and other documents are
 
 = Can I try it without a real ID card? =
 
-Test mode (VerifyBlind → Settings) accepts the demo card of the VerifyBlind app. The demo card only works with a test partner account; write to support@verifyblind.com for one. With a regular partner account, verify with your own ID card. Turn test mode off on a live site.
+You can test without your own ID card and without writing to us. Turn on test mode (VerifyBlind → Settings), then in the VerifyBlind app tap "Try with a sample card". This works with a regular partner account. While test mode is on, the plugin accepts the sample card and it passes age rules. Test mode turns itself off after 24 hours; with test mode off, the sample card is rejected, so it cannot be used on your live site.
 
 = Is locked content hidden everywhere? =
 
